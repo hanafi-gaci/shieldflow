@@ -82,7 +82,7 @@ app.post('/api/auth/login', (req, res) => {
   saveDB(db);
   res.json({ token, expires_at: expires });
 });
-
+app.get('/api/auth/me', requireAuth, (req, res) => { res.json({ status: 'ok' }); });
 app.post('/api/auth/logout', requireAuth, (req, res) => {
   const token = req.headers['authorization'].replace('Bearer ','');
   const db = loadDB(); delete db.sessions[token]; saveDB(db);
