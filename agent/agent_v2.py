@@ -14,6 +14,7 @@ Config via variables d'environnement ou fichier .env :
 
 import os
 import sys
+SHIELDFLOW_TENANT = os.getenv('SHIELDFLOW_TENANT', '')
 import json
 import time
 import uuid
@@ -114,7 +115,7 @@ def send_report(payload: dict) -> bool:
     # Step 1: Register device
     try:
         reg = requests.post(
-            f'{SERVER_URL}/api/agent/register',
+            f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/register' if SHIELDFLOW_TENANT else f'{SERVER_URL}/api/agent/register',
             json={
                 'hostname': payload.get('hostname', 'unknown'),
                 'platform': payload.get('platform', 'unknown'),
@@ -166,7 +167,7 @@ def send_report(payload: dict) -> bool:
             'logs': payload.get('logs', []),
         }
         resp = requests.post(
-            f'{SERVER_URL}/api/agent/heartbeat',
+            f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/heartbeat' if SHIELDFLOW_TENANT else f'{SERVER_URL}/api/agent/heartbeat',
             json=heartbeat, headers=headers, timeout=15
         )
         resp.raise_for_status()
