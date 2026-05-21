@@ -105,41 +105,81 @@ def collect_basic_info() -> dict:
 
 def send_report(payload: dict) -> bool:
     """Send analysis payload to ShieldFlow server."""
-    url = f'{SERVER_URL}/api/agent/report'
     headers = {
         'Content-Type': 'application/json',
+        'x-agent-key': 'shieldflow-secret-key-change-in-prod',
         'User-Agent': f'ShieldFlow-Agent/2.0 ({platform.system()})',
     }
-    if API_TOKEN:
-        headers['Authorization'] = f'Bearer {API_TOKEN}'
 
+    # Step 1: Register device
     try:
-        resp = requests.post(url, json=payload, headers=headers, timeout=15)
+        reg = requests.post(
+            f'{SERVER_URL}/api/agent/register',
+            json={
+                'hostname': payload.get('hostname', 'unknown'),
+                'platform': payload.get('platform', 'unknown'),
+                'name': payload.get('hostname', 'unknown'),
+                'agent_version': '2.0.0'
+            },
+            headers=headers, timeout=10
+        )
+        device_id = reg.json().get('device_id', '')
+    except Exception as e:
+        logger.error(f'Register failed: {e}')
+        return False
+
+    # Step 2: Send heartbeat with expert data
+    try:
+        heartbeat = {
+            'device_id': device_id,
+            'cpu_percent': payload.get('cpu_percent', 0),
+            'ram_gb': round((payload.get('memory_total', 0) or 0) / 1024**3, 1),
+            'disk_gb': round((payload.get('disk_total', 0) or 0) / 1024**3, 1),
+            'uptime_seconds': payload.get('uptime_seconds', 0),
+            'process_count': len(payload.get('processes') or []),
+            "running_processes": len(payload.get("processes") or []),
+            "uptime_hours": round((payload.get("uptime_seconds") or 0) / 3600, 1),
+            'ram_total_gb': round((payload.get('memory_total', 0) or 0) / 1024**3, 1),
+            'disk_total_gb': round((payload.get('disk_total', 0) or 0) / 1024**3, 1),
+            'uptime_seconds': payload.get('uptime_seconds', 0),
+            'os_version': payload.get('os_version', ''),
+            'platform': payload.get('platform', 'Darwin'),
+            'memory_total': payload.get('memory_total', 0),
+            'disk_total': payload.get('disk_total', 0),
+            'uptime_seconds': payload.get('uptime_seconds', 0),
+            'process_count': len(payload.get('processes') or []),
+            "running_processes": len(payload.get("processes") or []),
+            "uptime_hours": round((payload.get("uptime_seconds") or 0) / 3600, 1),
+            'ram_total_gb': round((payload.get('memory_total', 0) or 0) / 1024**3, 1),
+            'disk_total_gb': round((payload.get('disk_total', 0) or 0) / 1024**3, 1),
+            'uptime_seconds': payload.get('uptime_seconds', 0),
+            'ram_percent': payload.get('memory_percent', 0),
+            'disk_percent': payload.get('disk_usage_percent', 0),
+            'open_ports': [p.get('local_port') for p in (payload.get('open_ports') or []) if p.get('local_port')],
+            'network_connections': len(payload.get('open_ports') or []),
+            'processes': payload.get('processes', []),
+            'firewall_enabled': payload.get('firewall_enabled'),
+            'disk_encrypted': payload.get('disk_encrypted'),
+            'pending_updates': payload.get('pending_updates', 0),
+            'antivirus_status': payload.get('antivirus_status', 'unknown'),
+            'users': payload.get('users', []),
+            'logs': payload.get('logs', []),
+        }
+        resp = requests.post(
+            f'{SERVER_URL}/api/agent/heartbeat',
+            json=heartbeat, headers=headers, timeout=15
+        )
         resp.raise_for_status()
         data = resp.json()
-
-        score    = data.get('score', '?')
-        alerts   = data.get('alert_count', '?')
-        critical = data.get('critical_count', 0)
-
-        status_emoji = '🔴' if critical > 0 else ('🟡' if int(alerts or 0) > 0 else '🟢')
-        logger.info(f'{status_emoji} Score: {score}/100 | Alertes: {alerts} | Critiques: {critical}')
-
+        logger.info(f'🟢 Heartbeat envoyé — CPU: {heartbeat["cpu_percent"]}% | RAM: {heartbeat["ram_percent"]}% | Disque: {heartbeat["disk_percent"]}%')
         return True
 
-    except requests.exceptions.ConnectionError:
-        logger.error(f'Cannot reach server at {SERVER_URL}')
-    except requests.exceptions.Timeout:
-        logger.error('Request timed out after 15s')
     except requests.exceptions.HTTPError as e:
         logger.error(f'HTTP {e.response.status_code}: {e.response.text[:200]}')
     except Exception as e:
         logger.error(f'Unexpected error: {e}')
 
     return False
-
-
-# ─── MAIN LOOP ───────────────────────────────────────────────────────────────
 
 def main():
     logger.info('=' * 55)
