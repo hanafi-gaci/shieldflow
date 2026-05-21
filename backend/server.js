@@ -45,34 +45,79 @@ function analyzeAndCreateAlerts(db, deviceId, deviceName, snap) {
   const now = new Date().toISOString();
   const candidates = [];
 
+  // CPU
   if (snap.cpu_percent > 90)
-    candidates.push({ type:'HIGH_CPU', severity:'high', title:'CPU anormalement élevé', description:`CPU à ${snap.cpu_percent.toFixed(1)}% sur ${deviceName}.` });
+    candidates.push({ type:'HIGH_CPU', severity:'high', title:'CPU anormalement élevé', description:`CPU à ${snap.cpu_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Identifier les processus consommateurs via le Moniteur d'activité.' });
 
+  // RAM
   if (snap.ram_percent > 95)
-    candidates.push({ type:'HIGH_RAM', severity:'medium', title:'RAM saturée', description:`RAM à ${snap.ram_percent.toFixed(1)}% sur ${deviceName}.` });
+    candidates.push({ type:'HIGH_RAM', severity:'medium', title:'RAM saturée', description:`RAM à ${snap.ram_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Fermer les applications inutiles ou augmenter la RAM.' });
 
+  // Disque
   if (snap.disk_percent > 90)
-    candidates.push({ type:'LOW_DISK', severity:'high', title:'Espace disque critique', description:`Disque à ${snap.disk_percent.toFixed(1)}% sur ${deviceName}.` });
+    candidates.push({ type:'LOW_DISK', severity:'high', title:'Espace disque critique', description:`Disque à ${snap.disk_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Libérer de l'espace disque immédiatement.' });
 
+  // Ports dangereux
   const ports = Array.isArray(snap.open_ports) ? snap.open_ports : [];
-  const dangerPorts = ports.filter(p => [22,23,3389,5900].includes(Number(p)));
-  if (dangerPorts.length > 0) {
-    const names = {22:'SSH',23:'Telnet',3389:'RDP',5900:'VNC'};
-    candidates.push({ type:'OPEN_PORTS', severity: dangerPorts.includes(23)?'critical':'medium',
-      title:`Port(s) sensible(s) ouvert(s) : ${dangerPorts.join(', ')}`,
-      description:`Ports sur ${deviceName} : ${dangerPorts.map(p=>`${p} (${names[p]||'?'})`).join(', ')}.` });
+  const dangerPorts = ports.filter(p => [4444,1337,31337,6666,6667,23].includes(Number(p)));
+  if (dangerPorts.length > 0)
+    candidates.push({ type:'DANGER_PORTS', severity:'critical', title:`Port dangereux ouvert : ${dangerPorts.join(', ')}`, description:`Port(s) associé(s) à des outils d'attaque détectés sur ${deviceName}.`, recommendation:'Fermer ces ports via le pare-feu immédiatement.' });
+
+  // Pare-feu
+  if (snap.firewall_enabled === false || snap.firewall_status === 'disabled')
+    candidates.push({ type:'FIREWALL_OFF', severity:'critical', title:'Pare-feu désactivé', description:`Le pare-feu est désactivé sur ${deviceName}. La machine est exposée sans protection réseau.`, recommendation:'Activer le pare-feu : Réglages Système → Réseau → Pare-feu → Activer.' });
+
+  // Chiffrement disque
+  if (snap.disk_encrypted === false)
+    candidates.push({ type:'DISK_NOT_ENCRYPTED', severity:'high', title:'Disque non chiffré', description:`Le disque de ${deviceName} n'est pas chiffré. Non conforme RGPD Art. 32.`, recommendation:'Activer FileVault : Réglages Système → Confidentialité → FileVault.' });
+
+  // Antivirus
+  if (snap.antivirus_status === 'disabled' || snap.antivirus_enabled === false)
+    candidates.push({ type:'NO_ANTIVIRUS', severity:'high', title:'Protection antivirus absente', description:`Aucun antivirus actif détecté sur ${deviceName}.`, recommendation:'Installer Malwarebytes ou activer XProtect.' });
+
+  // Mises à jour
+  if (snap.pending_updates > 20)
+    candidates.push({ type:'UPDATES_CRITICAL', severity:'high', title:`${snap.pending_updates} mises à jour en attente`, description:`${snap.pending_updates} paquets non mis à jour sur ${deviceName}. Risque de vulnérabilités critiques.`, recommendation:'Appliquer les mises à jour système immédiatement.' });
+  else if (snap.pending_updates > 5)
+    candidates.push({ type:'UPDATES_PENDING', severity:'medium', title:`${snap.pending_updates} mises à jour disponibles`, description:`${snap.pending_updates} mises à jour disponibles sur ${deviceName}.`, recommendation:'Planifier une mise à jour dans les 7 jours.' });
+
+  // Processus suspects (malwares connus)
+  const malwarePatterns = [/lockbit/i, /wannacry/i, /mimikatz/i, /xmrig/i, /meterpreter/i, /njrat/i, /cryptolocker/i];
+  const processes = Array.isArray(snap.processes) ? snap.processes : [];
+  for (const proc of processes) {
+    const name = (proc.name || proc.cmd || '').toLowerCase();
+    for (const pattern of malwarePatterns) {
+      if (pattern.test(name)) {
+        candidates.push({ type:'MALWARE_DETECTED', severity:'critical', title:`Malware détecté : ${proc.name}`, description:`Processus malveillant "${proc.name}" (PID: ${proc.pid}) détecté sur ${deviceName}.`, recommendation:`Terminer immédiatement PID ${proc.pid} et isoler la machine.` });
+      }
+    }
   }
 
-  if (snap.network_connections > 200)
-    candidates.push({ type:'HIGH_CONNECTIONS', severity:'medium', title:'Connexions réseau élevées', description:`${snap.network_connections} connexions actives sur ${deviceName}.` });
+  // Logs : brute force
+  const logs = Array.isArray(snap.logs) ? snap.logs : [];
+  const failedLogins = logs.filter(l => /failed password|authentication failure/i.test(l.line || l.message || '')).length;
+  if (failedLogins > 10)
+    candidates.push({ type:'BRUTE_FORCE', severity: failedLogins > 50 ? 'critical' : 'high', title:`Tentatives de connexion échouées : ${failedLogins}`, description:`${failedLogins} échecs de connexion détectés sur ${deviceName}. Possible attaque brute force.`, recommendation:'Vérifier les IPs sources et activer fail2ban ou MFA.' });
 
+  // Ajouter les nouvelles alertes
   for (const c of candidates) {
-    const exists = db.alerts.some(a => a.device_id===deviceId && a.type===c.type && !a.resolved);
-    if (!exists) db.alerts.push({ id: db.alertIdSeq++, device_id:deviceId, device_name:deviceName, ...c, created_at:now, resolved:false, resolved_at:null });
+    const exists = db.alerts.some(a => a.device_id === deviceId && a.type === c.type && !a.resolved);
+    if (!exists) db.alerts.push({
+      id: db.alertIdSeq++,
+      device_id: deviceId,
+      device_name: deviceName,
+      type: c.type,
+      severity: c.severity,
+      title: c.title,
+      description: c.description,
+      recommendation: c.recommendation || '',
+      resolved: false,
+      created_at: now
+    });
   }
 }
 
-// Auth
+
 app.post('/api/auth/login', (req, res) => {
   if (!req.body.password || req.body.password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Mot de passe incorrect' });
   const token = crypto.randomBytes(32).toString('hex');
