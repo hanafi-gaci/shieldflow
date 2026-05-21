@@ -47,7 +47,7 @@ function analyzeAndCreateAlerts(db, deviceId, deviceName, snap) {
 
   // CPU
   if (snap.cpu_percent > 90)
-    candidates.push({ type:'HIGH_CPU', severity:'high', title:'CPU anormalement élevé', description:`CPU à ${snap.cpu_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Identifier les processus consommateurs via le Moniteur d'activité.' });
+    candidates.push({ type:'HIGH_CPU', severity:'high', title:'CPU anormalement élevé', description:`CPU à ${snap.cpu_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Identifier les processus consommateurs via le Moniteur activite.' });
 
   // RAM
   if (snap.ram_percent > 95)
@@ -55,7 +55,7 @@ function analyzeAndCreateAlerts(db, deviceId, deviceName, snap) {
 
   // Disque
   if (snap.disk_percent > 90)
-    candidates.push({ type:'LOW_DISK', severity:'high', title:'Espace disque critique', description:`Disque à ${snap.disk_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Libérer de l'espace disque immédiatement.' });
+    candidates.push({ type:'LOW_DISK', severity:'high', title:'Espace disque critique', description:`Disque à ${snap.disk_percent.toFixed(1)}% sur ${deviceName}.`, recommendation:'Liberer de espace disque immediatement.' });
 
   // Ports dangereux
   const ports = Array.isArray(snap.open_ports) ? snap.open_ports : [];
