@@ -15,6 +15,31 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shieldflow2026';
 const SECRET_KEY     = process.env.SECRET_KEY     || 'shieldflow-secret-key-change-in-prod';
 const DB_FILE        = path.join(__dirname, 'db.json');
 
+// ─── TENANTS (multi-clients) ──────────────────────────────────────────────
+const TENANTS_FILE = path.join(__dirname, 'tenants.json');
+
+function loadTenants() {
+  if (!fs.existsSync(TENANTS_FILE)) return { tenants: {}, mssp_password: 'shieldflow-mssp-2026' };
+  try { return JSON.parse(fs.readFileSync(TENANTS_FILE, 'utf8')); }
+  catch(e) { return { tenants: {}, mssp_password: 'shieldflow-mssp-2026' }; }
+}
+
+function saveTenants(data) {
+  fs.writeFileSync(TENANTS_FILE, JSON.stringify(data, null, 2));
+}
+
+function getTenantDB(tenantId) {
+  const file = path.join(__dirname, `db_${tenantId}.json`);
+  if (!fs.existsSync(file)) return { devices:{}, snapshots:{}, alerts:[], sessions:{}, alertIdSeq:1 };
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
+  catch(e) { return { devices:{}, snapshots:{}, alerts:[], sessions:{}, alertIdSeq:1 }; }
+}
+
+function saveTenantDB(tenantId, db) {
+  const file = path.join(__dirname, `db_${tenantId}.json`);
+  fs.writeFileSync(file, JSON.stringify(db, null, 2));
+}
+
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, '../dashboard')));
@@ -217,6 +242,125 @@ app.post('/api/alerts/:id/resolve', requireAuth, (req, res) => {
   alert.resolved=true; alert.resolved_at=new Date().toISOString();
   saveDB(db);
   res.json({ success:true });
+});
+
+// ─── MSSP ROUTES ─────────────────────────────────────────────────────────────
+
+// Login MSSP (vue globale)
+app.post('/api/mssp/login', (req, res) => {
+  const { password } = req.body;
+  const t = loadTenants();
+  if (password !== t.mssp_password) return res.status(401).json({ error: 'Mot de passe MSSP incorrect' });
+  const token = require('crypto').randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 24*60*60*1000).toISOString();
+  t.mssp_sessions = t.mssp_sessions || {};
+  t.mssp_sessions[token] = { expires_at: expires };
+  saveTenants(t);
+  res.json({ token, expires_at: expires, role: 'mssp' });
+});
+
+// Créer un client
+app.post('/api/mssp/tenants', (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !password) return res.status(400).json({ error: 'name et password requis' });
+  const t = loadTenants();
+  const id = 'tenant_' + Date.now();
+  const agentKey = require('crypto').randomBytes(16).toString('hex');
+  t.tenants[id] = { id, name, email: email||'', password, agent_key: agentKey, created_at: new Date().toISOString() };
+  saveTenants(t);
+  res.json({ tenant_id: id, agent_key: agentKey, message: 'Client créé' });
+});
+
+// Lister tous les clients (vue MSSP)
+app.get('/api/mssp/tenants', (req, res) => {
+  const t = loadTenants();
+  const result = [];
+  for (const [id, tenant] of Object.entries(t.tenants)) {
+    const db = getTenantDB(id);
+    const devices = Object.values(db.devices);
+    const alerts = db.alerts.filter(a => !a.resolved);
+    const criticals = alerts.filter(a => a.severity === 'critical');
+    const score = Math.max(0, 100 - criticals.length*20 - alerts.length*5);
+    result.push({
+      id, name: tenant.name, email: tenant.email,
+      device_count: devices.length,
+      alert_count: alerts.length,
+      critical_count: criticals.length,
+      score,
+      agent_key: tenant.agent_key,
+      created_at: tenant.created_at
+    });
+  }
+  res.json({ count: result.length, tenants: result });
+});
+
+// Dashboard d'un client spécifique
+app.get('/api/mssp/tenants/:id/dashboard', (req, res) => {
+  const t = loadTenants();
+  const tenant = t.tenants[req.params.id];
+  if (!tenant) return res.status(404).json({ error: 'Client non trouvé' });
+  const db = getTenantDB(req.params.id);
+  const devices = Object.values(db.devices);
+  const alerts = db.alerts.filter(a => !a.resolved);
+  res.json({ tenant: { id: req.params.id, name: tenant.name }, devices, alerts });
+});
+
+// Login client (avec tenant_id)
+app.post('/api/tenant/login', (req, res) => {
+  const { tenant_id, password } = req.body;
+  const t = loadTenants();
+  const tenant = t.tenants[tenant_id];
+  if (!tenant || tenant.password !== password) return res.status(401).json({ error: 'Identifiants incorrects' });
+  const token = require('crypto').randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 24*60*60*1000).toISOString();
+  const db = getTenantDB(tenant_id);
+  db.sessions = db.sessions || {};
+  db.sessions[token] = { expires_at: expires, tenant_id };
+  saveTenantDB(tenant_id, db);
+  res.json({ token, tenant_id, tenant_name: tenant.name, expires_at: expires });
+});
+
+// Agent register avec tenant
+app.post('/api/agent/:tenantId/register', (req, res) => {
+  const { hostname, platform, name, agent_version } = req.body;
+  const tenantId = req.params.tenantId;
+  const t = loadTenants();
+  const tenant = t.tenants[tenantId];
+  if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
+  const agentKey = req.headers['x-agent-key'];
+  if (agentKey !== tenant.agent_key) return res.status(403).json({ error: 'Clé agent invalide' });
+  const id = require('crypto').createHash('md5').update(hostname+platform).digest('hex');
+  const now = new Date().toISOString();
+  const db = getTenantDB(tenantId);
+  if (!db.devices[id]) db.devices[id] = { id, name: name||hostname, hostname, platform, agent_version, created_at: now };
+  db.devices[id].last_seen = now;
+  db.snapshots = db.snapshots || {};
+  saveTenantDB(tenantId, db);
+  res.json({ device_id: id, message: 'Appareil enregistré' });
+});
+
+// Agent heartbeat avec tenant
+app.post('/api/agent/:tenantId/heartbeat', (req, res) => {
+  const tenantId = req.params.tenantId;
+  const t = loadTenants();
+  const tenant = t.tenants[tenantId];
+  if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
+  const agentKey = req.headers['x-agent-key'];
+  if (agentKey !== tenant.agent_key) return res.status(403).json({ error: 'Clé agent invalide' });
+  const { device_id, ...snap } = req.body;
+  if (!device_id) return res.status(400).json({ error: 'device_id requis' });
+  const db = getTenantDB(tenantId);
+  if (!db.devices[device_id]) return res.status(404).json({ error: 'Appareil non enregistré' });
+  const now = new Date().toISOString();
+  db.devices[device_id].last_seen = now;
+  db.devices[device_id].status = 'online';
+  db.snapshots = db.snapshots || {};
+  if (!db.snapshots[device_id]) db.snapshots[device_id] = [];
+  db.snapshots[device_id].unshift({ ...snap, timestamp: now });
+  if (db.snapshots[device_id].length > 100) db.snapshots[device_id] = db.snapshots[device_id].slice(0, 100);
+  analyzeAndCreateAlerts(db, device_id, db.devices[device_id].name, snap);
+  saveTenantDB(tenantId, db);
+  res.json({ success: true, timestamp: now });
 });
 
 app.listen(PORT, () => {
