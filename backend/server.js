@@ -207,7 +207,8 @@ function analyzeAndCreateAlerts(db, deviceId, deviceName, snap) {
         created_at: now
       };
       db.alerts.push(newAlert);
-      if (c.severity === 'critical' || c.severity === 'high') {
+      // Email uniquement si premiere occurrence
+      if ((c.severity === 'critical' || c.severity === 'high') && !db.alerts.some(a => a.type === c.type && a.device_id === deviceId && a.resolved)) {
         const alertEmail = process.env.ALERT_EMAIL;
         if (alertEmail) sendAlertEmail(deviceName, newAlert, deviceName, alertEmail);
       }
