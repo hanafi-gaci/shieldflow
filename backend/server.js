@@ -10,6 +10,72 @@ const fs      = require('fs');
 const path    = require('path');
 
 const app  = express();
+
+// ─── EMAIL ALERTS ─────────────────────────────────────────────────────────────
+
+async function sendAlertEmail(tenantName, alert, deviceName, toEmail) {
+  const RESEND_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_KEY) return;
+
+  const sevColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#10b981' };
+  const color = sevColors[alert.severity] || '#6b7280';
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0f1117;color:#e8edf5;border-radius:12px;overflow:hidden">
+      <div style="background:#2563eb;padding:20px 28px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">🛡</span>
+        <div>
+          <div style="font-size:18px;font-weight:800;color:#fff">ShieldFlow — Alerte de sécurité</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.7)">${tenantName}</div>
+        </div>
+      </div>
+      <div style="padding:28px">
+        <div style="background:${color}22;border:1px solid ${color}44;border-radius:8px;padding:16px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="background:${color};color:#fff;padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;text-transform:uppercase">${alert.severity}</span>
+            <span style="font-size:14px;font-weight:600">${alert.title}</span>
+          </div>
+          <div style="font-size:13px;color:#8b9ab0">${alert.description}</div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;color:#4a5a6e;text-transform:uppercase;margin-bottom:6px">Appareil concerné</div>
+          <div style="font-size:13px">💻 ${deviceName}</div>
+        </div>
+        <div style="background:#1c2433;border-radius:8px;padding:14px">
+          <div style="font-size:11px;color:#4a5a6e;text-transform:uppercase;margin-bottom:6px">Recommandation</div>
+          <div style="font-size:13px;color:#10b981">${alert.recommendation || 'Vérifier immédiatement'}</div>
+        </div>
+        <div style="margin-top:24px;text-align:center">
+          <a href="https://shieldflow-rfzv.onrender.com" style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">Voir le dashboard →</a>
+        </div>
+      </div>
+      <div style="padding:16px 28px;border-top:1px solid #1e2d3d;font-size:11px;color:#4a5a6e;text-align:center">
+        ShieldFlow MSSP Platform · ${new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+      </div>
+    </div>`;
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'ShieldFlow <onboarding@resend.dev>',
+        to: [toEmail || process.env.ALERT_EMAIL],
+        subject: `🚨 [${alert.severity.toUpperCase()}] ${alert.title} — ${tenantName}`,
+        html
+      })
+    });
+    const result = await response.json();
+    console.log(`[Email] Alerte envoyée à ${toEmail}: ${alert.title}`);
+  } catch(e) {
+    console.error('[Email] Erreur:', e.message);
+  }
+}
+
+
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'shieldflow2026';
 const SECRET_KEY     = process.env.SECRET_KEY     || 'shieldflow-secret-key-change-in-prod';
@@ -127,18 +193,25 @@ function analyzeAndCreateAlerts(db, deviceId, deviceName, snap) {
   // Ajouter les nouvelles alertes
   for (const c of candidates) {
     const exists = db.alerts.some(a => a.device_id === deviceId && a.type === c.type && !a.resolved);
-    if (!exists) db.alerts.push({
-      id: db.alertIdSeq++,
-      device_id: deviceId,
-      device_name: deviceName,
-      type: c.type,
-      severity: c.severity,
-      title: c.title,
-      description: c.description,
-      recommendation: c.recommendation || '',
-      resolved: false,
-      created_at: now
-    });
+    if (!exists) {
+      const newAlert = {
+        id: db.alertIdSeq++,
+        device_id: deviceId,
+        device_name: deviceName,
+        type: c.type,
+        severity: c.severity,
+        title: c.title,
+        description: c.description,
+        recommendation: c.recommendation || '',
+        resolved: false,
+        created_at: now
+      };
+      db.alerts.push(newAlert);
+      if (c.severity === 'critical' || c.severity === 'high') {
+        const alertEmail = process.env.ALERT_EMAIL;
+        if (alertEmail) sendAlertEmail(deviceName, newAlert, deviceName, alertEmail);
+      }
+    }
   }
 }
 
