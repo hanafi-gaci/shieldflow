@@ -452,6 +452,52 @@ app.get('/api/reset-alerts', (req, res) => {
   res.json({ success: true, message: 'Alertes effacées' });
 });
 
+
+// ─── CLOUD INTEGRATION ROUTES ─────────────────────────────────────────────────
+
+// Ajouter credentials cloud à un tenant
+app.post('/api/mssp/tenants/:id/cloud', (req, res) => {
+  const { cloud_type, credentials } = req.body;
+  const t = loadTenants();
+  const tenant = t.tenants[req.params.id];
+  if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
+  
+  if (!tenant.cloud) tenant.cloud = {};
+  tenant.cloud[cloud_type] = { 
+    credentials, 
+    connected_at: new Date().toISOString(),
+    last_scan: null
+  };
+  saveTenants(t);
+  res.json({ success: true, message: `Cloud ${cloud_type} connecté` });
+});
+
+// Lister les clouds connectés d'un tenant
+app.get('/api/mssp/tenants/:id/cloud', (req, res) => {
+  const t = loadTenants();
+  const tenant = t.tenants[req.params.id];
+  if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
+  
+  const clouds = Object.entries(tenant.cloud || {}).map(([type, data]) => ({
+    type,
+    connected_at: data.connected_at,
+    last_scan: data.last_scan,
+    status: 'connected'
+  }));
+  res.json({ clouds });
+});
+
+// Supprimer un cloud d'un tenant
+app.delete('/api/mssp/tenants/:id/cloud/:type', (req, res) => {
+  const t = loadTenants();
+  const tenant = t.tenants[req.params.id];
+  if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
+  
+  if (tenant.cloud) delete tenant.cloud[req.params.type];
+  saveTenants(t);
+  res.json({ success: true });
+});
+
 app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════╗
