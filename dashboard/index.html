@@ -732,6 +732,49 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── CLOUD ─────────────────────────────────────────────────────────────────
+
+let currentCloudTenantId = '';
+
+function openAddCloud(tenantId) {
+  currentCloudTenantId = tenantId;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-title').textContent = 'Connecter un service cloud';
+  document.getElementById('modal-body').innerHTML = '<div style="margin-bottom:16px"><label class="field-label">Type de cloud</label><select class="field-input" id="cloud-type" onchange="updateCloudForm(this.value)"><option value="">Choisir...</option><option value="aws">Amazon AWS</option><option value="m365">Microsoft 365</option><option value="gworkspace">Google Workspace</option></select></div><div id="cloud-form"></div><div class="modal-actions"><button class="btn-ghost" onclick="closeModal()">Annuler</button><button class="btn-primary" style="width:auto;padding:8px 24px" onclick="saveCloud()">Connecter</button></div>';
+}
+
+function updateCloudForm(type) {
+  const el = document.getElementById('cloud-form');
+  if (!el) return;
+  if (type === 'aws') {
+    el.innerHTML = '<label class="field-label">AWS Access Key ID</label><input type="text" class="field-input" id="cloud-f1" placeholder="AKIAIOSFODNN7EXAMPLE"><label class="field-label">AWS Secret Access Key</label><input type="password" class="field-input" id="cloud-f2" placeholder="Secret Key"><label class="field-label">Region</label><input type="text" class="field-input" id="cloud-f3" placeholder="eu-west-1">';
+  } else if (type === 'm365') {
+    el.innerHTML = '<label class="field-label">Tenant ID Azure AD</label><input type="text" class="field-input" id="cloud-f1" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"><label class="field-label">Client ID</label><input type="text" class="field-input" id="cloud-f2" placeholder="Client ID"><label class="field-label">Client Secret</label><input type="password" class="field-input" id="cloud-f3" placeholder="Secret">';
+  } else if (type === 'gworkspace') {
+    el.innerHTML = '<label class="field-label">Email administrateur</label><input type="email" class="field-input" id="cloud-f1" placeholder="admin@domaine.com"><label class="field-label">Service Account JSON</label><textarea class="field-input" id="cloud-f2" rows="3" placeholder="{}"></textarea>';
+  }
+}
+
+async function saveCloud() {
+  const type = document.getElementById('cloud-type').value;
+  if (!type) { showToast('Choisir un type de cloud'); return; }
+  const f1 = document.getElementById('cloud-f1')?.value || '';
+  const f2 = document.getElementById('cloud-f2')?.value || '';
+  const f3 = document.getElementById('cloud-f3')?.value || '';
+  let credentials = {};
+  if (type === 'aws') credentials = { access_key: f1, secret_key: f2, region: f3 || 'eu-west-1' };
+  else if (type === 'm365') credentials = { tenant_id: f1, client_id: f2, client_secret: f3 };
+  else if (type === 'gworkspace') credentials = { admin_email: f1, service_account: f2 };
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+currentCloudTenantId+'/cloud', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ cloud_type: type, credentials })
+    });
+    const d = await r.json();
+    if (d.success) { closeModal(); showToast('Cloud connecte !'); }
+  } catch(e) { showToast('Erreur connexion cloud'); }
+}
+
 // ── BOOT ──────────────────────────────────────────────────────────────────
 
 if (state.token && state.role) {
