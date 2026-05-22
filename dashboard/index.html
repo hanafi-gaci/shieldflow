@@ -602,6 +602,18 @@ async function openClientDetail(id, name) {
         </div>
       </div>
 
+      <div class="table-wrap" style="margin-bottom:20px">
+        <div class="table-header">
+          <div class="table-title">☁️ Surveillance Cloud</div>
+          <button class="tb-btn" onclick="openAddCloud('${id}')" style="font-size:11px;padding:4px 12px">+ Connecter un cloud</button>
+        </div>
+        <div id="cloud-section-${id}" style="padding:16px 20px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap" id="cloud-badges-${id}">
+            <div style="font-size:12px;color:var(--text3)">Aucun service cloud connecté</div>
+          </div>
+        </div>
+      </div>
+
       <div class="grid2">
         <div class="table-wrap">
           <div class="table-header"><div class="table-title">Alertes</div></div>
@@ -728,3 +740,4 @@ if (state.token && state.role) {
 </script>
 </body>
 </html>
+
