@@ -108,7 +108,7 @@ def send_report(payload: dict) -> bool:
     """Send analysis payload to ShieldFlow server."""
     headers = {
         'Content-Type': 'application/json',
-        'x-agent-key': 'shieldflow-secret-key-change-in-prod',
+        'x-agent-key': os.getenv('SHIELDFLOW_KEY', 'shieldflow-secret-key-change-in-prod'),
         'User-Agent': f'ShieldFlow-Agent/2.0 ({platform.system()})',
     }
 
