@@ -185,6 +185,172 @@ function analyzeSnap(snap, deviceId, deviceName) {
   return candidates;
 }
 
+
+// ─── PDF REPORT + SCHEDULER ───────────────────────────────────────────────────
+
+const PDFDocument = require('pdfkit');
+const cron = require('node-cron');
+
+async function generateTenantReport(tenantId) {
+  const tenant = await Tenant.findById(tenantId);
+  if (!tenant) return null;
+  
+  const devices = await Device.find({ tenant_id: tenantId });
+  const alerts  = await Alert.find({ tenant_id: tenantId, resolved: false }).sort({ created_at: -1 });
+  const resolvedToday = await Alert.find({ 
+    tenant_id: tenantId, resolved: true,
+    resolved_at: { $gte: new Date(Date.now() - 24*60*60*1000) }
+  });
+  
+  const criticals = alerts.filter(a => a.severity === 'critical');
+  const highs     = alerts.filter(a => a.severity === 'high');
+  const score     = Math.max(0, 100 - criticals.length*20 - highs.length*10 - alerts.length*2);
+  const date      = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+
+  return new Promise((resolve) => {
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const chunks = [];
+    doc.on('data', c => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+
+    // Header
+    doc.rect(0, 0, 595, 80).fill('#0f1117');
+    doc.fillColor('#2563eb').fontSize(24).font('Helvetica-Bold').text('ShieldFlow', 50, 25);
+    doc.fillColor('#ffffff').fontSize(11).font('Helvetica').text('Rapport de Securite', 50, 52);
+    doc.fillColor('#8b9ab0').fontSize(9).text(date, 400, 35, { align: 'right' });
+    doc.fillColor('#8b9ab0').fontSize(9).text(tenant.name, 400, 50, { align: 'right' });
+
+    doc.moveDown(4);
+
+    // Score
+    const scoreColor = score >= 80 ? '#10b981' : score >= 50 ? '#f97316' : '#ef4444';
+    doc.fillColor('#1a1d27').rect(50, 100, 495, 80).fill();
+    doc.fillColor(scoreColor).fontSize(40).font('Helvetica-Bold').text(score + '/100', 60, 112);
+    doc.fillColor('#8b9ab0').fontSize(10).font('Helvetica').text('Score de securite global', 60, 155);
+    doc.fillColor('#e8edf5').fontSize(10).text(`${devices.length} appareil(s)  |  ${alerts.length} alerte(s) active(s)  |  ${criticals.length} critique(s)`, 200, 130);
+    doc.fillColor('#10b981').fontSize(10).text(`${resolvedToday.length} alerte(s) resolue(s) aujourd hui`, 200, 148);
+
+    doc.moveDown(5);
+    doc.y = 200;
+
+    // Alertes actives
+    doc.fillColor('#e8edf5').fontSize(14).font('Helvetica-Bold').text('Alertes actives', 50);
+    doc.moveDown(0.5);
+
+    if (alerts.length === 0) {
+      doc.fillColor('#10b981').fontSize(11).font('Helvetica').text('Aucune alerte active — Infrastructure saine', 50);
+    } else {
+      const sevColors = { critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#10b981' };
+      alerts.slice(0, 10).forEach(a => {
+        const color = sevColors[a.severity] || '#6b7280';
+        doc.fillColor(color).fontSize(9).font('Helvetica-Bold').text(`[${a.severity.toUpperCase()}]`, 50, doc.y, { continued: true });
+        doc.fillColor('#e8edf5').fontSize(9).font('Helvetica').text(` ${a.title}`, { continued: false });
+        doc.fillColor('#8b9ab0').fontSize(8).text(`   ${a.description}`, 50);
+        doc.moveDown(0.3);
+      });
+      if (alerts.length > 10) {
+        doc.fillColor('#8b9ab0').fontSize(8).text(`... et ${alerts.length - 10} autre(s) alerte(s)`, 50);
+      }
+    }
+
+    doc.moveDown(1);
+
+    // Appareils
+    doc.fillColor('#e8edf5').fontSize(14).font('Helvetica-Bold').text('Appareils surveilles', 50);
+    doc.moveDown(0.5);
+    if (devices.length === 0) {
+      doc.fillColor('#8b9ab0').fontSize(11).font('Helvetica').text('Aucun appareil connecte', 50);
+    } else {
+      devices.forEach(d => {
+        const status = d.last_seen > new Date(Date.now() - 5*60*1000) ? 'En ligne' : 'Hors ligne';
+        const statusColor = status === 'En ligne' ? '#10b981' : '#ef4444';
+        doc.fillColor('#e8edf5').fontSize(10).font('Helvetica').text(`${d.name || d.hostname}`, 50, doc.y, { continued: true });
+        doc.fillColor('#8b9ab0').text(`  ${d.platform}  `, { continued: true });
+        doc.fillColor(statusColor).text(status);
+        doc.moveDown(0.3);
+      });
+    }
+
+    // Footer
+    doc.rect(0, 780, 595, 62).fill('#0f1117');
+    doc.fillColor('#4a5a6e').fontSize(8).font('Helvetica')
+       .text('ShieldFlow MSSP Platform  |  shieldflow-rfzv.onrender.com  |  Ce rapport est genere automatiquement', 50, 795, { align: 'center' });
+    doc.fillColor('#2563eb').fontSize(8).text('Votre securite, notre priorite.', 50, 810, { align: 'center' });
+
+    doc.end();
+  });
+}
+
+async function sendDailyReport(tenantId) {
+  if (!RESEND_API_KEY || !ALERT_EMAIL) return;
+  const tenant = await Tenant.findById(tenantId);
+  if (!tenant || !tenant.email) return;
+  
+  const pdfBuffer = await generateTenantReport(tenantId);
+  if (!pdfBuffer) return;
+  
+  const base64PDF = pdfBuffer.toString('base64');
+  const date = new Date().toLocaleDateString('fr-FR');
+  
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'ShieldFlow <onboarding@resend.dev>',
+        to: [tenant.email || ALERT_EMAIL],
+        subject: `Rapport de securite ShieldFlow — ${date} — ${tenant.name}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0f1117;color:#e8edf5;border-radius:12px">
+          <div style="text-align:center;margin-bottom:20px">
+            <span style="font-size:24px;font-weight:800;color:#2563eb">🛡 ShieldFlow</span>
+          </div>
+          <p>Bonjour,</p>
+          <p>Veuillez trouver en pièce jointe votre rapport de sécurité quotidien pour <strong>${tenant.name}</strong>.</p>
+          <p>Pour consulter votre dashboard en temps réel :</p>
+          <div style="text-align:center;margin:20px 0">
+            <a href="https://shieldflow-rfzv.onrender.com" style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">Voir le dashboard →</a>
+          </div>
+          <p style="color:#8b9ab0;font-size:12px">Ce rapport est généré automatiquement chaque matin par ShieldFlow.</p>
+        </div>`,
+        attachments: [{
+          filename: `ShieldFlow-Rapport-${date.replace(/\//g,'-')}.pdf`,
+          content: base64PDF,
+          content_type: 'application/pdf'
+        }]
+      })
+    });
+    console.log(`[PDF] Rapport envoye a ${tenant.email || ALERT_EMAIL} pour ${tenant.name}`);
+  } catch(e) {
+    console.error('[PDF] Erreur envoi:', e.message);
+  }
+}
+
+// Route pour générer/télécharger un rapport PDF manuellement
+app.get('/api/mssp/tenants/:id/report', async (req, res) => {
+  try {
+    const pdfBuffer = await generateTenantReport(req.params.id);
+    if (!pdfBuffer) return res.status(404).json({ error: 'Tenant non trouve' });
+    const tenant = await Tenant.findById(req.params.id);
+    const date = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="ShieldFlow-${tenant.name}-${date}.pdf"`);
+    res.send(pdfBuffer);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Scheduler — rapport PDF tous les jours à 8h00
+cron.schedule('0 8 * * *', async () => {
+  console.log('[Scheduler] Envoi des rapports PDF quotidiens...');
+  const tenants = await Tenant.find({ email: { $exists: true, $ne: '' } });
+  for (const t of tenants) {
+    await sendDailyReport(t._id.toString());
+  }
+}, { timezone: 'Europe/Paris' });
+
+console.log('[Scheduler] Rapport PDF quotidien programme a 8h00 Paris');
+
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────────────────────────
 
 async function requireAuth(req, res, next) {
