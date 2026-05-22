@@ -208,7 +208,7 @@ function analyzeAndCreateAlerts(db, deviceId, deviceName, snap) {
       };
       db.alerts.push(newAlert);
       // Email uniquement si premiere occurrence
-      if ((c.severity === 'critical' || c.severity === 'high') && !db.alerts.some(a => a.type === c.type && a.device_id === deviceId && a.resolved)) {
+      if ((c.severity === 'critical' || c.severity === 'high') && !db.alerts.some(a => a.type === c.type && a.device_id === deviceId)) {
         const alertEmail = process.env.ALERT_EMAIL;
         if (alertEmail) sendAlertEmail(deviceName, newAlert, deviceName, alertEmail);
       }
