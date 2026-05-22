@@ -436,6 +436,21 @@ app.post('/api/agent/:tenantId/heartbeat', (req, res) => {
   res.json({ success: true, timestamp: now });
 });
 
+app.get('/api/reset-alerts', (req, res) => {
+  const db = loadDB();
+  db.alerts = [];
+  db.alertIdSeq = 1;
+  saveDB(db);
+  const t = loadTenants();
+  for (const id of Object.keys(t.tenants)) {
+    const tdb = getTenantDB(id);
+    tdb.alerts = [];
+    tdb.alertIdSeq = 1;
+    saveTenantDB(id, tdb);
+  }
+  res.json({ success: true, message: 'Alertes effacées' });
+});
+
 app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════╗
