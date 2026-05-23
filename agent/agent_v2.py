@@ -15,6 +15,7 @@ Config via variables d'environnement ou fichier .env :
 import os
 import sys
 SHIELDFLOW_TENANT = os.getenv('SHIELDFLOW_TENANT', '')
+SECRET_KEY = os.getenv('SHIELDFLOW_KEY', 'shieldflow-secret-key-change-in-prod')
 import json
 import time
 import uuid
