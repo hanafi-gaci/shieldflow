@@ -602,3 +602,13 @@ def check_threat_intelligence(connections):
         return check_connections(connections)
     except Exception as e:
         return []
+
+def check_darkweb(emails):
+    """Vérifie les emails contre les bases de fuites dark web."""
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.dirname(__file__))
+        from darkweb import check_emails_darkweb
+        return check_emails_darkweb(emails)
+    except Exception as e:
+        return []
