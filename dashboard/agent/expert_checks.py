@@ -592,3 +592,13 @@ if __name__ == '__main__':
     print(f"Startup items:        {len(data.get('startup_items', []))}")
     print('\nFull JSON:')
     print(json.dumps(data, indent=2, default=str))
+
+def check_threat_intelligence(connections):
+    """Vérifie les connexions contre la base Threat Intelligence OTX."""
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.dirname(__file__))
+        from threat_intel import check_connections
+        return check_connections(connections)
+    except Exception as e:
+        return []

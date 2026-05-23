@@ -247,6 +247,17 @@ def main():
                         timeout=10
                     )
                     logger.info(f'[Remediation] {result.get("output", result.get("error",""))}')
+        
+        # Threat Intelligence — vérifier les connexions réseau
+        try:
+            from expert_checks import check_threat_intelligence
+            connections = snap.get('network_connections_detail', [])
+            threat_alerts = check_threat_intelligence(connections)
+            if threat_alerts:
+                for ta in threat_alerts:
+                    logger.warning(f'[ThreatIntel] {ta["title"]}')
+        except Exception as e:
+            logger.debug(f'ThreatIntel: {e}')
         except Exception as e:
             logger.debug(f'Remediation: {e}')
         time.sleep(INTERVAL)
