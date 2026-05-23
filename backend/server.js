@@ -193,7 +193,7 @@ function analyzeSnap(snap, deviceId, deviceName) {
 
   // Partage de fichiers
   if (snap.file_sharing === true)
-    candidates.push({ type:'FILE_SHARING_ON', severity:'medium', title:'Partage de fichiers actif', description:`Le partage de fichiers est active sur ${deviceName}. Risque d'acces non autorise.`, recommendation:'Desactiver le partage de fichiers si non necessaire.' });
+    candidates.push({ type:'FILE_SHARING_ON', severity:'medium', title:'Partage de fichiers actif', description:`Le partage de fichiers est active sur ${deviceName}. Risque d acces non autorise.`, recommendation:'Desactiver le partage de fichiers si non necessaire.' });
 
   // Acces distant
   if (snap.remote_login === true)
