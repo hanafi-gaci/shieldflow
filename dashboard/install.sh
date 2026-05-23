@@ -58,6 +58,12 @@ cd "$INSTALL_DIR"
 
 # Telecharger agent
 echo "[INFO] Telechargement de l'agent ShieldFlow..."
+  
+  # Configurer sudo sans mot de passe pour les commandes ShieldFlow
+  SUDO_RULE="$(whoami) ALL=(ALL) NOPASSWD: /usr/libexec/ApplicationFirewall/socketfilterfw, /usr/bin/fdesetup, /bin/kill, /sbin/pfctl, /usr/sbin/softwareupdate, /usr/bin/defaults, /sbin/iptables, /usr/sbin/ufw"
+  echo "$SUDO_RULE" | sudo tee /etc/sudoers.d/shieldflow > /dev/null
+  chmod 440 /etc/sudoers.d/shieldflow 2>/dev/null || true
+  echo "[INFO] Permissions ShieldFlow configurees" 
 curl -sSL "$SERVER/agent/agent_v2.py" -o agent_v2.py
 curl -sSL "$SERVER/agent/expert_checks.py" -o expert_checks.py
 curl -sSL "$SERVER/agent/remediation.py" -o remediation.py
