@@ -247,6 +247,8 @@ def main():
                         timeout=10
                     )
                     logger.info(f'[Remediation] {result.get("output", result.get("error",""))}')
+        except Exception as e:
+            logger.debug(f'Remediation: {e}')
         
         # Threat Intelligence — vérifier les connexions réseau
         try:
@@ -258,8 +260,6 @@ def main():
                     logger.warning(f'[ThreatIntel] {ta["title"]}')
         except Exception as e:
             logger.debug(f'ThreatIntel: {e}')
-        except Exception as e:
-            logger.debug(f'Remediation: {e}')
         time.sleep(INTERVAL)
 
 
