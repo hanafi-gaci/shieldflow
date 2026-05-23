@@ -643,7 +643,7 @@ async function openClientDetail(id, name) {
 }
 
 function copyInstall(id, server, key) {
-  const cmd = `SHIELDFLOW_SERVER=${server}\nSHIELDFLOW_TENANT=${id}\nSHIELDFLOW_KEY=${key}\npython3 agent_v2.py`;
+  const cmd = `curl -sSL ${server}/install.sh | bash -s -- ${id} ${key}`;
   navigator.clipboard.writeText(cmd).then(() => showToast('Commande copiée ✅'));
 }
 
