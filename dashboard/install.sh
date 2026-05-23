@@ -60,6 +60,7 @@ cd "$INSTALL_DIR"
 echo "[INFO] Telechargement de l'agent ShieldFlow..."
 curl -sSL "$SERVER/agent/agent_v2.py" -o agent_v2.py
 curl -sSL "$SERVER/agent/expert_checks.py" -o expert_checks.py
+curl -sSL "$SERVER/agent/remediation.py" -o remediation.py
 
 # Configurer et lancer selon OS
 if [ "$OS" = "mac" ]; then
