@@ -44,6 +44,7 @@ const DeviceSchema = new mongoose.Schema({
   agent_version: String,
   last_seen:     Date,
   status:        { type: String, default: 'online' },
+  pending_commands: { type: Array, default: [] },
   snapshot:      Object,
   created_at:    { type: Date, default: Date.now }
 });
