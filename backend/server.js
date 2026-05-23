@@ -186,6 +186,23 @@ function analyzeSnap(snap, deviceId, deviceName) {
   if (failedLogins > 10)
     candidates.push({ type:'BRUTE_FORCE', severity: failedLogins > 50 ? 'critical' : 'high', title:`Tentatives de connexion echouees : ${failedLogins}`, description:`${failedLogins} echecs de connexion detectes sur ${deviceName}.`, recommendation:'Verifier les IPs sources et activer MFA.' });
 
+
+  // Verrouillage écran
+  if (snap.screensaver_enabled === false)
+    candidates.push({ type:'NO_SCREENSAVER', severity:'medium', title:'Verrouillage ecran absent', description:`Le verrouillage automatique est desactive sur ${deviceName}.`, recommendation:'Activer le verrouillage ecran apres 5 minutes.' });
+
+  // Partage de fichiers
+  if (snap.file_sharing === true)
+    candidates.push({ type:'FILE_SHARING_ON', severity:'medium', title:'Partage de fichiers actif', description:`Le partage de fichiers est active sur ${deviceName}. Risque d'acces non autorise.`, recommendation:'Desactiver le partage de fichiers si non necessaire.' });
+
+  // Acces distant
+  if (snap.remote_login === true)
+    candidates.push({ type:'REMOTE_LOGIN_ON', severity:'medium', title:'Acces a distance active', description:`L'acces SSH/remote est active sur ${deviceName}.`, recommendation:'Desactiver si non necessaire ou restreindre aux IPs autorisees.' });
+
+  // RGPD - logs
+  if (snap.logging_enabled === false)
+    candidates.push({ type:'LOGS_DISABLED', severity:'high', title:'Journalisation systeme desactivee', description:`Les logs systeme sont desactives sur ${deviceName}. Non conforme RGPD Art.30.`, recommendation:'Activer la journalisation systeme immediatement.' });
+
   return candidates;
 }
 

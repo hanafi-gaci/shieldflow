@@ -590,6 +590,180 @@ const MANUAL_INSTRUCTIONS = {
     Windows: ['1. Console AWS depuis votre navigateur', '2. Suivez les mêmes étapes que Mac'],
     Linux: ['1. aws cloudtrail create-trail --name shieldflow-audit --s3-bucket-name votre-bucket --is-multi-region-trail', '2. aws cloudtrail start-logging --name shieldflow-audit']
   }
+  WEAK_PASSWORD: {
+    auto: true,
+    label: 'Politique de mot de passe faible',
+    Darwin: [
+      '1. L'agent applique la politique de mot de passe automatiquement',
+      '2. Verifiez : Reglages Systeme → Confidentialite et securite → Mot de passe',
+      '3. Activez le mot de passe obligatoire apres verrouillage',
+      '4. Utilisez un gestionnaire de mots de passe : Bitwarden (gratuit) ou 1Password',
+      '5. Mot de passe recommande : 12+ caracteres, majuscules, chiffres, symboles'
+    ],
+    Windows: [
+      '1. L'agent configure la politique automatiquement',
+      '2. Verifiez via gpedit.msc → Strategies de compte → Strategie de mot de passe',
+      '3. Longueur minimale : 12 caracteres',
+      '4. Complexite : activee',
+      '5. Historique : 10 mots de passe'
+    ],
+    Linux: [
+      '1. L'agent installe et configure pam_pwquality automatiquement',
+      '2. Verifiez : cat /etc/security/pwquality.conf',
+      '3. minlen = 12, minclass = 3 recommandes'
+    ]
+  },
+
+  NO_SCREENSAVER: {
+    auto: true,
+    label: 'Verrouillage ecran absent',
+    Darwin: [
+      '1. L'agent active le verrouillage automatiquement',
+      '2. Verifiez : Reglages Systeme → Ecran de veille → Demarrer apres : 5 min',
+      '3. Reglages Systeme → Touch ID et mot de passe → Exiger le mot de passe : immediatement',
+      '4. Raccourci de verrouillage : Ctrl+Cmd+Q'
+    ],
+    Windows: [
+      '1. L'agent configure le verrouillage automatiquement',
+      '2. Parametres → Personnalisation → Ecran de veille → 5 minutes',
+      '3. Cochez : A la reprise, afficher l'ecran de connexion',
+      '4. Raccourci : Windows+L pour verrouiller manuellement'
+    ],
+    Linux: [
+      '1. L'agent active gsettings pour le verrouillage automatiquement',
+      '2. Verifiez : gsettings get org.gnome.desktop.screensaver lock-enabled',
+      '3. Si desactive : gsettings set org.gnome.desktop.screensaver lock-enabled true'
+    ]
+  },
+
+  SSH_PASSWORD_AUTH: {
+    auto: true,
+    label: 'Authentification SSH par mot de passe activee',
+    Darwin: [
+      '1. L'agent desactive l'authentification SSH par mot de passe automatiquement',
+      '2. Seules les cles SSH seront acceptees - plus securise',
+      '3. Pour generer une cle SSH : ssh-keygen -t ed25519 -C votre@email.com',
+      '4. Copiez la cle publique : ssh-copy-id utilisateur@serveur',
+      '5. Verifiez : sudo grep PasswordAuthentication /etc/ssh/sshd_config'
+    ],
+    Windows: [
+      '1. Modifiez C:\ProgramData\ssh\sshd_config',
+      '2. Changez PasswordAuthentication yes en PasswordAuthentication no',
+      '3. Redemarrez le service : Restart-Service sshd',
+      '4. Generez une cle SSH : ssh-keygen dans PowerShell'
+    ],
+    Linux: [
+      '1. L'agent modifie /etc/ssh/sshd_config automatiquement',
+      '2. Verifiez : sudo grep PasswordAuthentication /etc/ssh/sshd_config',
+      '3. Doit afficher : PasswordAuthentication no',
+      '4. Redemarrage SSH : sudo systemctl restart sshd'
+    ]
+  },
+
+  LOGS_DISABLED: {
+    auto: true,
+    label: 'Journalisation systeme desactivee',
+    Darwin: [
+      '1. L'agent active les logs systeme automatiquement',
+      '2. Verifiez : sudo log show --last 1h | head -20',
+      '3. Les logs sont stockes dans /var/log/ et via le systeme unifie Apple',
+      '4. Conservation recommandee : 90 jours minimum (conformite RGPD)',
+      '5. Consultez les logs : Applications → Utilitaires → Console'
+    ],
+    Windows: [
+      '1. L'agent active l'Observateur d'evenements automatiquement',
+      '2. Verifiez : eventvwr.msc → Journaux Windows',
+      '3. Configurez la retention : clic droit → Proprietes → 90 jours minimum',
+      '4. Activez l'audit : gpedit.msc → Parametres de securite → Strategies d'audit'
+    ],
+    Linux: [
+      '1. L'agent active et configure rsyslog automatiquement',
+      '2. Verifiez : sudo systemctl status rsyslog',
+      '3. Logs dans /var/log/syslog et /var/log/auth.log',
+      '4. Configurez logrotate pour 90 jours : /etc/logrotate.conf'
+    ]
+  },
+
+  M365_RISKY_USER: {
+    auto: false,
+    label: 'Compte Microsoft 365 compromis ou a risque',
+    Darwin: [
+      '1. URGENT : Allez sur https://portal.azure.com → Azure AD → Securite → Utilisateurs a risque',
+      '2. Selectionnez l'utilisateur concerne',
+      '3. Cliquez sur Reinitialiser le mot de passe',
+      '4. Cliquez sur Revoquer les sessions (deconnecte toutes les sessions actives)',
+      '5. Activez le MFA immediatement sur ce compte',
+      '6. Verifiez les regles de transfert d'email : Outlook → Parametres → Courrier → Transfert',
+      '7. Verifiez les connexions recentes : Azure AD → Journaux de connexion',
+      '8. Signalez l'incident a votre DPO si des donnees ont pu etre consultees (obligation RGPD 72h)'
+    ],
+    Windows: [
+      '1. https://portal.azure.com → Azure AD → Securite → Utilisateurs a risque',
+      '2. Reinitialiser le mot de passe et revoquer les sessions',
+      '3. Activer MFA et verifier les regles de transfert email',
+      '4. Notifier le DPO si violation de donnees'
+    ],
+    Linux: [
+      '1. Acces via navigateur : https://portal.azure.com',
+      '2. Suivez les memes etapes que ci-dessus'
+    ]
+  },
+
+  DARKWEB_BREACH: {
+    auto: false,
+    label: 'Email trouve dans une fuite de donnees dark web',
+    Darwin: [
+      '1. URGENT : Changez immediatement le mot de passe du compte email concerne',
+      '2. Changez le mot de passe sur TOUS les services utilisant ce meme mot de passe',
+      '3. Activez la double authentification sur tous les comptes importants',
+      '4. Verifiez les activites recentes : emails envoyes, connexions inhabituelles',
+      '5. Utilisez un gestionnaire de mots de passe : Bitwarden (gratuit) sur bitwarden.com',
+      '6. Verifiez regulierement sur https://haveibeenpwned.com',
+      '7. Informez votre banque si des coordonnees bancaires ont pu etre exposees',
+      '8. Deposez une alerte aupres de votre banque en cas de risque fraude'
+    ],
+    Windows: [
+      '1. Changez immediatement tous les mots de passe concernes',
+      '2. Activez la 2FA sur tous les comptes importants',
+      '3. Installez Bitwarden : https://bitwarden.com',
+      '4. Surveillez vos comptes bancaires les prochaines semaines'
+    ],
+    Linux: [
+      '1. Changez tous les mots de passe depuis un terminal securise',
+      '2. Generez des mots de passe forts : openssl rand -base64 20',
+      '3. Activez la 2FA sur tous les comptes importants'
+    ]
+  },
+
+  EC2_PORT_3389: {
+    auto: false,
+    label: 'Port RDP AWS expose a internet',
+    Darwin: [
+      '1. Console AWS → EC2 → Groupes de securite',
+      '2. Trouvez la regle autorisant le port 3389 depuis 0.0.0.0/0',
+      '3. Modifiez la regle : source → Votre IP uniquement (https://monip.org)',
+      '4. OU utilisez AWS Systems Manager Session Manager pour acceder aux instances sans RDP expose',
+      '5. Considerez un VPN AWS (AWS Client VPN) pour l'acces distant securise'
+    ],
+    Windows: ['1. Console AWS → EC2 → Groupes de securite → modifiez le port 3389', '2. Limitez a votre IP uniquement'],
+    Linux: ['1. aws ec2 revoke-security-group-ingress --group-id sg-xxx --protocol tcp --port 3389 --cidr 0.0.0.0/0', '2. aws ec2 authorize-security-group-ingress --group-id sg-xxx --protocol tcp --port 3389 --cidr VOTRE_IP/32']
+  },
+
+  EC2_PORT_3306: {
+    auto: false,
+    label: 'Port MySQL/MariaDB expose a internet',
+    Darwin: [
+      '1. Console AWS → EC2 → Groupes de securite',
+      '2. Supprimez la regle autorisant le port 3306 depuis 0.0.0.0/0',
+      '3. La base de donnees ne doit jamais etre accessible depuis internet',
+      '4. Autorisez uniquement les connexions depuis les instances EC2 de votre application',
+      '5. Utilisez un Security Group prive pour la base de donnees'
+    ],
+    Windows: ['1. Supprimez la regle port 3306 ouverte a internet dans AWS Security Groups', '2. Autorisez uniquement le Security Group de votre application'],
+    Linux: ['1. aws ec2 revoke-security-group-ingress --group-id sg-xxx --protocol tcp --port 3306 --cidr 0.0.0.0/0']
+  },
+
+
 };
 
 module.exports = MANUAL_INSTRUCTIONS;
