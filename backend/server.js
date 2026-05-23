@@ -676,7 +676,22 @@ app.get('/api/mssp/tenants/:tenantId/alerts/:alertId/instructions', async (req, 
       }
     }
     
-    res.json({ title: alert.title, instructions, auto_fixable: alert.auto_fixable || false });
+    // Si pas d'instructions specifiques, generer des instructions generiques
+    const finalInstructions = instructions.length > 0 ? instructions : [
+      `Alerte detectee : ${alert.title}`,
+      `Appareil concerne : ${alert.device_name}`,
+      `Severite : ${alert.severity.toUpperCase()}`,
+      '---',
+      '1. Verifiez l etat de l appareil concerne dans le dashboard',
+      '2. Connectez-vous a la machine et verifiez les logs systeme',
+      '3. Si Mac : ouvrez Console.app et cherchez des erreurs recentes',
+      '4. Si Windows : ouvrez l Observateur d evenements et cherchez des erreurs',
+      '5. Si Linux : tapez sudo journalctl -n 100 dans le terminal',
+      `6. Description complete : ${alert.description}`,
+      `7. Recommendation : ${alert.recommendation || 'Contactez le support ShieldFlow'}`,
+      '8. Une fois resolu, l alerte disparaitra au prochain scan (30 secondes)'
+    ];
+    res.json({ title: alert.title, instructions: finalInstructions, auto_fixable: alert.auto_fixable || false });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
