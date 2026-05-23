@@ -626,7 +626,7 @@ async function openClientDetail(id, name) {
               </div>
               ${a.auto_fixable !== false ? 
                 `<button onclick="remediateAlert('${id}','${a._id}')" style="background:#10b981;border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">⚡ Régler auto</button>` :
-                `<button onclick="showInstructions('${a._id}','${(a.instructions||[]).join('|||')}')" style="background:#f97316;border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">📋 Instructions</button>`
+                `<button onclick="showInstructions('${id}','${a._id}')" style="background:#f97316;border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">📋 Instructions</button>`
               }
             </div>`).join('') : '<div class="empty"><div class="empty-icon">✅</div>Aucune alerte</div>'}
         </div>
@@ -738,23 +738,34 @@ function showToast(msg) {
 
 // ── INSTRUCTIONS ──────────────────────────────────────────────────────────────
 
-function showInstructions(alertId, instructionsStr) {
-  const steps = instructionsStr.split('|||').filter(s => s.trim());
+async function showInstructions(tenantId, alertId) {
   document.getElementById('modal').classList.add('open');
   document.getElementById('modal-title').textContent = 'Instructions de correction';
-  document.getElementById('modal-body').innerHTML = `
-    <div style="margin-bottom:16px;font-size:13px;color:var(--text2)">
-      Cette alerte necessite une intervention humaine. Suivez ces etapes :
-    </div>
-    <div style="background:var(--surface2);border-radius:8px;padding:16px">
-      ${steps.map((s,i) => `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);">${s}</div>`).join('')}
-    </div>
-    <div style="margin-top:16px;font-size:12px;color:var(--text3)">
-      Une fois corrige, l alerte disparaitra automatiquement au prochain scan (30 secondes).
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeModal()">Fermer</button>
-    </div>`;
+  document.getElementById('modal-body').innerHTML = '<div style="color:var(--text2);font-size:13px">Chargement...</div>';
+  
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/alerts/'+alertId+'/instructions');
+    const d = await r.json();
+    const steps = d.instructions || ['Contactez le support ShieldFlow.'];
+    const title = d.title || 'Alerte de sécurité';
+    
+    document.getElementById('modal-body').innerHTML = `
+      <div style="margin-bottom:16px">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">${title}</div>
+        <div style="font-size:12px;color:var(--text3)">Cette alerte necessite une intervention humaine. Suivez ces etapes precisement :</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:4px 0">
+        ${steps.map((s,i) => `<div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.5"><span style="color:var(--accent2);font-weight:700;margin-right:8px">${i+1}.</span>${s.replace(/^\d+\.\s*/,'')}</div>`).join('')}
+      </div>
+      <div style="margin-top:12px;padding:10px;background:rgba(16,185,129,.08);border-radius:8px;font-size:12px;color:var(--green)">
+        ✅ Une fois corrige, l alerte disparaitra automatiquement au prochain scan (30 sec).
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('modal-body').innerHTML = '<div style="color:var(--red)">Erreur de chargement</div>';
+  }
 }
 
 // ── REMEDIATION ───────────────────────────────────────────────────────────────

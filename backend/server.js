@@ -628,6 +628,34 @@ app.get('/api/reset-alerts', async (req, res) => {
 app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
 
+// ─── INSTRUCTIONS ROUTE ──────────────────────────────────────────────────────
+
+app.get('/api/mssp/tenants/:tenantId/alerts/:alertId/instructions', async (req, res) => {
+  try {
+    const alert = await Alert.findById(req.params.alertId);
+    if (!alert) return res.status(404).json({ error: 'Alerte non trouvée' });
+    
+    const instructions = alert.instructions || [];
+    const platform = 'Darwin'; // Par défaut macOS, à améliorer
+    
+    // Si pas d'instructions en DB, chercher dans la base statique
+    if (!instructions.length) {
+      const instrKey = Object.keys(MANUAL_INSTRUCTIONS).find(k => alert.type.startsWith(k));
+      if (instrKey) {
+        const device = await Device.findOne({ device_id: alert.device_id });
+        const os = device?.platform || 'Darwin';
+        const instr = MANUAL_INSTRUCTIONS[instrKey];
+        const steps = instr[os] || instr['Darwin'] || ['Contactez le support ShieldFlow.'];
+        return res.json({ title: alert.title, instructions: steps, auto_fixable: instr.auto || false });
+      }
+    }
+    
+    res.json({ title: alert.title, instructions, auto_fixable: alert.auto_fixable || false });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── REMEDIATION ROUTES ───────────────────────────────────────────────────────
 
 // Envoyer une commande de remédiation à un agent
