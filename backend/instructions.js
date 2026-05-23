@@ -505,6 +505,77 @@ const MANUAL_INSTRUCTIONS = {
   },
 
   // ─── CLOUDTRAIL / AUDIT ────────────────────────────────────────────────────
+  M365_AUTH_ERROR: {
+    auto: false,
+    label: 'Authentification Microsoft 365 echouee',
+    Darwin: [
+      '1. Allez sur https://portal.azure.com',
+      '2. Cherchez App registrations et selectionnez ShieldFlow',
+      '3. Cliquez sur API permissions → Add a permission → Microsoft Graph',
+      '4. Choisissez Application permissions et ajoutez : User.Read.All, Directory.Read.All, AuditLog.Read.All',
+      '5. Cliquez sur Grant admin consent for votre organisation',
+      '6. Retournez dans ShieldFlow et cliquez sur Scanner pour verifier'
+    ],
+    Windows: [
+      '1. Allez sur https://portal.azure.com',
+      '2. App registrations → ShieldFlow → API permissions',
+      '3. Add a permission → Microsoft Graph → Application permissions',
+      '4. Ajoutez : User.Read.All, Directory.Read.All, AuditLog.Read.All',
+      '5. Grant admin consent → Yes',
+      '6. Retournez dans ShieldFlow et relancez le scan'
+    ],
+    Linux: [
+      '1. Ouvrez un navigateur et allez sur https://portal.azure.com',
+      '2. Suivez les memes etapes que Windows ci-dessus'
+    ]
+  },
+
+  AWS_INVALID_KEY: {
+    auto: false,
+    label: 'Cle AWS invalide ou expiree',
+    Darwin: [
+      '1. Connectez-vous sur https://console.aws.amazon.com',
+      '2. Cliquez sur votre nom en haut a droite → Security credentials',
+      '3. Section Access keys → Create access key',
+      '4. Copiez le nouvel Access Key ID et Secret Access Key',
+      '5. Dans ShieldFlow → client → Connecter un cloud → AWS → entrez les nouvelles cles',
+      '6. Supprimez lancienne cle dans AWS pour securite'
+    ],
+    Windows: [
+      '1. https://console.aws.amazon.com → Security credentials',
+      '2. Access keys → Create access key → copiez les credentials',
+      '3. Mettez a jour dans ShieldFlow'
+    ],
+    Linux: [
+      '1. aws configure dans le terminal pour verifier les credentials',
+      '2. Generez une nouvelle cle dans la console AWS',
+      '3. Mettez a jour dans ShieldFlow'
+    ]
+  },
+
+  GWS_CREDENTIALS_CHECK: {
+    auto: false,
+    label: 'Google Workspace - verification manuelle requise',
+    Darwin: [
+      '1. Allez sur https://admin.google.com',
+      '2. Securite → Controle des API → Gerer la delegation a lechelle du domaine',
+      '3. Ajoutez le Client ID du compte de service ShieldFlow',
+      '4. Scopes requis : https://www.googleapis.com/auth/admin.directory.user.readonly',
+      '5. Retournez dans ShieldFlow et relancez le scan cloud',
+      '6. Les alertes apparaitront automatiquement'
+    ],
+    Windows: [
+      '1. https://admin.google.com → Securite → Controle des API',
+      '2. Delegation a lechelle du domaine → Ajouter',
+      '3. Entrez le Client ID et les scopes requis',
+      '4. Relancez le scan dans ShieldFlow'
+    ],
+    Linux: [
+      '1. Meme procedure que Windows via un navigateur',
+      '2. https://admin.google.com → Securite → Controle des API'
+    ]
+  },
+
   CLOUDTRAIL_DISABLED: {
     auto: false,
     label: 'Audit AWS désactivé',
