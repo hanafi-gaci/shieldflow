@@ -569,6 +569,24 @@ async function openClientDetail(id, name) {
     const td = await tr.json();
     const tenant = (td.tenants||[]).find(t => t.id === id);
     const agentKey = tenant?.agent_key || '';
+    
+    // Charger les clouds connectés
+    const cloudIcons = { aws: '☁️ AWS', m365: '🔵 Microsoft 365', gworkspace: '🟡 Google Workspace' };
+    let cloudHtml = '<div style="font-size:12px;color:var(--text3)">Aucun service cloud connecté</div>';
+    try {
+      const cr = await fetch(S+'/api/mssp/tenants/'+id+'/cloud');
+      const cd = await cr.json();
+      if (cd.clouds && cd.clouds.length > 0) {
+        cloudHtml = cd.clouds.map(c => `
+          <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+            <span style="font-size:13px">${cloudIcons[c.type] || c.type}</span>
+            <span style="font-size:11px;color:var(--green)">● Connecté</span>
+            <span style="font-size:10px;color:var(--text3)">${c.last_scan ? 'Dernier scan: '+new Date(c.last_scan).toLocaleString('fr-FR') : 'Scan en attente'}</span>
+            <button onclick="scanCloud('${id}','${c.type}')" style="background:var(--accent);border:none;color:#fff;padding:3px 10px;border-radius:5px;font-size:10px;cursor:pointer;margin-left:auto">🔍 Scanner</button>
+            <button onclick="deleteCloud('${id}','${c.type}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:3px 10px;border-radius:5px;font-size:10px;cursor:pointer">🗑</button>
+          </div>`).join('');
+      }
+    } catch(e) {}
 
     const installCmd = `curl -sSL ${S}/install.sh | bash -s -- ${id} ${agentKey}`;
 
@@ -608,8 +626,8 @@ async function openClientDetail(id, name) {
           <button class="tb-btn" onclick="openAddCloud('${id}')" style="font-size:11px;padding:4px 12px">+ Connecter un cloud</button>
         </div>
         <div id="cloud-section-${id}" style="padding:16px 20px">
-          <div style="display:flex;gap:10px;flex-wrap:wrap" id="cloud-badges-${id}">
-            <div style="font-size:12px;color:var(--text3)">Aucun service cloud connecté</div>
+          <div style="display:flex;flex-direction:column;gap:8px;width:100%" id="cloud-badges-${id}">
+            ${cloudHtml}
           </div>
         </div>
       </div>
@@ -788,6 +806,27 @@ async function remediateAlert(tenantId, alertId) {
   } catch(e) {
     showToast('Erreur de connexion');
   }
+}
+
+// ── CLOUD ACTIONS ────────────────────────────────────────────────────────────
+
+async function scanCloud(tenantId, cloudType) {
+  showToast('Scan ' + cloudType + ' en cours...');
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/cloud/scan', {method:'POST'});
+    const d = await r.json();
+    showToast('Scan termine - ' + (d.results[cloudType]||0) + ' alerte(s)');
+    setTimeout(() => openClientDetail(tenantId, state.selectedClient?.name||''), 2000);
+  } catch(e) { showToast('Erreur scan cloud'); }
+}
+
+async function deleteCloud(tenantId, cloudType) {
+  if (!confirm('Supprimer la connexion ' + cloudType + ' ?')) return;
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/cloud/'+cloudType, {method:'DELETE'});
+    const d = await r.json();
+    if (d.success) { showToast('Cloud supprime'); openClientDetail(tenantId, state.selectedClient?.name||''); }
+  } catch(e) { showToast('Erreur'); }
 }
 
 // ── CLOUD ─────────────────────────────────────────────────────────────────
