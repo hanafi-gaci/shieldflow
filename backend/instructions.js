@@ -589,26 +589,27 @@ const MANUAL_INSTRUCTIONS = {
     ],
     Windows: ['1. Console AWS depuis votre navigateur', '2. Suivez les mêmes étapes que Mac'],
     Linux: ['1. aws cloudtrail create-trail --name shieldflow-audit --s3-bucket-name votre-bucket --is-multi-region-trail', '2. aws cloudtrail start-logging --name shieldflow-audit']
-  }
+  },
+
   WEAK_PASSWORD: {
     auto: true,
     label: 'Politique de mot de passe faible',
     Darwin: [
-      '1. L'agent applique la politique de mot de passe automatiquement',
+      '1. L agent applique la politique de mot de passe automatiquement',
       '2. Verifiez : Reglages Systeme → Confidentialite et securite → Mot de passe',
       '3. Activez le mot de passe obligatoire apres verrouillage',
       '4. Utilisez un gestionnaire de mots de passe : Bitwarden (gratuit) ou 1Password',
       '5. Mot de passe recommande : 12+ caracteres, majuscules, chiffres, symboles'
     ],
     Windows: [
-      '1. L'agent configure la politique automatiquement',
+      '1. L agent configure la politique automatiquement',
       '2. Verifiez via gpedit.msc → Strategies de compte → Strategie de mot de passe',
       '3. Longueur minimale : 12 caracteres',
       '4. Complexite : activee',
       '5. Historique : 10 mots de passe'
     ],
     Linux: [
-      '1. L'agent installe et configure pam_pwquality automatiquement',
+      '1. L agent installe et configure pam_pwquality automatiquement',
       '2. Verifiez : cat /etc/security/pwquality.conf',
       '3. minlen = 12, minclass = 3 recommandes'
     ]
@@ -618,19 +619,19 @@ const MANUAL_INSTRUCTIONS = {
     auto: true,
     label: 'Verrouillage ecran absent',
     Darwin: [
-      '1. L'agent active le verrouillage automatiquement',
+      '1. L agent active le verrouillage automatiquement',
       '2. Verifiez : Reglages Systeme → Ecran de veille → Demarrer apres : 5 min',
       '3. Reglages Systeme → Touch ID et mot de passe → Exiger le mot de passe : immediatement',
       '4. Raccourci de verrouillage : Ctrl+Cmd+Q'
     ],
     Windows: [
-      '1. L'agent configure le verrouillage automatiquement',
+      '1. L agent configure le verrouillage automatiquement',
       '2. Parametres → Personnalisation → Ecran de veille → 5 minutes',
-      '3. Cochez : A la reprise, afficher l'ecran de connexion',
+      '3. Cochez : A la reprise, afficher l ecran de connexion',
       '4. Raccourci : Windows+L pour verrouiller manuellement'
     ],
     Linux: [
-      '1. L'agent active gsettings pour le verrouillage automatiquement',
+      '1. L agent active gsettings pour le verrouillage automatiquement',
       '2. Verifiez : gsettings get org.gnome.desktop.screensaver lock-enabled',
       '3. Si desactive : gsettings set org.gnome.desktop.screensaver lock-enabled true'
     ]
@@ -640,7 +641,7 @@ const MANUAL_INSTRUCTIONS = {
     auto: true,
     label: 'Authentification SSH par mot de passe activee',
     Darwin: [
-      '1. L'agent desactive l'authentification SSH par mot de passe automatiquement',
+      '1. L agent desactive l'authentification SSH par mot de passe automatiquement',
       '2. Seules les cles SSH seront acceptees - plus securise',
       '3. Pour generer une cle SSH : ssh-keygen -t ed25519 -C votre@email.com',
       '4. Copiez la cle publique : ssh-copy-id utilisateur@serveur',
@@ -653,7 +654,7 @@ const MANUAL_INSTRUCTIONS = {
       '4. Generez une cle SSH : ssh-keygen dans PowerShell'
     ],
     Linux: [
-      '1. L'agent modifie /etc/ssh/sshd_config automatiquement',
+      '1. L agent modifie /etc/ssh/sshd_config automatiquement',
       '2. Verifiez : sudo grep PasswordAuthentication /etc/ssh/sshd_config',
       '3. Doit afficher : PasswordAuthentication no',
       '4. Redemarrage SSH : sudo systemctl restart sshd'
@@ -664,20 +665,20 @@ const MANUAL_INSTRUCTIONS = {
     auto: true,
     label: 'Journalisation systeme desactivee',
     Darwin: [
-      '1. L'agent active les logs systeme automatiquement',
+      '1. L agent active les logs systeme automatiquement',
       '2. Verifiez : sudo log show --last 1h | head -20',
       '3. Les logs sont stockes dans /var/log/ et via le systeme unifie Apple',
       '4. Conservation recommandee : 90 jours minimum (conformite RGPD)',
       '5. Consultez les logs : Applications → Utilitaires → Console'
     ],
     Windows: [
-      '1. L'agent active l'Observateur d'evenements automatiquement',
+      '1. L agent active l Observateur d'evenements automatiquement',
       '2. Verifiez : eventvwr.msc → Journaux Windows',
       '3. Configurez la retention : clic droit → Proprietes → 90 jours minimum',
       '4. Activez l'audit : gpedit.msc → Parametres de securite → Strategies d'audit'
     ],
     Linux: [
-      '1. L'agent active et configure rsyslog automatiquement',
+      '1. L agent active et configure rsyslog automatiquement',
       '2. Verifiez : sudo systemctl status rsyslog',
       '3. Logs dans /var/log/syslog et /var/log/auth.log',
       '4. Configurez logrotate pour 90 jours : /etc/logrotate.conf'
@@ -743,7 +744,7 @@ const MANUAL_INSTRUCTIONS = {
       '2. Trouvez la regle autorisant le port 3389 depuis 0.0.0.0/0',
       '3. Modifiez la regle : source → Votre IP uniquement (https://monip.org)',
       '4. OU utilisez AWS Systems Manager Session Manager pour acceder aux instances sans RDP expose',
-      '5. Considerez un VPN AWS (AWS Client VPN) pour l'acces distant securise'
+      '5. Considerez un VPN AWS (AWS Client VPN) pour l acces distant securise'
     ],
     Windows: ['1. Console AWS → EC2 → Groupes de securite → modifiez le port 3389', '2. Limitez a votre IP uniquement'],
     Linux: ['1. aws ec2 revoke-security-group-ingress --group-id sg-xxx --protocol tcp --port 3389 --cidr 0.0.0.0/0', '2. aws ec2 authorize-security-group-ingress --group-id sg-xxx --protocol tcp --port 3389 --cidr VOTRE_IP/32']
