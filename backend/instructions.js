@@ -675,7 +675,7 @@ const MANUAL_INSTRUCTIONS = {
       '1. L agent active l Observateur d evenements automatiquement',
       '2. Verifiez : eventvwr.msc → Journaux Windows',
       '3. Configurez la retention : clic droit → Proprietes → 90 jours minimum',
-      '4. Activez l'audit : gpedit.msc → Parametres de securite → Strategies d'audit'
+      "4. Activez l'audit : gpedit.msc → Parametres de securite → Strategies d'audit"
     ],
     Linux: [
       '1. L agent active et configure rsyslog automatiquement',
