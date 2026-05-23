@@ -761,7 +761,7 @@ async function runCloudScan(tenantId, cloudType, credentials) {
           type: 'AWS_INVALID_KEY',
           severity: 'high',
           title: 'Clé AWS invalide ou expirée',
-          description: 'La clé d'accès AWS fournie semble invalide. Vérifiez vos credentials.',
+          description: 'La cle acces AWS fournie semble invalide. Verifiez vos credentials.',
           recommendation: 'Créez une nouvelle clé dans AWS IAM et mettez à jour ShieldFlow.'
         });
       }
