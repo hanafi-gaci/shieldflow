@@ -164,6 +164,10 @@ def send_report(payload: dict) -> bool:
             'disk_encrypted': payload.get('disk_encrypted'),
             'pending_updates': payload.get('pending_updates', 0),
             'antivirus_status': payload.get('antivirus_status', 'unknown'),
+            'screensaver_enabled': payload.get('screensaver_enabled'),
+            'file_sharing': payload.get('file_sharing'),
+            'remote_login': payload.get('remote_login'),
+            'logging_enabled': payload.get('logging_enabled'),
             'users': payload.get('users', []),
             'logs': payload.get('logs', []),
         }
