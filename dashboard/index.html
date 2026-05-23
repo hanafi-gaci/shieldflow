@@ -620,10 +620,11 @@ async function openClientDetail(id, name) {
           ${alerts.length ? alerts.map(a => `
             <div class="table-row">
               <span class="sev-badge sev-${a.severity}">${a.severity}</span>
-              <div>
+              <div style="flex:1">
                 <div style="font-size:13px;font-weight:500">${a.title}</div>
                 <div style="font-size:11px;color:var(--text3)">${a.device_name}</div>
               </div>
+              <button onclick="remediateAlert('${id}','${a._id}')" style="background:#10b981;border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">⚡ Régler</button>
             </div>`).join('') : '<div class="empty"><div class="empty-icon">✅</div>Aucune alerte</div>'}
         </div>
         <div class="table-wrap">
@@ -730,6 +731,28 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── REMEDIATION ───────────────────────────────────────────────────────────────
+
+async function remediateAlert(tenantId, alertId) {
+  if (!confirm('ShieldFlow va regler cette alerte automatiquement. Confirmer ?')) return;
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/alerts/'+alertId+'/remediate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({})
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast('Commande envoyee a l agent - Correction en cours...');
+      setTimeout(() => openClientDetail(tenantId, state.selectedClient?.name || ''), 5000);
+    } else {
+      showToast('Erreur: ' + (d.error || 'Inconnue'));
+    }
+  } catch(e) {
+    showToast('Erreur de connexion');
+  }
 }
 
 // ── CLOUD ─────────────────────────────────────────────────────────────────

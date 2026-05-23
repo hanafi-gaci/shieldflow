@@ -612,6 +612,92 @@ app.get('/api/reset-alerts', async (req, res) => {
 // ─── SERVE AGENT FILES ────────────────────────────────────────────────────────
 app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
+
+// ─── REMEDIATION ROUTES ───────────────────────────────────────────────────────
+
+// Envoyer une commande de remédiation à un agent
+app.post('/api/mssp/tenants/:tenantId/alerts/:alertId/remediate', async (req, res) => {
+  try {
+    const alert = await Alert.findById(req.params.alertId);
+    if (!alert) return res.status(404).json({ error: 'Alerte non trouvée' });
+    
+    // Créer la commande
+    const command = {
+      id: require('crypto').randomBytes(8).toString('hex'),
+      alert_type: alert.type,
+      alert_id: alert._id.toString(),
+      device_id: alert.device_id,
+      params: req.body.params || {},
+      created_at: new Date(),
+      executed: false
+    };
+    
+    // Stocker dans la file d'attente du device
+    await Device.findOneAndUpdate(
+      { device_id: alert.device_id, tenant_id: req.params.tenantId },
+      { $push: { pending_commands: command } }
+    );
+    
+    res.json({ success: true, command_id: command.id, message: 'Commande envoyée à l\'agent' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Agent récupère ses commandes en attente
+app.get('/api/agent/:tenantId/commands', async (req, res) => {
+  const tenantId = req.params.tenantId;
+  const agentKey = req.headers['x-agent-key'];
+  
+  const tenant = await Tenant.findById(tenantId).catch(() => null);
+  if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
+  if (agentKey !== tenant.agent_key && agentKey !== SECRET_KEY) return res.status(403).json({ error: 'Clé invalide' });
+  
+  // Récupérer toutes les commandes en attente pour ce tenant
+  const devices = await Device.find({ tenant_id: tenantId, 'pending_commands.0': { $exists: true } });
+  const commands = [];
+  for (const d of devices) {
+    const pending = (d.pending_commands || []).filter(c => !c.executed);
+    commands.push(...pending);
+  }
+  
+  res.json({ commands });
+});
+
+// Agent signale le résultat d'une remédiation
+app.post('/api/agent/:tenantId/remediation-result', async (req, res) => {
+  const { command_id, result } = req.body;
+  const tenantId = req.params.tenantId;
+  
+  // Marquer la commande comme exécutée
+  await Device.findOneAndUpdate(
+    { tenant_id: tenantId, 'pending_commands.id': command_id },
+    { 
+      $set: { 
+        'pending_commands.$.executed': true,
+        'pending_commands.$.result': result,
+        'pending_commands.$.executed_at': new Date()
+      }
+    }
+  );
+  
+  // Si succès → résoudre l'alerte
+  if (result && result.success) {
+    const cmd = await Device.findOne(
+      { tenant_id: tenantId, 'pending_commands.id': command_id },
+      { 'pending_commands.$': 1 }
+    );
+    if (cmd && cmd.pending_commands[0]) {
+      const alertId = cmd.pending_commands[0].alert_id;
+      if (alertId) {
+        await Alert.findByIdAndUpdate(alertId, { resolved: true, resolved_at: new Date() });
+      }
+    }
+  }
+  
+  res.json({ success: true });
+});
+
 // ─── START ────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
