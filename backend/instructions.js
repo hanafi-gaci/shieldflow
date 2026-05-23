@@ -56,7 +56,7 @@ const MANUAL_INSTRUCTIONS = {
 
   // ─── ANTIVIRUS ─────────────────────────────────────────────────────────────
   NO_ANTIVIRUS: {
-    auto: true,
+    auto: false,
     label: 'Antivirus absent',
     Darwin: [
       '1. L\'agent met à jour XProtect (antivirus Apple intégré) automatiquement',
