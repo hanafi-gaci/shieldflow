@@ -641,7 +641,7 @@ const MANUAL_INSTRUCTIONS = {
     auto: true,
     label: 'Authentification SSH par mot de passe activee',
     Darwin: [
-      '1. L agent desactive l'authentification SSH par mot de passe automatiquement',
+      '1. L agent desactive l authentification SSH par mot de passe automatiquement',
       '2. Seules les cles SSH seront acceptees - plus securise',
       '3. Pour generer une cle SSH : ssh-keygen -t ed25519 -C votre@email.com',
       '4. Copiez la cle publique : ssh-copy-id utilisateur@serveur',
@@ -672,7 +672,7 @@ const MANUAL_INSTRUCTIONS = {
       '5. Consultez les logs : Applications → Utilitaires → Console'
     ],
     Windows: [
-      '1. L agent active l Observateur d'evenements automatiquement',
+      '1. L agent active l Observateur d evenements automatiquement',
       '2. Verifiez : eventvwr.msc → Journaux Windows',
       '3. Configurez la retention : clic droit → Proprietes → 90 jours minimum',
       '4. Activez l'audit : gpedit.msc → Parametres de securite → Strategies d'audit'
@@ -690,13 +690,13 @@ const MANUAL_INSTRUCTIONS = {
     label: 'Compte Microsoft 365 compromis ou a risque',
     Darwin: [
       '1. URGENT : Allez sur https://portal.azure.com → Azure AD → Securite → Utilisateurs a risque',
-      '2. Selectionnez l'utilisateur concerne',
+      '2. Selectionnez l utilisateur concerne',
       '3. Cliquez sur Reinitialiser le mot de passe',
       '4. Cliquez sur Revoquer les sessions (deconnecte toutes les sessions actives)',
       '5. Activez le MFA immediatement sur ce compte',
-      '6. Verifiez les regles de transfert d'email : Outlook → Parametres → Courrier → Transfert',
+      '6. Verifiez les regles de transfert d email : Outlook → Parametres → Courrier → Transfert',
       '7. Verifiez les connexions recentes : Azure AD → Journaux de connexion',
-      '8. Signalez l'incident a votre DPO si des donnees ont pu etre consultees (obligation RGPD 72h)'
+      '8. Signalez l incident a votre DPO si des donnees ont pu etre consultees (obligation RGPD 72h)'
     ],
     Windows: [
       '1. https://portal.azure.com → Azure AD → Securite → Utilisateurs a risque',
