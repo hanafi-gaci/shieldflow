@@ -465,7 +465,33 @@ app.post('/api/mssp/tenants/:id/cloud', async (req, res) => {
   tenant.cloud[cloud_type] = { credentials, connected_at: new Date(), last_scan: null };
   tenant.markModified('cloud');
   await tenant.save();
-  res.json({ success: true, message: `Cloud ${cloud_type} connecte` });
+  
+  // Lancer le scan immédiatement après connexion
+  setTimeout(async () => {
+    try {
+      const alerts = await runCloudScan(req.params.id, cloud_type, credentials);
+      for (const alert of alerts) {
+        if (alert.type === 'M365_SCAN_OK') continue;
+        const exists = await Alert.findOne({ tenant_id: req.params.id, type: alert.type, resolved: false });
+        if (!exists) {
+          const newAlert = await Alert.create({ 
+            tenant_id: req.params.id, 
+            device_id: 'cloud_' + cloud_type, 
+            device_name: cloud_type.toUpperCase() + ' Cloud', 
+            ...alert 
+          });
+          if (alert.severity === 'critical' || alert.severity === 'high') {
+            sendAlertEmail(tenant.name, newAlert, cloud_type + ' Cloud', ALERT_EMAIL);
+          }
+        }
+      }
+      console.log(`[CloudScan] Scan immediat ${cloud_type} pour ${tenant.name}: ${alerts.length} alertes`);
+    } catch(e) {
+      console.error('[CloudScan] Erreur scan immediat:', e.message);
+    }
+  }, 2000);
+  
+  res.json({ success: true, message: `Cloud ${cloud_type} connecte - scan en cours...` });
 });
 
 app.get('/api/mssp/tenants/:id/cloud', async (req, res) => {
