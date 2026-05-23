@@ -224,6 +224,30 @@ def main():
             logger.error(f'Collection error: {e}', exc_info=True)
 
         logger.info(f'Next report in {INTERVAL}s...\n')
+        
+        # Verifier les commandes de remediation
+        try:
+            from remediation import execute as remediate
+            import os as _os
+            r = requests.get(
+                f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/commands',
+                headers={'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)},
+                timeout=10
+            )
+            if r.status_code == 200:
+                commands = r.json().get('commands', [])
+                for cmd in commands:
+                    logger.info(f'[Remediation] {cmd["alert_type"]}')
+                    result = remediate(cmd['alert_type'], cmd.get('params', {}))
+                    requests.post(
+                        f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/remediation-result',
+                        json={'command_id': cmd['id'], 'result': result},
+                        headers={'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)},
+                        timeout=10
+                    )
+                    logger.info(f'[Remediation] {result.get("output", result.get("error",""))}')
+        except Exception as e:
+            logger.debug(f'Remediation: {e}')
         time.sleep(INTERVAL)
 
 
