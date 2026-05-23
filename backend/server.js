@@ -17,6 +17,7 @@ const ADMIN_PASSWORD  = process.env.ADMIN_PASSWORD  || 'shieldflow2026';
 const MSSP_PASSWORD   = process.env.MSSP_PASSWORD   || 'shieldflow-mssp-2026';
 const SECRET_KEY      = process.env.SECRET_KEY      || 'shieldflow-secret-key-change-in-prod';
 const MONGODB_URI     = process.env.MONGODB_URI     || '';
+const MANUAL_INSTRUCTIONS = require('./instructions');
 const RESEND_API_KEY  = process.env.RESEND_API_KEY  || '';
 const ALERT_EMAIL     = process.env.ALERT_EMAIL     || '';
 
@@ -58,8 +59,10 @@ const AlertSchema = new mongoose.Schema({
   title:       String,
   description: String,
   recommendation: String,
-  resolved:    { type: Boolean, default: false },
-  resolved_at: Date,
+  resolved:      { type: Boolean, default: false },
+  resolved_at:   Date,
+  auto_fixable:  { type: Boolean, default: false },
+  instructions:  { type: Array, default: [] },
   created_at:  { type: Date, default: Date.now }
 });
 
@@ -549,6 +552,17 @@ app.post('/api/agent/:tenantId/heartbeat', async (req, res) => {
   for (const c of candidates) {
     const exists = await Alert.findOne({ device_id, tenant_id: tenantId, type: c.type, resolved: false });
     if (!exists) {
+      // Ajouter les instructions selon l'OS
+      const platform = device.platform || 'Darwin';
+      const instrKey = Object.keys(MANUAL_INSTRUCTIONS).find(k => c.type.startsWith(k));
+      if (instrKey) {
+        const instr = MANUAL_INSTRUCTIONS[instrKey];
+        c.auto_fixable = instr.auto || false;
+        c.instructions = instr[platform] || instr['Darwin'] || [];
+      } else {
+        c.auto_fixable = false;
+        c.instructions = ['Contactez le support ShieldFlow pour cette alerte.'];
+      }
       const newAlert = await Alert.create({ tenant_id: tenantId, device_id, device_name: device.name, ...c });
       if (c.severity === 'critical' || c.severity === 'high') {
         sendAlertEmail(tenant.name, newAlert, device.name, ALERT_EMAIL);
