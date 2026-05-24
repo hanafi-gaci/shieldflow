@@ -549,6 +549,16 @@ app.post('/api/agent/heartbeat', async (req, res) => {
   if (!device) return res.status(404).json({ error: 'Appareil non enregistre' });
   
   const candidates = analyzeSnap(snap, device_id, device.name);
+  
+  // Calculer NIS2 directement a partir du heartbeat
+  const nis2 = calculateNIS2(snap);
+  await Tenant.findByIdAndUpdate(tenantId, {
+    nis2_score: nis2.score,
+    nis2_level: nis2.level,
+    nis2_criteria: nis2.criteria,
+    nis2_updated_at: new Date()
+  });
+
   for (const c of candidates) {
     const exists = await Alert.findOne({ device_id, type: c.type, resolved: false });
     if (!exists) {
@@ -596,6 +606,16 @@ app.post('/api/agent/:tenantId/heartbeat', async (req, res) => {
   if (!device) return res.status(404).json({ error: 'Appareil non enregistre' });
   
   const candidates = analyzeSnap(snap, device_id, device.name);
+  
+  // Calculer NIS2 directement a partir du heartbeat
+  const nis2 = calculateNIS2(snap);
+  await Tenant.findByIdAndUpdate(tenantId, {
+    nis2_score: nis2.score,
+    nis2_level: nis2.level,
+    nis2_criteria: nis2.criteria,
+    nis2_updated_at: new Date()
+  });
+
   for (const c of candidates) {
     const exists = await Alert.findOne({ device_id, tenant_id: tenantId, type: c.type, resolved: false });
     if (!exists) {
@@ -676,6 +696,61 @@ app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
 
 
+
+
+// ─── CALCUL NIS2 SERVEUR ──────────────────────────────────────────────────────
+
+function calculateNIS2(snap) {
+  const checks = {
+    firewall:    snap.firewall_enabled === true || snap.firewall_status === 'enabled',
+    encrypted:   snap.disk_encrypted === true,
+    antivirus:   snap.antivirus_status && snap.antivirus_status !== 'disabled' && snap.antivirus_status !== 'unknown',
+    logging:     snap.logging_enabled !== false,
+    disk_ok:     (snap.disk_percent || 0) < 85,
+    updates_ok:  (snap.pending_updates || 0) === 0,
+    screensaver: snap.screensaver_enabled === true,
+    no_sharing:  snap.file_sharing !== true,
+    no_remote:   snap.remote_login !== true,
+  };
+
+  const criteria = {
+    'Politique de securite': { checks: ['firewall','encrypted','antivirus'], article: 'Art.21.2.a', weight: 15 },
+    'Gestion des incidents':  { checks: ['logging'], article: 'Art.21.2.b', weight: 15 },
+    'Continuite activite':    { checks: ['disk_ok','updates_ok'], article: 'Art.21.2.c', weight: 10 },
+    'Securite reseaux':       { checks: ['firewall','no_sharing','no_remote'], article: 'Art.21.2.e', weight: 15 },
+    'Hygiene informatique':   { checks: ['screensaver','updates_ok'], article: 'Art.21.2.g', weight: 15 },
+    'Cryptographie':          { checks: ['encrypted'], article: 'Art.21.2.h', weight: 15 },
+    'Controle acces':         { checks: ['no_remote','screensaver'], article: 'Art.21.2.i', weight: 15 },
+  };
+
+  let totalScore = 0;
+  let totalWeight = 0;
+  const results = {};
+
+  for (const [name, crit] of Object.entries(criteria)) {
+    const passed = crit.checks.filter(c => checks[c]).length;
+    const score = Math.round((passed / crit.checks.length) * 100);
+    results[name] = {
+      label: name,
+      article: crit.article,
+      score,
+      passed,
+      total: crit.checks.length,
+      compliant: score >= 75,
+      details: crit.checks.map(c => [c, checks[c]])
+    };
+    totalScore += score * crit.weight;
+    totalWeight += crit.weight;
+  }
+
+  const global = Math.round(totalScore / totalWeight);
+  return {
+    score: global,
+    level: global >= 80 ? 'CONFORME' : global >= 60 ? 'PARTIELLEMENT CONFORME' : 'NON CONFORME',
+    criteria: results,
+    checks
+  };
+}
 
 // ─── NIS2 SCORE ROUTE ────────────────────────────────────────────────────────
 
