@@ -6,3 +6,8 @@ darkweb_cache.json
 threat_cache.json
 __pycache__/
 *.pyc
+cve_cache.json
+darkweb_cache.json
+threat_cache.json
+__pycache__/
+*.pyc
