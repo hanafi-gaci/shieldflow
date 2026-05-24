@@ -286,7 +286,9 @@ def main():
                 logger.debug(f'CVE thread: {e}')
         
         h = {'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)}
-        threading.Thread(target=run_nis2, args=(snap.copy(), h), daemon=True).start()
+        t_nis2 = threading.Thread(target=run_nis2, args=(snap.copy(), h), daemon=True)
+        t_nis2.start()
+        t_nis2.join(timeout=15)  # Attendre max 15 secondes
         # CVE toutes les 10 iterations seulement (5 minutes)
         if iteration % 10 == 0:
             threading.Thread(target=run_cve, args=(h,), daemon=True).start()
