@@ -580,6 +580,9 @@ async function openClientDetail(id, name) {
     const tenant = (td.tenants||[]).find(t => t.id === id);
     const agentKey = tenant?.agent_key || '';
     
+    // Attendre que le DOM soit pret
+    await new Promise(r => setTimeout(r, 100));
+
     // Charger le score RGPD
     try {
       const rr = await fetch(S+'/api/mssp/tenants/'+id+'/rgpd');
