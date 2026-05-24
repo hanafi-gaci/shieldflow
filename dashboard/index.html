@@ -283,6 +283,11 @@ button,input{font-family:inherit}
               <div class="card-value" id="cl-score">100</div>
               <div class="card-sub" id="cl-score-sub">Bon niveau</div>
             </div>
+            <div class="card" id="nis2-card" style="cursor:pointer" onclick="showNis2(state.selectedClient?.id)">
+              <div class="card-label">Conformité NIS2</div>
+              <div class="card-value" id="cl-nis2-score" style="font-size:20px">--</div>
+              <div class="card-sub" id="cl-nis2-level">Non évalué</div>
+            </div>
             <div class="card">
               <div class="card-label">Appareils</div>
               <div class="card-value" style="color:var(--accent2)" id="cl-devices">0</div>
@@ -570,6 +575,19 @@ async function openClientDetail(id, name) {
     const tenant = (td.tenants||[]).find(t => t.id === id);
     const agentKey = tenant?.agent_key || '';
     
+    // Charger le score NIS2
+    try {
+      const nr = await fetch(S+'/api/mssp/tenants/'+id+'/nis2');
+      const nd = await nr.json();
+      const nis2El = document.getElementById('cl-nis2-score');
+      const nis2LvlEl = document.getElementById('cl-nis2-level');
+      if (nis2El) {
+        nis2El.textContent = nd.score ? nd.score+'/100' : '--';
+        nis2El.style.color = nd.score >= 80 ? 'var(--green)' : nd.score >= 60 ? 'var(--orange)' : 'var(--red)';
+      }
+      if (nis2LvlEl) nis2LvlEl.textContent = nd.level || 'Non evalue';
+    } catch(e) {}
+
     // Charger les clouds connectés
     const cloudIcons = { aws: '☁️ AWS', m365: '🔵 Microsoft 365', gworkspace: '🟡 Google Workspace' };
     let cloudHtml = '<div style="font-size:12px;color:var(--text3)">Aucun service cloud connecté</div>';
@@ -805,6 +823,108 @@ async function remediateAlert(tenantId, alertId) {
     }
   } catch(e) {
     showToast('Erreur de connexion');
+  }
+}
+
+// ── NIS2 ──────────────────────────────────────────────────────────────────────
+
+async function showNis2(tenantId) {
+  if (!tenantId) return;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-title').textContent = 'Rapport de Conformite NIS2';
+  document.getElementById('modal-body').innerHTML = '<div style="color:var(--text2);font-size:13px">Chargement...</div>';
+
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/nis2');
+    const d = await r.json();
+    const score = d.score || 0;
+    const level = d.level || 'Non evalue';
+    const criteria = d.criteria || {};
+    const scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+
+    const criteriaHtml = Object.entries(criteria).map(([id, c]) => {
+      const status = c.compliant ? '✅' : '❌';
+      const barColor = c.score >= 80 ? 'var(--green)' : c.score >= 50 ? 'var(--orange)' : 'var(--red)';
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;color:var(--text)">${status} ${c.article} — ${c.label}</span>
+          <span style="font-size:11px;font-weight:700;color:${barColor}">${Math.round(c.score)}%</span>
+        </div>
+        <div style="background:var(--border);border-radius:4px;height:4px">
+          <div style="background:${barColor};width:${c.score}%;height:4px;border-radius:4px"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('modal-body').innerHTML = `
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:48px;font-weight:800;color:${scoreColor}">${score}/100</div>
+        <div style="font-size:14px;font-weight:600;color:${scoreColor};margin-top:4px">${level}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Directive europeenne NIS2 — Article 21</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:4px 16px;margin-bottom:12px">
+        ${criteriaHtml || '<div style="padding:12px;color:var(--text3);font-size:13px">Aucune donnee disponible — en attente du prochain scan agent</div>'}
+      </div>
+      <div style="background:rgba(37,99,235,.08);border-radius:8px;padding:10px;font-size:11px;color:var(--text3)">
+        Le score NIS2 est mis a jour automatiquement a chaque scan de l agent (toutes les 30 secondes).
+        Un score inferieur a 80% expose l entreprise a des risques de non-conformite reglementaire.
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('modal-body').innerHTML = '<div style="color:var(--red)">Erreur de chargement</div>';
+  }
+}
+
+// ── NIS2 ──────────────────────────────────────────────────────────────────────
+
+async function showNis2(tenantId) {
+  if (!tenantId) return;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-title').textContent = 'Rapport de Conformite NIS2';
+  document.getElementById('modal-body').innerHTML = '<div style="color:var(--text2);font-size:13px">Chargement...</div>';
+
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/nis2');
+    const d = await r.json();
+    const score = d.score || 0;
+    const level = d.level || 'Non evalue';
+    const criteria = d.criteria || {};
+    const scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+
+    const criteriaHtml = Object.entries(criteria).map(([id, c]) => {
+      const status = c.compliant ? '✅' : '❌';
+      const barColor = c.score >= 80 ? 'var(--green)' : c.score >= 50 ? 'var(--orange)' : 'var(--red)';
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;color:var(--text)">${status} ${c.article} — ${c.label}</span>
+          <span style="font-size:11px;font-weight:700;color:${barColor}">${Math.round(c.score)}%</span>
+        </div>
+        <div style="background:var(--border);border-radius:4px;height:4px">
+          <div style="background:${barColor};width:${c.score}%;height:4px;border-radius:4px"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('modal-body').innerHTML = `
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:48px;font-weight:800;color:${scoreColor}">${score}/100</div>
+        <div style="font-size:14px;font-weight:600;color:${scoreColor};margin-top:4px">${level}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Directive europeenne NIS2 — Article 21</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:4px 16px;margin-bottom:12px">
+        ${criteriaHtml || '<div style="padding:12px;color:var(--text3);font-size:13px">Aucune donnee disponible — en attente du prochain scan agent</div>'}
+      </div>
+      <div style="background:rgba(37,99,235,.08);border-radius:8px;padding:10px;font-size:11px;color:var(--text3)">
+        Le score NIS2 est mis a jour automatiquement a chaque scan de l agent (toutes les 30 secondes).
+        Un score inferieur a 80% expose l entreprise a des risques de non-conformite reglementaire.
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('modal-body').innerHTML = '<div style="color:var(--red)">Erreur de chargement</div>';
   }
 }
 

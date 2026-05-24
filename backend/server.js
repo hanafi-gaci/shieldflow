@@ -33,6 +33,10 @@ const TenantSchema = new mongoose.Schema({
   password:   String,
   agent_key:  String,
   cloud:      { type: Object, default: {} },
+  nis2_score:      { type: Number },
+  nis2_level:      { type: String },
+  nis2_criteria:   { type: Object },
+  nis2_updated_at: { type: Date },
   created_at: { type: Date, default: Date.now }
 });
 
@@ -671,6 +675,47 @@ app.get('/api/reset-alerts', async (req, res) => {
 app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
 
+
+
+// ─── NIS2 SCORE ROUTE ────────────────────────────────────────────────────────
+
+app.post('/api/agent/:tenantId/nis2-score', async (req, res) => {
+  try {
+    const tenantId = req.params.tenantId;
+    const agentKey = req.headers['x-agent-key'];
+    const tenant = await Tenant.findById(tenantId).catch(() => null);
+    if (!tenant) return res.status(404).json({ error: 'Tenant non trouve' });
+    if (agentKey !== tenant.agent_key && agentKey !== SECRET_KEY)
+      return res.status(403).json({ error: 'Cle invalide' });
+
+    // Sauvegarder le score NIS2
+    await Tenant.findByIdAndUpdate(tenantId, {
+      'nis2_score': req.body.score,
+      'nis2_level': req.body.level,
+      'nis2_criteria': req.body.criteria,
+      'nis2_updated_at': new Date()
+    });
+
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/mssp/tenants/:id/nis2', async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) return res.status(404).json({ error: 'Tenant non trouve' });
+    res.json({
+      score: tenant.nis2_score || 0,
+      level: tenant.nis2_level || 'Non evalue',
+      criteria: tenant.nis2_criteria || {},
+      updated_at: tenant.nis2_updated_at
+    });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── CVE ALERTS ROUTE ────────────────────────────────────────────────────────
 

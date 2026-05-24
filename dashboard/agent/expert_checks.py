@@ -689,3 +689,15 @@ def check_cve_vulnerabilities(software_list=None):
         return scan_cve(software_list)
     except Exception as e:
         return []
+
+def check_nis2_compliance(snap):
+    """Evalue la conformite NIS2."""
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.dirname(__file__))
+        from nis2_compliance import evaluate_compliance, generate_nis2_alerts
+        result = evaluate_compliance(snap)
+        alerts = generate_nis2_alerts(result)
+        return result, alerts
+    except Exception as e:
+        return None, []
