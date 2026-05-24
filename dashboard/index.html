@@ -283,11 +283,7 @@ button,input{font-family:inherit}
               <div class="card-value" id="cl-score">100</div>
               <div class="card-sub" id="cl-score-sub">Bon niveau</div>
             </div>
-            <div class="card" id="nis2-card" style="cursor:pointer" onclick="showNis2(state.selectedClient?.id)">
-              <div class="card-label">Conformité NIS2</div>
-              <div class="card-value" id="cl-nis2-score" style="font-size:20px">--</div>
-              <div class="card-sub" id="cl-nis2-level">Non évalué</div>
-            </div>
+
             <div class="card" style="cursor:pointer" onclick="showRGPD(state.selectedClient?.id)">
               <div class="card-label">Conformité RGPD</div>
               <div class="card-value" id="cl-rgpd-score" style="font-size:20px">--</div>
@@ -596,18 +592,7 @@ async function openClientDetail(id, name) {
       if (rgpdLvlEl) rgpdLvlEl.textContent = rd.level || 'Non evalue';
     } catch(e) {}
 
-    // Charger le score NIS2
-    try {
-      const nr = await fetch(S+'/api/mssp/tenants/'+id+'/nis2');
-      const nd = await nr.json();
-      const nis2El = document.getElementById('cl-nis2-score');
-      const nis2LvlEl = document.getElementById('cl-nis2-level');
-      if (nis2El) {
-        nis2El.textContent = nd.score ? nd.score+'/100' : '--';
-        nis2El.style.color = nd.score >= 80 ? 'var(--green)' : nd.score >= 60 ? 'var(--orange)' : 'var(--red)';
-      }
-      if (nis2LvlEl) nis2LvlEl.textContent = nd.level || 'Non evalue';
-    } catch(e) {}
+
 
     // Charger les clouds connectés
     const cloudIcons = { aws: '☁️ AWS', m365: '🔵 Microsoft 365', gworkspace: '🟡 Google Workspace' };
