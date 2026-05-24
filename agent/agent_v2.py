@@ -250,44 +250,46 @@ def main():
         except Exception as e:
             logger.debug(f'Remediation: {e}')
         
-        # NIS2 Compliance — evaluer la conformite reglementaire
-        try:
-            from expert_checks import check_nis2_compliance
-            nis2_result, nis2_alerts = check_nis2_compliance(snap)
-            if nis2_result:
-                logger.info(f'[NIS2] Score: {nis2_result["score"]}/100 — {nis2_result["level"]}')
-                for alert in nis2_alerts:
+        # NIS2 + CVE — tourner en thread pour ne pas bloquer le heartbeat
+        import threading
+        
+        def run_nis2(snap_copy, headers_copy):
+            try:
+                from expert_checks import check_nis2_compliance
+                nis2_result, nis2_alerts = check_nis2_compliance(snap_copy)
+                if nis2_result:
+                    logger.info(f'[NIS2] Score: {nis2_result["score"]}/100 — {nis2_result["level"]}')
+                    for alert in nis2_alerts:
+                        requests.post(
+                            f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/cve-alert',
+                            json=alert, headers=headers_copy, timeout=10
+                        )
+                    requests.post(
+                        f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/nis2-score',
+                        json={'score': nis2_result['score'], 'level': nis2_result['level'], 'criteria': nis2_result['criteria']},
+                        headers=headers_copy, timeout=10
+                    )
+            except Exception as e:
+                logger.debug(f'NIS2 thread: {e}')
+        
+        def run_cve(headers_copy):
+            try:
+                from expert_checks import check_cve_vulnerabilities
+                cve_alerts = check_cve_vulnerabilities()
+                for ca in cve_alerts:
+                    logger.warning(f'[CVE] {ca["title"]}')
                     requests.post(
                         f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/cve-alert',
-                        json=alert,
-                        headers={'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)},
-                        timeout=10
+                        json=ca, headers=headers_copy, timeout=10
                     )
-                # Envoyer le score NIS2 au serveur
-                requests.post(
-                    f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/nis2-score',
-                    json={'score': nis2_result['score'], 'level': nis2_result['level'], 'criteria': nis2_result['criteria']},
-                    headers={'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)},
-                    timeout=10
-                )
-        except Exception as e:
-            logger.debug(f'NIS2: {e}')
-
-        # CVE Scan — verifier les vulnerabilites logicielles
-        try:
-            from expert_checks import check_cve_vulnerabilities
-            cve_alerts = check_cve_vulnerabilities()
-            for ca in cve_alerts:
-                logger.warning(f'[CVE] {ca["title"]}')
-                # Envoyer l alerte CVE au serveur
-                requests.post(
-                    f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/cve-alert',
-                    json=ca,
-                    headers={'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)},
-                    timeout=10
-                )
-        except Exception as e:
-            logger.debug(f'CVE scan: {e}')
+            except Exception as e:
+                logger.debug(f'CVE thread: {e}')
+        
+        h = {'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)}
+        threading.Thread(target=run_nis2, args=(snap.copy(), h), daemon=True).start()
+        # CVE toutes les 10 iterations seulement (5 minutes)
+        if iteration % 10 == 0:
+            threading.Thread(target=run_cve, args=(h,), daemon=True).start()
 
         # Threat Intelligence — vérifier les connexions réseau
         try:
