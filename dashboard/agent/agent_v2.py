@@ -250,6 +250,22 @@ def main():
         except Exception as e:
             logger.debug(f'Remediation: {e}')
         
+        # CVE Scan — verifier les vulnerabilites logicielles
+        try:
+            from expert_checks import check_cve_vulnerabilities
+            cve_alerts = check_cve_vulnerabilities()
+            for ca in cve_alerts:
+                logger.warning(f'[CVE] {ca["title"]}')
+                # Envoyer l alerte CVE au serveur
+                requests.post(
+                    f'{SERVER_URL}/api/agent/{SHIELDFLOW_TENANT}/cve-alert',
+                    json=ca,
+                    headers={'x-agent-key': _os.getenv('SHIELDFLOW_KEY', SECRET_KEY)},
+                    timeout=10
+                )
+        except Exception as e:
+            logger.debug(f'CVE scan: {e}')
+
         # Threat Intelligence — vérifier les connexions réseau
         try:
             from expert_checks import check_threat_intelligence

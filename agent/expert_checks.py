@@ -677,3 +677,15 @@ def check_darkweb(emails):
         return check_emails_darkweb(emails)
     except Exception as e:
         return []
+
+def check_cve_vulnerabilities(software_list=None):
+    """Scan CVE sur les logiciels installes."""
+    try:
+        import sys, os
+        sys.path.insert(0, os.path.dirname(__file__))
+        from cve_scanner import scan_cve, get_installed_software
+        if software_list is None:
+            software_list = get_installed_software()
+        return scan_cve(software_list)
+    except Exception as e:
+        return []

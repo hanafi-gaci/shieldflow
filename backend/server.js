@@ -671,6 +671,62 @@ app.get('/api/reset-alerts', async (req, res) => {
 app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
 
+
+// ─── CVE ALERTS ROUTE ────────────────────────────────────────────────────────
+
+app.post('/api/agent/:tenantId/cve-alert', async (req, res) => {
+  try {
+    const tenantId = req.params.tenantId;
+    const agentKey = req.headers['x-agent-key'];
+    const tenant = await Tenant.findById(tenantId).catch(() => null);
+    if (!tenant) return res.status(404).json({ error: 'Tenant non trouve' });
+    if (agentKey !== tenant.agent_key && agentKey !== SECRET_KEY) 
+      return res.status(403).json({ error: 'Cle invalide' });
+
+    const alert = req.body;
+    const device = await Device.findOne({ tenant_id: tenantId });
+    
+    // Verifier si alerte deja existante
+    const exists = await Alert.findOne({ 
+      tenant_id: tenantId, 
+      type: alert.type, 
+      resolved: false 
+    });
+    
+    if (!exists) {
+      // Ajouter instructions CVE
+      const instrKey = 'CVE_SOFTWARE';
+      alert.instructions = [
+        'Mettez a jour ' + (alert.evidence?.software || 'le logiciel concerne') + ' immediatement',
+        'Allez sur le site officiel du logiciel et telechargez la derniere version',
+        'Mac : utilisez les mises a jour automatiques ou App Store',
+        'Windows : Parametres → Windows Update → Rechercher les mises a jour',
+        'Linux : sudo apt-get update && sudo apt-get upgrade -y',
+        'Apres mise a jour, relancez un scan ShieldFlow pour confirmer la correction',
+        'CVE references : ' + (alert.evidence?.cves?.map(c => c.cve_id).join(', ') || 'voir rapport')
+      ];
+      alert.auto_fixable = false;
+      
+      const newAlert = await Alert.create({
+        tenant_id: tenantId,
+        device_id: device?.device_id || 'unknown',
+        device_name: device?.name || 'Machine',
+        ...alert
+      });
+      
+      if (alert.severity === 'critical' || alert.severity === 'high') {
+        sendAlertEmail(tenant.name, newAlert, device?.name || 'Machine', ALERT_EMAIL);
+      }
+      
+      console.log(`[CVE] Nouvelle alerte: ${alert.title}`);
+    }
+    
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── INSTRUCTIONS ROUTE ──────────────────────────────────────────────────────
 
 app.get('/api/mssp/tenants/:tenantId/alerts/:alertId/instructions', async (req, res) => {
