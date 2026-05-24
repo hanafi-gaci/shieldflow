@@ -37,6 +37,11 @@ const TenantSchema = new mongoose.Schema({
   nis2_level:      { type: String },
   nis2_criteria:   { type: Object },
   nis2_updated_at: { type: Date },
+  rgpd_score:      { type: Number },
+  rgpd_level:      { type: String },
+  rgpd_conforme:   { type: Boolean },
+  rgpd_articles:   { type: Object },
+  rgpd_updated_at: { type: Date },
   created_at: { type: Date, default: Date.now }
 });
 
@@ -550,13 +555,19 @@ app.post('/api/agent/heartbeat', async (req, res) => {
   
   const candidates = analyzeSnap(snap, device_id, device.name);
   
-  // Calculer NIS2 directement a partir du heartbeat
+  // Calculer NIS2 et RGPD directement a partir du heartbeat
   const nis2 = calculateNIS2(snap);
+  const rgpd = calculateRGPD(snap);
   await Tenant.findByIdAndUpdate(tenantId, {
     nis2_score: nis2.score,
     nis2_level: nis2.level,
     nis2_criteria: nis2.criteria,
-    nis2_updated_at: new Date()
+    nis2_updated_at: new Date(),
+    rgpd_score: rgpd.score,
+    rgpd_level: rgpd.level,
+    rgpd_conforme: rgpd.conforme,
+    rgpd_articles: rgpd.articles,
+    rgpd_updated_at: new Date()
   });
 
   for (const c of candidates) {
@@ -607,13 +618,19 @@ app.post('/api/agent/:tenantId/heartbeat', async (req, res) => {
   
   const candidates = analyzeSnap(snap, device_id, device.name);
   
-  // Calculer NIS2 directement a partir du heartbeat
+  // Calculer NIS2 et RGPD directement a partir du heartbeat
   const nis2 = calculateNIS2(snap);
+  const rgpd = calculateRGPD(snap);
   await Tenant.findByIdAndUpdate(tenantId, {
     nis2_score: nis2.score,
     nis2_level: nis2.level,
     nis2_criteria: nis2.criteria,
-    nis2_updated_at: new Date()
+    nis2_updated_at: new Date(),
+    rgpd_score: rgpd.score,
+    rgpd_level: rgpd.level,
+    rgpd_conforme: rgpd.conforme,
+    rgpd_articles: rgpd.articles,
+    rgpd_updated_at: new Date()
   });
 
   for (const c of candidates) {
@@ -698,6 +715,53 @@ app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
 
 
+
+// ─── CALCUL RGPD SERVEUR ──────────────────────────────────────────────────────
+
+function calculateRGPD(snap) {
+  const articles = {
+    'Art.5 - Integrite et confidentialite': {
+      ok: snap.disk_encrypted === true,
+      detail: snap.disk_encrypted ? 'Donnees chiffrees' : 'Disque non chiffre — violation Art.5',
+      instruction: 'Activez FileVault (Mac) ou BitLocker (Windows) pour chiffrer les donnees personnelles.'
+    },
+    'Art.25 - Protection des donnees par defaut': {
+      ok: snap.firewall_enabled === true || snap.firewall_status === 'enabled',
+      detail: snap.firewall_enabled ? 'Pare-feu actif' : 'Pare-feu desactive — acces non autorise possible',
+      instruction: 'Activez le pare-feu systeme pour proteger les donnees par defaut.'
+    },
+    'Art.32 - Securite du traitement': {
+      ok: (snap.antivirus_status && snap.antivirus_status !== 'disabled' && snap.antivirus_status !== 'unknown'),
+      detail: snap.antivirus_status !== 'disabled' ? 'Antivirus actif' : 'Aucune protection antivirus',
+      instruction: 'Installez un antivirus pour proteger les traitements de donnees personnelles.'
+    },
+    'Art.30 - Registre des traitements': {
+      ok: snap.logging_enabled !== false,
+      detail: snap.logging_enabled !== false ? 'Journalisation active' : 'Logs desactives — tracabilite impossible',
+      instruction: 'Activez la journalisation systeme pour maintenir un registre des acces aux donnees.'
+    },
+    'Art.5 - Limitation conservation': {
+      ok: (snap.disk_percent || 0) < 80,
+      detail: (snap.disk_percent || 0) < 80 ? 'Espace disque OK' : 'Disque presque plein — risque perte de donnees',
+      instruction: 'Liberez de lespace disque et mettez en place une politique de retention des donnees.'
+    },
+  };
+
+  const passed = Object.values(articles).filter(a => a.ok).length;
+  const total = Object.keys(articles).length;
+  const score = Math.round((passed / total) * 100);
+  const conforme = score >= 80;
+
+  return {
+    conforme,
+    score,
+    level: conforme ? 'CONFORME' : score >= 60 ? 'PARTIELLEMENT CONFORME' : 'NON CONFORME',
+    articles,
+    passed,
+    total
+  };
+}
+
 // ─── CALCUL NIS2 SERVEUR ──────────────────────────────────────────────────────
 
 function calculateNIS2(snap) {
@@ -751,6 +815,106 @@ function calculateNIS2(snap) {
     checks
   };
 }
+
+
+// ─── RGPD PDF REPORT ─────────────────────────────────────────────────────────
+
+app.get('/api/mssp/tenants/:id/rgpd-report', async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) return res.status(404).json({ error: 'Tenant non trouve' });
+
+    const rgpd = {
+      score: tenant.rgpd_score || 0,
+      level: tenant.rgpd_level || 'Non evalue',
+      conforme: tenant.rgpd_conforme || false,
+      articles: tenant.rgpd_articles || {}
+    };
+
+    const doc = new PDFDocument({ margin: 50 });
+    const chunks = [];
+    doc.on('data', c => chunks.push(c));
+    doc.on('end', () => {
+      const buf = Buffer.concat(chunks);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=rapport-rgpd-' + tenant.name + '.pdf');
+      res.send(buf);
+    });
+
+    // Header
+    doc.fillColor('#1a1d27').rect(0, 0, doc.page.width, 120).fill();
+    doc.fillColor('#2563eb').fontSize(28).font('Helvetica-Bold').text('ShieldFlow', 50, 30);
+    doc.fillColor('#ffffff').fontSize(16).font('Helvetica-Bold').text('Rapport de Conformite RGPD', 50, 65);
+    doc.fillColor('#8b9ab0').fontSize(11).font('Helvetica').text('Reglement General sur la Protection des Donnees (UE) 2016/679', 50, 88);
+
+    doc.moveDown(3);
+
+    // Score global
+    const scoreColor = rgpd.conforme ? '#10b981' : rgpd.score >= 60 ? '#f97316' : '#ef4444';
+    const badge = rgpd.conforme ? 'CONFORME' : rgpd.level;
+
+    doc.fillColor('#1a1d27').roundedRect(50, 135, doc.page.width - 100, 80, 8).fill();
+    doc.fillColor(scoreColor).fontSize(36).font('Helvetica-Bold').text(rgpd.score + '/100', 70, 150);
+    doc.fillColor(scoreColor).fontSize(14).font('Helvetica-Bold').text(badge, 70, 192);
+    doc.fillColor('#8b9ab0').fontSize(10).font('Helvetica').text('Client: ' + tenant.name + '  |  Date: ' + new Date().toLocaleDateString('fr-FR'), 300, 165);
+
+    doc.moveDown(5);
+
+    // Articles
+    doc.fillColor('#e8edf5').fontSize(14).font('Helvetica-Bold').text('Detail par article RGPD', 50);
+    doc.moveDown(0.5);
+
+    for (const [name, article] of Object.entries(rgpd.articles)) {
+      const color = article.ok ? '#10b981' : '#ef4444';
+      const icon = article.ok ? '✓' : '✗';
+
+      doc.fillColor('#151b26').roundedRect(50, doc.y, doc.page.width - 100, article.ok ? 45 : 70, 6).fill();
+      doc.fillColor(color).fontSize(11).font('Helvetica-Bold').text(icon + '  ' + name, 65, doc.y + 10);
+      doc.fillColor('#8b9ab0').fontSize(9).font('Helvetica').text(article.detail, 65, doc.y + 5);
+      if (!article.ok && article.instruction) {
+        doc.fillColor('#3b82f6').fontSize(9).font('Helvetica').text('→ ' + article.instruction, 65, doc.y + 3);
+      }
+      doc.moveDown(article.ok ? 2.5 : 3.5);
+    }
+
+    doc.moveDown();
+
+    // Conclusion
+    const conclusionBg = rgpd.conforme ? '#0a1f15' : '#1a0a0a';
+    const conclusionColor = rgpd.conforme ? '#10b981' : '#ef4444';
+    doc.fillColor(conclusionBg).roundedRect(50, doc.y, doc.page.width - 100, 80, 8).fill();
+
+    if (rgpd.conforme) {
+      doc.fillColor(conclusionColor).fontSize(12).font('Helvetica-Bold').text('Felicitations — Votre systeme est conforme au RGPD', 65, doc.y + 15);
+      doc.fillColor('#8b9ab0').fontSize(10).font('Helvetica').text('Continuez a surveiller votre conformite avec ShieldFlow. Un rapport mensuel est recommande.', 65, doc.y + 5);
+    } else {
+      doc.fillColor(conclusionColor).fontSize(12).font('Helvetica-Bold').text('Action requise — Votre systeme necessite des corrections', 65, doc.y + 15);
+      doc.fillColor('#8b9ab0').fontSize(10).font('Helvetica').text('Les points marques ✗ doivent etre corriges pour eviter des sanctions CNIL (jusqu a 4% du CA mondial).', 65, doc.y + 5);
+    }
+
+    doc.end();
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── RGPD ROUTE ──────────────────────────────────────────────────────────────
+
+app.get('/api/mssp/tenants/:id/rgpd', async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) return res.status(404).json({ error: 'Tenant non trouve' });
+    res.json({
+      score: tenant.rgpd_score || 0,
+      level: tenant.rgpd_level || 'Non evalue',
+      conforme: tenant.rgpd_conforme || false,
+      articles: tenant.rgpd_articles || {},
+      updated_at: tenant.rgpd_updated_at
+    });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── NIS2 SCORE ROUTE ────────────────────────────────────────────────────────
 

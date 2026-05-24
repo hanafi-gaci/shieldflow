@@ -288,6 +288,11 @@ button,input{font-family:inherit}
               <div class="card-value" id="cl-nis2-score" style="font-size:20px">--</div>
               <div class="card-sub" id="cl-nis2-level">Non évalué</div>
             </div>
+            <div class="card" style="cursor:pointer" onclick="showRGPD(state.selectedClient?.id)">
+              <div class="card-label">Conformité RGPD</div>
+              <div class="card-value" id="cl-rgpd-score" style="font-size:20px">--</div>
+              <div class="card-sub" id="cl-rgpd-level">Non évalué</div>
+            </div>
             <div class="card">
               <div class="card-label">Appareils</div>
               <div class="card-value" style="color:var(--accent2)" id="cl-devices">0</div>
@@ -575,6 +580,19 @@ async function openClientDetail(id, name) {
     const tenant = (td.tenants||[]).find(t => t.id === id);
     const agentKey = tenant?.agent_key || '';
     
+    // Charger le score RGPD
+    try {
+      const rr = await fetch(S+'/api/mssp/tenants/'+id+'/rgpd');
+      const rd = await rr.json();
+      const rgpdEl = document.getElementById('cl-rgpd-score');
+      const rgpdLvlEl = document.getElementById('cl-rgpd-level');
+      if (rgpdEl) {
+        rgpdEl.textContent = rd.score ? rd.score+'/100' : '--';
+        rgpdEl.style.color = rd.conforme ? 'var(--green)' : rd.score >= 60 ? 'var(--orange)' : 'var(--red)';
+      }
+      if (rgpdLvlEl) rgpdLvlEl.textContent = rd.level || 'Non evalue';
+    } catch(e) {}
+
     // Charger le score NIS2
     try {
       const nr = await fetch(S+'/api/mssp/tenants/'+id+'/nis2');
@@ -826,6 +844,64 @@ async function remediateAlert(tenantId, alertId) {
   }
 }
 
+// ── RGPD ──────────────────────────────────────────────────────────────────────
+
+async function showRGPD(tenantId) {
+  if (!tenantId) return;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-title').textContent = 'Rapport de Conformite RGPD';
+  document.getElementById('modal-body').innerHTML = '<div style="color:var(--text2);font-size:13px">Chargement...</div>';
+
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/rgpd');
+    const d = await r.json();
+    const score = d.score || 0;
+    const conforme = d.conforme;
+    const articles = d.articles || {};
+    const scoreColor = conforme ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+    const badge = conforme ? '✅ CONFORME' : '❌ NON CONFORME';
+
+    const articlesHtml = Object.entries(articles).map(([name, a]) => {
+      const icon = a.ok ? '✅' : '❌';
+      const color = a.ok ? 'var(--green)' : 'var(--red)';
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:14px">${icon}</span>
+          <span style="font-size:12px;font-weight:600;color:${color}">${name}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-left:22px">${a.detail}</div>
+        ${!a.ok ? '<div style="font-size:11px;color:var(--accent2);margin-left:22px;margin-top:4px">→ ' + a.instruction + '</div>' : ''}
+      </div>`;
+    }).join('');
+
+    document.getElementById('modal-body').innerHTML = `
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:48px;font-weight:800;color:${scoreColor}">${score}/100</div>
+        <div style="font-size:14px;font-weight:700;color:${scoreColor};margin-top:4px">${badge}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Reglement General sur la Protection des Donnees</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:4px 16px;margin-bottom:12px">
+        ${articlesHtml || '<div style="padding:12px;color:var(--text3);font-size:13px">En attente du prochain scan agent...</div>'}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button onclick="generateRGPDPDF('${tenantId}')" style="flex:1;background:var(--blue);border:none;color:#fff;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📄 Générer rapport PDF RGPD</button>
+      </div>
+      <div style="background:rgba(37,99,235,.08);border-radius:8px;padding:10px;font-size:11px;color:var(--text3)">
+        Score mis a jour automatiquement a chaque scan (30 secondes). Un score inferieur a 80% expose l entreprise a des sanctions CNIL pouvant atteindre 4% du CA mondial.
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('modal-body').innerHTML = '<div style="color:var(--red)">Erreur de chargement</div>';
+  }
+}
+
+async function generateRGPDPDF(tenantId) {
+  showToast('Generation du rapport RGPD en cours...');
+  window.open(S+'/api/mssp/tenants/'+tenantId+'/rgpd-report', '_blank');
+}
+
 // ── NIS2 ──────────────────────────────────────────────────────────────────────
 
 async function showNis2(tenantId) {
@@ -875,6 +951,64 @@ async function showNis2(tenantId) {
   } catch(e) {
     document.getElementById('modal-body').innerHTML = '<div style="color:var(--red)">Erreur de chargement</div>';
   }
+}
+
+// ── RGPD ──────────────────────────────────────────────────────────────────────
+
+async function showRGPD(tenantId) {
+  if (!tenantId) return;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal-title').textContent = 'Rapport de Conformite RGPD';
+  document.getElementById('modal-body').innerHTML = '<div style="color:var(--text2);font-size:13px">Chargement...</div>';
+
+  try {
+    const r = await fetch(S+'/api/mssp/tenants/'+tenantId+'/rgpd');
+    const d = await r.json();
+    const score = d.score || 0;
+    const conforme = d.conforme;
+    const articles = d.articles || {};
+    const scoreColor = conforme ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+    const badge = conforme ? '✅ CONFORME' : '❌ NON CONFORME';
+
+    const articlesHtml = Object.entries(articles).map(([name, a]) => {
+      const icon = a.ok ? '✅' : '❌';
+      const color = a.ok ? 'var(--green)' : 'var(--red)';
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:14px">${icon}</span>
+          <span style="font-size:12px;font-weight:600;color:${color}">${name}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-left:22px">${a.detail}</div>
+        ${!a.ok ? '<div style="font-size:11px;color:var(--accent2);margin-left:22px;margin-top:4px">→ ' + a.instruction + '</div>' : ''}
+      </div>`;
+    }).join('');
+
+    document.getElementById('modal-body').innerHTML = `
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:48px;font-weight:800;color:${scoreColor}">${score}/100</div>
+        <div style="font-size:14px;font-weight:700;color:${scoreColor};margin-top:4px">${badge}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Reglement General sur la Protection des Donnees</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:4px 16px;margin-bottom:12px">
+        ${articlesHtml || '<div style="padding:12px;color:var(--text3);font-size:13px">En attente du prochain scan agent...</div>'}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button onclick="generateRGPDPDF('${tenantId}')" style="flex:1;background:var(--blue);border:none;color:#fff;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📄 Générer rapport PDF RGPD</button>
+      </div>
+      <div style="background:rgba(37,99,235,.08);border-radius:8px;padding:10px;font-size:11px;color:var(--text3)">
+        Score mis a jour automatiquement a chaque scan (30 secondes). Un score inferieur a 80% expose l entreprise a des sanctions CNIL pouvant atteindre 4% du CA mondial.
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Fermer</button>
+      </div>`;
+  } catch(e) {
+    document.getElementById('modal-body').innerHTML = '<div style="color:var(--red)">Erreur de chargement</div>';
+  }
+}
+
+async function generateRGPDPDF(tenantId) {
+  showToast('Generation du rapport RGPD en cours...');
+  window.open(S+'/api/mssp/tenants/'+tenantId+'/rgpd-report', '_blank');
 }
 
 // ── NIS2 ──────────────────────────────────────────────────────────────────────
