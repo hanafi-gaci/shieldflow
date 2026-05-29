@@ -69,6 +69,8 @@ curl -sSL "$SERVER/agent/expert_checks.py" -o expert_checks.py
 curl -sSL "$SERVER/agent/remediation.py" -o remediation.py
 curl -sSL "$SERVER/agent/nis2_compliance.py" -o nis2_compliance.py
 curl -sSL "$SERVER/agent/cve_scanner.py" -o cve_scanner.py
+curl -sSL "$SERVER/agent/threat_intel.py" -o threat_intel.py
+curl -sSL "$SERVER/agent/darkweb.py" -o darkweb.py
 
 # Configurer et lancer selon OS
 if [ "$OS" = "mac" ]; then

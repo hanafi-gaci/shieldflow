@@ -1299,6 +1299,22 @@ async function scanAllClouds() {
 cron.schedule('0 * * * *', scanAllClouds, { timezone: 'Europe/Paris' });
 
 // Route pour déclencher un scan cloud manuellement
+// ─── DELETE CLOUD ─────────────────────────────────────────────────────────────
+
+app.delete('/api/mssp/tenants/:id/cloud/:type', async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.id).catch(() => null);
+    if (!tenant) return res.status(404).json({ error: 'Client non trouve' });
+    if (!tenant.cloud) return res.json({ success: true });
+    delete tenant.cloud[req.params.type];
+    tenant.markModified('cloud');
+    await tenant.save();
+    res.json({ success: true, message: 'Cloud supprime' });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/mssp/tenants/:id/cloud/scan', async (req, res) => {
   const tenant = await Tenant.findById(req.params.id).catch(() => null);
   if (!tenant) return res.status(404).json({ error: 'Tenant non trouvé' });
