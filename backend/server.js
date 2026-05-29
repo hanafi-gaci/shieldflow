@@ -555,10 +555,8 @@ app.post('/api/agent/heartbeat', async (req, res) => {
   
   const candidates = analyzeSnap(snap, device_id, device.name);
   
-  // Calculer NIS2 et RGPD directement a partir du heartbeat
-  const nis2 = calculateNIS2(snap);
-  const rgpd = calculateRGPD(snap);
-  await Tenant.findByIdAndUpdate(tenantId, {
+  // Pas de NIS2/RGPD pour heartbeat sans tenant
+  await Tenant.findOneAndUpdate({ _id: 'default' }, {
     nis2_score: nis2.score,
     nis2_level: nis2.level,
     nis2_criteria: nis2.criteria,
