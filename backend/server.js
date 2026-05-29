@@ -469,7 +469,9 @@ app.get('/api/mssp/tenants/:id/dashboard', async (req, res) => {
   if (!tenant) return res.status(404).json({ error: 'Client non trouve' });
   const devices = await Device.find({ tenant_id: req.params.id });
   const alerts  = await Alert.find({ tenant_id: req.params.id, resolved: false }).sort({ created_at: -1 });
-  res.json({ tenant: { id: tenant._id, name: tenant.name }, devices, alerts });
+  const criticals = alerts.filter(a => a.severity === 'critical');
+  const score = Math.max(0, 100 - criticals.length*20 - alerts.length*5);
+  res.json({ tenant: { id: tenant._id, name: tenant.name }, devices, alerts, score });
 });
 
 app.post('/api/tenant/login', async (req, res) => {
