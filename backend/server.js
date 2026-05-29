@@ -490,7 +490,7 @@ app.post('/api/mssp/tenants/:id/cloud', async (req, res) => {
   const tenant = await Tenant.findById(req.params.id).catch(() => null);
   if (!tenant) return res.status(404).json({ error: 'Client non trouve' });
   if (!tenant.cloud) tenant.cloud = {};
-  tenant.cloud[cloud_type] = { credentials, connected_at: new Date(), last_scan: null };
+  tenant.cloud[cloud_type] = { credentials: encryptCredentials(credentials), connected_at: new Date(), last_scan: null };
   tenant.markModified('cloud');
   await tenant.save();
   
@@ -704,6 +704,54 @@ app.use('/agent', express.static(path.join(__dirname, '../dashboard/agent')));
 
 
 
+
+
+// ─── CHIFFREMENT CREDENTIALS ──────────────────────────────────────────────────
+
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex').slice(0, 32);
+const IV_LENGTH = 16;
+
+function encrypt(text) {
+  if (!text) return text;
+  try {
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv);
+    let encrypted = cipher.update(String(text));
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+  } catch(e) { return text; }
+}
+
+function decrypt(text) {
+  if (!text || !text.includes(':')) return text;
+  try {
+    const parts = text.split(':');
+    const iv = Buffer.from(parts[0], 'hex');
+    const encryptedText = Buffer.from(parts[1], 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch(e) { return text; }
+}
+
+function encryptCredentials(credentials) {
+  if (!credentials) return credentials;
+  const encrypted = {};
+  for (const [key, value] of Object.entries(credentials)) {
+    encrypted[key] = typeof value === 'string' ? encrypt(value) : value;
+  }
+  return encrypted;
+}
+
+function decryptCredentials(credentials) {
+  if (!credentials) return credentials;
+  const decrypted = {};
+  for (const [key, value] of Object.entries(credentials)) {
+    decrypted[key] = typeof value === 'string' ? decrypt(value) : value;
+  }
+  return decrypted;
+}
 
 // ─── CALCUL RGPD SERVEUR ──────────────────────────────────────────────────────
 
@@ -1326,7 +1374,7 @@ app.post('/api/mssp/tenants/:id/cloud/scan', async (req, res) => {
   
   for (const [cloudType, cloudData] of Object.entries(clouds)) {
     if (!cloudData.credentials) continue;
-    const alerts = await runCloudScan(req.params.id, cloudType, cloudData.credentials);
+    const alerts = await runCloudScan(req.params.id, cloudType, decryptCredentials(cloudData.credentials));
     results[cloudType] = alerts.length;
     
     for (const alert of alerts) {
