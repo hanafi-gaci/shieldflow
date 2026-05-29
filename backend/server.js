@@ -556,17 +556,6 @@ app.post('/api/agent/heartbeat', async (req, res) => {
   const candidates = analyzeSnap(snap, device_id, device.name);
   
   // Pas de NIS2/RGPD pour heartbeat sans tenant
-  await Tenant.findOneAndUpdate({ _id: 'default' }, {
-    nis2_score: nis2.score,
-    nis2_level: nis2.level,
-    nis2_criteria: nis2.criteria,
-    nis2_updated_at: new Date(),
-    rgpd_score: rgpd.score,
-    rgpd_level: rgpd.level,
-    rgpd_conforme: rgpd.conforme,
-    rgpd_articles: rgpd.articles,
-    rgpd_updated_at: new Date()
-  });
 
   for (const c of candidates) {
     const exists = await Alert.findOne({ device_id, type: c.type, resolved: false });
