@@ -1359,6 +1359,11 @@ app.delete('/api/mssp/tenants/:id/cloud/:type', async (req, res) => {
     delete tenant.cloud[req.params.type];
     tenant.markModified('cloud');
     await tenant.save();
+    // Supprimer les alertes cloud associées
+    await Alert.updateMany(
+      { tenant_id: req.params.id, device_id: 'cloud_' + req.params.type },
+      { resolved: true, resolved_at: new Date() }
+    );
     res.json({ success: true, message: 'Cloud supprime' });
   } catch(e) {
     res.status(500).json({ error: e.message });
