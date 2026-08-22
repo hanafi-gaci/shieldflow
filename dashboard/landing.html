@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShieldFlow — Cybersécurité opérationnelle pour PME</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f3ee;
+  --bg2: #eceae3;
+  --ink: #0f0e0b;
+  --ink2: #3d3b35;
+  --ink3: #7a7870;
+  --accent: #1a5cff;
+  --accent-hover: #0040e0;
+  --green: #00b87a;
+  --red: #e83535;
+  --amber: #e87c00;
+  --surface: #ffffff;
+  --border: #d8d5cc;
+  --font: 'Bricolage Grotesque', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.5; overflow-x: hidden; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 48px;
+  background: rgba(245,243,238,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-mark {
+  width: 34px; height: 34px; background: var(--ink); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-mark svg { width: 18px; height: 18px; }
+.nav-logo-text { font-size: 17px; font-weight: 800; color: var(--ink); letter-spacing: -0.03em; }
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--ink2); text-decoration: none; transition: color 0.15s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-cta {
+  background: var(--ink); color: #fff; border: none; border-radius: 8px;
+  padding: 10px 20px; font-size: 13px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; transition: background 0.15s; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.nav-cta:hover { background: #1a1814; }
+
+/* HERO */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 120px 48px 80px; text-align: center; position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 800px 500px at 50% 30%, rgba(26,92,255,0.07) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,0,0,0.03) 39px, rgba(0,0,0,0.03) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,0,0,0.03) 39px, rgba(0,0,0,0.03) 40px);
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+  padding: 5px 14px; font-size: 11px; font-weight: 600; color: var(--ink2);
+  font-family: var(--mono); letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 28px; position: relative; z-index: 1;
+  animation: fadeUp 0.6s ease both;
+}
+.tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.hero h1 {
+  font-size: clamp(44px, 7vw, 88px); font-weight: 800; letter-spacing: -0.04em;
+  line-height: 1; color: var(--ink); max-width: 900px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-sub {
+  font-size: 18px; color: var(--ink2); max-width: 560px; margin: 24px auto 0;
+  font-weight: 400; line-height: 1.65;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+.hero-actions {
+  display: flex; align-items: center; gap: 12px; margin-top: 40px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+.btn-primary {
+  background: var(--ink); color: #fff; border: none; border-radius: 10px;
+  padding: 14px 28px; font-size: 15px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(26,92,255,0.3); }
+.btn-secondary {
+  background: transparent; color: var(--ink2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 24px; font-size: 15px; font-weight: 600;
+  font-family: var(--font); cursor: pointer; transition: all 0.15s;
+}
+.btn-secondary:hover { border-color: var(--ink2); color: var(--ink); }
+.hero-trust {
+  display: flex; align-items: center; gap: 20px; margin-top: 56px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.6s ease 0.4s both;
+}
+.hero-trust-text { font-size: 12px; color: var(--ink3); }
+.trust-faces { display: flex; }
+.trust-face {
+  width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--bg);
+  background: var(--bg2); margin-left: -8px; display: flex; align-items: center;
+  justify-content: center; font-size: 13px;
+}
+.trust-face:first-child { margin-left: 0; }
+
+/* DASHBOARD PREVIEW */
+.preview-section {
+  padding: 0 48px 100px; display: flex; justify-content: center;
+  animation: fadeUp 0.8s ease 0.5s both;
+}
+.preview-wrap {
+  width: 100%; max-width: 1000px; background: var(--ink); border-radius: 16px;
+  overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.2);
+  border: 1px solid #2a2824;
+}
+.preview-bar {
+  background: #1a1814; padding: 12px 16px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid #2a2824;
+}
+.preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+.preview-url {
+  flex: 1; background: #0f0e0b; border-radius: 6px; padding: 5px 12px;
+  font-family: var(--mono); font-size: 11px; color: #5a5850; text-align: center;
+}
+.preview-body { padding: 24px; display: grid; grid-template-columns: 180px 1fr; gap: 16px; }
+.preview-sidebar { display: flex; flex-direction: column; gap: 4px; }
+.preview-nav-item {
+  padding: 8px 12px; border-radius: 7px; font-size: 11px; font-weight: 600;
+  color: #5a5850; display: flex; align-items: center; gap: 8px;
+}
+.preview-nav-item.active { background: rgba(26,92,255,0.15); color: #6b9fff; }
+.preview-logo-sm { font-size: 13px; font-weight: 800; color: #fff; padding: 0 12px 16px; letter-spacing: -0.03em; }
+.preview-content { display: flex; flex-direction: column; gap: 12px; }
+.preview-title { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.preview-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.preview-metric {
+  background: #1a1814; border: 1px solid #2a2824; border-radius: 8px;
+  padding: 10px 12px;
+}
+.preview-metric-val { font-size: 20px; font-weight: 800; margin-bottom: 2px; }
+.preview-metric-label { font-size: 9px; color: #5a5850; font-family: var(--mono); }
+.preview-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.preview-panel { background: #1a1814; border: 1px solid #2a2824; border-radius: 8px; padding: 12px; }
+.preview-panel-title { font-size: 9px; font-weight: 700; color: #5a5850; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.preview-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #2a2824; }
+.preview-item:last-child { border-bottom: none; }
+.preview-item-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.preview-item-text { font-size: 10px; color: #8a8880; flex: 1; }
+.preview-item-tag { font-size: 8px; font-family: var(--mono); padding: 2px 6px; border-radius: 4px; }
+
+/* PROBLEM */
+.problem { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+.section-tag {
+  font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink3);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; display: block;
+}
+.problem h2 { font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -0.03em; max-width: 700px; line-height: 1.1; margin-bottom: 20px; }
+.problem-sub { font-size: 17px; color: var(--ink2); max-width: 560px; margin-bottom: 56px; line-height: 1.6; }
+.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.problem-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 24px; transition: border-color 0.2s, transform 0.2s;
+}
+.problem-card:hover { border-color: var(--ink2); transform: translateY(-2px); }
+.problem-icon { font-size: 28px; margin-bottom: 14px; }
+.problem-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.problem-card p { font-size: 13px; color: var(--ink2); line-height: 1.6; }
+
+/* HOW IT WORKS */
+.how { padding: 100px 48px; background: var(--ink); color: #fff; }
+.how-inner { max-width: 1100px; margin: 0 auto; }
+.how h2 { font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 16px; }
+.how-sub { font-size: 17px; color: #8a8880; max-width: 500px; margin-bottom: 64px; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+.steps::before {
+  content: ''; position: absolute; top: 20px; left: calc(12.5% + 20px);
+  right: calc(12.5% + 20px); height: 1px; background: #2a2824; z-index: 0;
+}
+.step { padding: 0 24px; }
+.step-num {
+  width: 40px; height: 40px; border-radius: 50%; background: #1a1814;
+  border: 1px solid #3a3830; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 13px; font-weight: 500; color: #5a5850;
+  margin-bottom: 20px; position: relative; z-index: 1;
+}
+.step.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+.step p { font-size: 13px; color: #6a6860; line-height: 1.6; }
+
+/* FEATURES */
+.features { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+.features-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 56px; }
+.features h2 { font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+.features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.feature-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 32px; display: flex; gap: 20px; transition: all 0.2s; cursor: default;
+}
+.feature-card:hover { border-color: var(--accent); box-shadow: 0 4px 24px rgba(26,92,255,0.08); }
+.feature-card.big { grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.feature-icon-wrap {
+  width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.feature-icon-wrap.blue { background: rgba(26,92,255,0.08); }
+.feature-icon-wrap.green { background: rgba(0,184,122,0.08); }
+.feature-icon-wrap.amber { background: rgba(232,124,0,0.08); }
+.feature-icon-wrap.red { background: rgba(232,53,53,0.08); }
+.feature-text h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.feature-text p { font-size: 13px; color: var(--ink2); line-height: 1.6; }
+.feature-badge {
+  display: inline-flex; margin-top: 12px; background: rgba(26,92,255,0.08);
+  color: var(--accent); font-size: 11px; font-weight: 700; font-family: var(--mono);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* INTEGRATIONS */
+.integrations { padding: 80px 48px; background: var(--bg2); }
+.integrations-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+.integrations h2 { font-size: clamp(28px, 3vw, 42px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+.integrations-sub { font-size: 16px; color: var(--ink2); margin-bottom: 48px; }
+.integrations-logos { display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; }
+.integration-pill {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 24px; display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  transition: all 0.2s; cursor: default;
+}
+.integration-pill:hover { border-color: var(--ink2); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.integration-pill span { font-size: 22px; }
+
+/* SCORE */
+.score-section { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+.score-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.score-text h2 { font-size: clamp(32px, 4vw, 48px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px; }
+.score-text p { font-size: 16px; color: var(--ink2); line-height: 1.65; margin-bottom: 32px; }
+.score-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 32px; box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+}
+.score-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.score-title { font-size: 12px; font-weight: 700; color: var(--ink3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.score-date { font-size: 11px; color: var(--ink3); font-family: var(--mono); }
+.score-big { font-size: 72px; font-weight: 800; letter-spacing: -0.05em; color: var(--green); line-height: 1; }
+.score-compare { font-size: 13px; color: var(--ink2); margin-top: 6px; margin-bottom: 24px; }
+.score-bars { display: flex; flex-direction: column; gap: 10px; }
+.sbar { display: flex; align-items: center; gap: 10px; }
+.sbar-label { font-size: 12px; color: var(--ink2); width: 100px; flex-shrink: 0; }
+.sbar-track { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+.sbar-fill { height: 100%; border-radius: 3px; }
+.sbar-val { font-family: var(--mono); font-size: 11px; color: var(--ink2); width: 30px; text-align: right; }
+.remediation-box {
+  margin-top: 24px; background: rgba(0,184,122,0.06); border: 1px solid rgba(0,184,122,0.2);
+  border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+}
+.rem-text { font-size: 13px; color: var(--ink2); flex: 1; }
+.rem-btn {
+  background: var(--green); color: #fff; border: none; border-radius: 8px;
+  padding: 8px 16px; font-size: 12px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+}
+.rem-btn:hover { opacity: 0.85; }
+
+/* PRICING */
+.pricing { padding: 100px 48px; background: var(--ink); color: #fff; }
+.pricing-inner { max-width: 1000px; margin: 0 auto; text-align: center; }
+.pricing h2 { font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+.pricing-sub { font-size: 17px; color: #8a8880; margin-bottom: 56px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: left; }
+.pricing-card {
+  background: #1a1814; border: 1px solid #2a2824; border-radius: 14px;
+  padding: 28px; display: flex; flex-direction: column; gap: 0;
+  transition: border-color 0.2s;
+}
+.pricing-card:hover { border-color: #3a3830; }
+.pricing-card.featured {
+  background: var(--accent); border-color: var(--accent);
+}
+.pricing-card.featured .pricing-name { color: rgba(255,255,255,0.7); }
+.pricing-card.featured .pricing-price { color: #fff; }
+.pricing-card.featured .pricing-period { color: rgba(255,255,255,0.6); }
+.pricing-card.featured .pricing-feature { color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.15); }
+.pricing-card.featured .pricing-feature::before { color: rgba(255,255,255,0.5); }
+.pricing-name { font-family: var(--mono); font-size: 11px; font-weight: 500; color: #5a5850; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; display: block; }
+.pricing-price { font-size: 42px; font-weight: 800; letter-spacing: -0.04em; color: #fff; line-height: 1; }
+.pricing-period { font-size: 13px; color: #5a5850; margin-bottom: 24px; display: block; }
+.pricing-features { display: flex; flex-direction: column; gap: 0; flex: 1; margin-bottom: 24px; }
+.pricing-feature { font-size: 13px; color: #8a8880; padding: 9px 0; border-bottom: 1px solid #2a2824; display: flex; align-items: flex-start; gap: 8px; }
+.pricing-feature::before { content: '✓'; font-weight: 700; flex-shrink: 0; color: var(--green); }
+.pricing-btn {
+  width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700;
+  font-family: var(--font); cursor: pointer; border: none; transition: all 0.15s;
+  background: #2a2824; color: #fff;
+}
+.pricing-btn:hover { background: #3a3830; }
+.pricing-card.featured .pricing-btn { background: rgba(0,0,0,0.25); color: #fff; }
+.pricing-card.featured .pricing-btn:hover { background: rgba(0,0,0,0.35); }
+
+/* TARGETS */
+.targets { padding: 100px 48px; max-width: 1100px; margin: 0 auto; }
+.targets h2 { font-size: clamp(28px, 3vw, 42px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+.targets-sub { font-size: 16px; color: var(--ink2); margin-bottom: 48px; }
+.targets-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.target-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 16px; text-align: center; transition: all 0.2s;
+}
+.target-card:hover { border-color: var(--ink2); transform: translateY(-2px); }
+.target-icon { font-size: 28px; margin-bottom: 10px; }
+.target-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.target-desc { font-size: 11px; color: var(--ink3); }
+
+/* TESTIMONIAL */
+.testimonial { padding: 100px 48px; background: var(--bg2); }
+.testimonial-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+.quote { font-size: clamp(20px, 2.5vw, 28px); font-weight: 600; letter-spacing: -0.02em; color: var(--ink); line-height: 1.4; margin-bottom: 24px; }
+.quote-author { font-size: 13px; color: var(--ink3); }
+.quote-author strong { color: var(--ink2); font-weight: 600; }
+
+/* CTA */
+.cta-section { padding: 100px 48px; text-align: center; }
+.cta-inner { max-width: 680px; margin: 0 auto; }
+.cta-section h2 { font-size: clamp(36px, 5vw, 64px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 20px; }
+.cta-section p { font-size: 17px; color: var(--ink2); margin-bottom: 40px; }
+.cta-form { display: flex; gap: 8px; max-width: 440px; margin: 0 auto 16px; }
+.cta-input {
+  flex: 1; padding: 14px 18px; border: 1px solid var(--border); border-radius: 10px;
+  font-size: 14px; font-family: var(--font); background: var(--surface);
+  color: var(--ink); outline: none; transition: border-color 0.15s;
+}
+.cta-input:focus { border-color: var(--accent); }
+.cta-note { font-size: 12px; color: var(--ink3); }
+
+/* FOOTER */
+footer {
+  background: var(--ink); color: #5a5850; padding: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.03em; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 12px; color: #5a5850; text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: #8a8880; }
+.footer-copy { font-size: 12px; }
+
+/* ANIM */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ALERT BANNER */
+.alert-item {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; margin-bottom: 8px; font-size: 12px; color: var(--ink2);
+}
+.alert-sev { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.alert-label { flex: 1; }
+.alert-tag { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+
+/* NOTIFICATION TOAST */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  background: var(--ink); color: #fff; border-radius: 10px;
+  padding: 14px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <span class="nav-logo-text">ShieldFlow</span>
+  </a>
+  <div class="nav-links">
+    <a href="#fonctionnalites">Fonctionnalités</a>
+    <a href="#integrations">Intégrations</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a class="nav-cta" href="#contact" onclick="showToast('Demande envoyée ! Nous vous contactons sous 24h.')">
+    Essai gratuit 14 jours
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-tag"><span class="tag-dot"></span> Cybersécurité opérationnelle pour PME</div>
+  <h1>Protégez votre entreprise.<br>Sans <em>complexité.</em></h1>
+  <p class="hero-sub">ShieldFlow surveille et corrige les risques critiques de votre entreprise avant qu'ils deviennent des incidents. Simple. Actionnable. Humain.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="showToast('Démo lancée ! Redirection en cours...')">
+      Voir la démo gratuite
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <button class="btn-secondary" onclick="document.getElementById('tarifs').scrollIntoView({behavior:'smooth'})">Voir les tarifs</button>
+  </div>
+  <div class="hero-trust">
+    <div class="trust-faces">
+      <div class="trust-face">👨‍💼</div>
+      <div class="trust-face">👩‍💻</div>
+      <div class="trust-face">🧑‍⚕️</div>
+      <div class="trust-face">👨‍🏫</div>
+    </div>
+    <div class="hero-trust-text">+200 PME protégées en France</div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<div class="preview-section reveal">
+  <div class="preview-wrap">
+    <div class="preview-bar">
+      <div class="preview-dot" style="background:#ff5f57"></div>
+      <div class="preview-dot" style="background:#ffbd2e"></div>
+      <div class="preview-dot" style="background:#27c840"></div>
+      <div class="preview-url">app.shieldflow.io/dashboard</div>
+    </div>
+    <div class="preview-body">
+      <div class="preview-sidebar">
+        <div class="preview-logo-sm">ShieldFlow</div>
+        <div class="preview-nav-item active">⬛ Vue d'ensemble</div>
+        <div class="preview-nav-item">⚠ Menaces · 4</div>
+        <div class="preview-nav-item">🔗 Intégrations</div>
+        <div class="preview-nav-item">📊 Rapports</div>
+        <div class="preview-nav-item">🔧 Remédiation</div>
+      </div>
+      <div class="preview-content">
+        <div class="preview-title">Vue d'ensemble — Lundi 18 mai 2026</div>
+        <div class="preview-metrics">
+          <div class="preview-metric">
+            <div class="preview-metric-val" style="color:#e83535">4</div>
+            <div class="preview-metric-label">Menaces actives</div>
+          </div>
+          <div class="preview-metric">
+            <div class="preview-metric-val" style="color:#00b87a">74</div>
+            <div class="preview-metric-label">Score sécurité</div>
+          </div>
+          <div class="preview-metric">
+            <div class="preview-metric-val" style="color:#6b9fff">38</div>
+            <div class="preview-metric-label">Appareils OK</div>
+          </div>
+          <div class="preview-metric">
+            <div class="preview-metric-val" style="color:#e87c00">2</div>
+            <div class="preview-metric-label">Alertes urgentes</div>
+          </div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-panel">
+            <div class="preview-panel-title">Alertes critiques</div>
+            <div class="preview-item"><div class="preview-item-dot" style="background:#e83535"></div><div class="preview-item-text">MFA désactivé — 3 comptes</div><div class="preview-item-tag" style="background:rgba(232,53,53,0.15);color:#e83535">CRITIQUE</div></div>
+            <div class="preview-item"><div class="preview-item-dot" style="background:#e87c00"></div><div class="preview-item-text">Admin GitHub exposé</div><div class="preview-item-tag" style="background:rgba(232,124,0,0.15);color:#e87c00">ÉLEVÉ</div></div>
+            <div class="preview-item"><div class="preview-item-dot" style="background:#e87c00"></div><div class="preview-item-text">Backup M365 échoué</div><div class="preview-item-tag" style="background:rgba(232,124,0,0.15);color:#e87c00">ÉLEVÉ</div></div>
+          </div>
+          <div class="preview-panel">
+            <div class="preview-panel-title">Remédiation rapide</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="background:rgba(26,92,255,0.15);border-radius:6px;padding:8px 10px;font-size:10px;color:#6b9fff;font-weight:600;cursor:pointer">→ Forcer MFA sur tous les comptes</div>
+              <div style="background:rgba(0,184,122,0.1);border-radius:6px;padding:8px 10px;font-size:10px;color:#00b87a;font-weight:600;cursor:pointer">→ Révoquer accès GitHub dangereux</div>
+              <div style="background:rgba(232,124,0,0.1);border-radius:6px;padding:8px 10px;font-size:10px;color:#e87c00;font-weight:600;cursor:pointer">→ Relancer sauvegarde M365</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="problem reveal" id="fonctionnalites">
+  <span class="section-tag">Le problème</span>
+  <h2>Votre entreprise est exposée. Personne ne le surveille.</h2>
+  <p class="problem-sub">Les PME utilisent Microsoft 365, Google Workspace, GitHub… mais personne ne surveille réellement ces environnements. Résultat : des incidents évitables.</p>
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-icon">🔓</div>
+      <h3>MFA non activé</h3>
+      <p>67% des compromissions de comptes auraient été évitées avec une authentification à deux facteurs. La plupart des PME l'ignorent.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">📧</div>
+      <h3>Phishing non détecté</h3>
+      <p>Un email frauduleux suffit pour compromettre toute votre organisation. Sans surveillance, impossible de réagir à temps.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">💾</div>
+      <h3>Backups silencieusement échoués</h3>
+      <p>Votre backup a échoué la nuit dernière. Vous ne le saurez qu'au moment de la crise. Trop tard.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🔑</div>
+      <h3>Accès admin incontrôlés</h3>
+      <p>D'anciens employés gardent parfois des droits administrateurs pendant des mois. Une porte ouverte pour les attaquants.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🐙</div>
+      <h3>Code source exposé sur GitHub</h3>
+      <p>Des repos publics contenant des clés API, mots de passe ou données sensibles. Une erreur humaine courante et catastrophique.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🌐</div>
+      <h3>DNS & certificats SSL expirés</h3>
+      <p>Un certificat expiré ou une erreur DNS peut rendre votre site inaccessible ou compromettre vos emails professionnels.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how reveal">
+  <div class="how-inner">
+    <span class="section-tag" style="color:#5a5850">Comment ça marche</span>
+    <h2>Simple. Rapide. Efficace.</h2>
+    <p class="how-sub">En 15 minutes, ShieldFlow surveille votre infrastructure cloud. Sans aucune compétence technique requise.</p>
+    <div class="steps">
+      <div class="step active">
+        <div class="step-num">01</div>
+        <h3>Connexion en 1 clic</h3>
+        <p>Connectez Microsoft 365, Google Workspace et GitHub. Aucune installation. Aucun agent à déployer.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Analyse automatique</h3>
+        <p>ShieldFlow analyse votre configuration, détecte les risques et les classe par priorité réelle.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Alertes intelligentes</h3>
+        <p>Seulement ce qui compte vraiment. Pas 500 alertes. Les 5 actions qui protègent vraiment votre entreprise.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h3>Corriger en 1 clic</h3>
+        <p>Forcer le MFA, révoquer un accès, relancer un backup. Un bouton suffit. Vous n'avez rien à configurer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features reveal">
+  <div class="features-header">
+    <div>
+      <span class="section-tag">Fonctionnalités</span>
+      <h2>Tout ce dont<br>votre PME a besoin.</h2>
+    </div>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card big">
+      <div>
+        <div class="feature-icon-wrap blue" style="margin-bottom:16px">🛡️</div>
+        <h3 style="font-size:22px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px">Remédiation en 1 clic</h3>
+        <p style="font-size:15px;color:var(--ink2);line-height:1.65">Notre fonctionnalité signature. Un risque détecté, un bouton pour le corriger. Forcer le MFA, désactiver un compte admin, révoquer un token GitHub, relancer une sauvegarde. Pas besoin d'un expert.</p>
+        <span class="feature-badge">Différenciateur #1</span>
+      </div>
+      <div style="background:var(--bg2);border-radius:12px;padding:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:14px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em">Actions disponibles</div>
+        <div class="alert-item"><div class="alert-sev" style="background:#e83535"></div><div class="alert-label">MFA désactivé sur 3 comptes Microsoft 365</div><div class="alert-tag" style="background:rgba(232,53,53,0.1);color:#e83535">Forcer MFA →</div></div>
+        <div class="alert-item"><div class="alert-sev" style="background:#e87c00"></div><div class="alert-label">Repo GitHub public avec données sensibles</div><div class="alert-tag" style="background:rgba(232,124,0,0.1);color:#e87c00">Rendre privé →</div></div>
+        <div class="alert-item"><div class="alert-sev" style="background:#e87c00"></div><div class="alert-label">Backup Microsoft 365 échoué depuis 48h</div><div class="alert-tag" style="background:rgba(232,124,0,0.1);color:#e87c00">Relancer →</div></div>
+        <div class="alert-item"><div class="alert-sev" style="background:#00b87a"></div><div class="alert-label">Accès admin révoqué avec succès</div><div class="alert-tag" style="background:rgba(0,184,122,0.1);color:#00b87a">Résolu ✓</div></div>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap blue">📊</div>
+      <div class="feature-text">
+        <h3>Dashboard quotidien ultra simple</h3>
+        <p>Un seul écran. Votre état de sécurité en temps réel. Compréhensible par n'importe quel dirigeant, sans formation.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap green">📈</div>
+      <div class="feature-text">
+        <h3>Score cyber comparatif</h3>
+        <p>"Votre sécurité est meilleure que 74% des PME de votre secteur." Un indicateur que vos dirigeants comprennent immédiatement.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap amber">🔔</div>
+      <div class="feature-text">
+        <h3>Alertes intelligentes — sans bruit</h3>
+        <p>Pas 3 000 alertes. Seulement les risques réels qui mettent votre entreprise en danger. Classés par priorité.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap red">📄</div>
+      <div class="feature-text">
+        <h3>Rapports PDF automatiques</h3>
+        <p>Rapport hebdomadaire et mensuel généré automatiquement. Parfait pour votre direction, vos clients ou vos assureurs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="integrations reveal" id="integrations">
+  <div class="integrations-inner">
+    <span class="section-tag">Intégrations MVP</span>
+    <h2>Connecté à vos outils en 15 minutes.</h2>
+    <p class="integrations-sub">Pas d'agent à installer. Pas de DSI requis. Juste vos identifiants OAuth et c'est parti.</p>
+    <div class="integrations-logos">
+      <div class="integration-pill"><span>🪟</span> Microsoft 365</div>
+      <div class="integration-pill"><span>🔵</span> Google Workspace</div>
+      <div class="integration-pill"><span>🐙</span> GitHub</div>
+      <div class="integration-pill" style="opacity:0.4;cursor:default"><span>☁️</span> AWS <span style="font-size:10px;font-family:var(--mono);color:var(--ink3)">bientôt</span></div>
+      <div class="integration-pill" style="opacity:0.4;cursor:default"><span>🔷</span> Azure AD <span style="font-size:10px;font-family:var(--mono);color:var(--ink3)">bientôt</span></div>
+      <div class="integration-pill" style="opacity:0.4;cursor:default"><span>🌊</span> Slack <span style="font-size:10px;font-family:var(--mono);color:var(--ink3)">bientôt</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCORE -->
+<section class="score-section reveal">
+  <div class="score-inner">
+    <div class="score-text">
+      <span class="section-tag">Score de sécurité</span>
+      <h2>Un chiffre. Une vérité. Une action.</h2>
+      <p>Plus besoin de rapports de 40 pages incompréhensibles. ShieldFlow vous donne un score clair, un comparatif sectoriel, et les actions exactes pour l'améliorer.</p>
+      <button class="btn-primary" onclick="showToast('Votre démo gratuite est prête !')">
+        Calculer mon score →
+      </button>
+    </div>
+    <div class="score-card">
+      <div class="score-header">
+        <div class="score-title">Votre score ShieldFlow</div>
+        <div class="score-date">18 mai 2026</div>
+      </div>
+      <div class="score-big">74</div>
+      <div class="score-compare">Meilleur que <strong>74% des PME</strong> de votre secteur</div>
+      <div class="score-bars">
+        <div class="sbar"><div class="sbar-label">Microsoft 365</div><div class="sbar-track"><div class="sbar-fill" style="width:82%;background:#00b87a"></div></div><div class="sbar-val">82%</div></div>
+        <div class="sbar"><div class="sbar-label">Google WS</div><div class="sbar-track"><div class="sbar-fill" style="width:70%;background:#e87c00"></div></div><div class="sbar-val">70%</div></div>
+        <div class="sbar"><div class="sbar-label">GitHub</div><div class="sbar-track"><div class="sbar-fill" style="width:58%;background:#e83535"></div></div><div class="sbar-val">58%</div></div>
+        <div class="sbar"><div class="sbar-label">Backups</div><div class="sbar-track"><div class="sbar-fill" style="width:90%;background:#00b87a"></div></div><div class="sbar-val">90%</div></div>
+      </div>
+      <div class="remediation-box">
+        <div class="rem-text">🔓 MFA non activé sur 3 comptes Microsoft 365</div>
+        <button class="rem-btn" onclick="showToast('✅ MFA forcé sur tous les comptes !')">Corriger →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARGETS -->
+<section class="targets reveal">
+  <span class="section-tag">Qui utilise ShieldFlow</span>
+  <h2>Fait pour les PME sans équipe cyber.</h2>
+  <p class="targets-sub">10 à 200 employés. Trop grandes pour ignorer le risque. Trop petites pour avoir un RSSI interne.</p>
+  <div class="targets-grid">
+    <div class="target-card">
+      <div class="target-icon">🧾</div>
+      <div class="target-name">Cabinets comptables</div>
+      <div class="target-desc">Données financières sensibles à protéger</div>
+    </div>
+    <div class="target-card">
+      <div class="target-icon">🏥</div>
+      <div class="target-name">Cabinets médicaux</div>
+      <div class="target-desc">Données de santé, conformité RGPD</div>
+    </div>
+    <div class="target-card">
+      <div class="target-icon">🛒</div>
+      <div class="target-name">E-commerce</div>
+      <div class="target-desc">Transactions, données clients, continuité</div>
+    </div>
+    <div class="target-card">
+      <div class="target-icon">🎨</div>
+      <div class="target-name">Agences web</div>
+      <div class="target-desc">Code source, accès clients, GitHub</div>
+    </div>
+    <div class="target-card">
+      <div class="target-icon">🏗️</div>
+      <div class="target-name">PME BTP / Logistique</div>
+      <div class="target-desc">Sous-estimé mais très exposé</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section class="testimonial reveal">
+  <div class="testimonial-inner">
+    <span class="section-tag" style="display:block;text-align:center;margin-bottom:24px">Ce que disent nos clients</span>
+    <p class="quote">"Avant ShieldFlow, je n'avais aucune visibilité sur notre sécurité. Aujourd'hui, je reçois chaque matin un rapport clair. En 3 clics, j'ai corrigé un problème MFA qui existait depuis 8 mois."</p>
+    <div class="quote-author"><strong>Marie D.</strong> — Directrice, Cabinet comptable · 45 employés · Paris</div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing reveal" id="tarifs">
+  <div class="pricing-inner">
+    <span class="section-tag" style="color:#5a5850">Tarifs transparents</span>
+    <h2>Simple. Sans surprise.</h2>
+    <p class="pricing-sub">Essai gratuit 14 jours. Sans carte bancaire. Sans engagement.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <span class="pricing-name">Starter</span>
+        <div class="pricing-price">299€</div>
+        <span class="pricing-period">/ mois · jusqu'à 25 utilisateurs</span>
+        <div class="pricing-features">
+          <div class="pricing-feature">Dashboard sécurité quotidien</div>
+          <div class="pricing-feature">1 intégration (M365 ou GWS)</div>
+          <div class="pricing-feature">Alertes intelligentes</div>
+          <div class="pricing-feature">Score cyber mensuel</div>
+          <div class="pricing-feature">Rapport PDF mensuel</div>
+          <div class="pricing-feature">Support email sous 24h</div>
+        </div>
+        <button class="pricing-btn" onclick="showToast('Essai Starter démarré — 14 jours gratuits !')">Commencer l'essai</button>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pricing-name">Business ⭐ Recommandé</span>
+        <div class="pricing-price">799€</div>
+        <span class="pricing-period">/ mois · jusqu'à 100 utilisateurs</span>
+        <div class="pricing-features">
+          <div class="pricing-feature">Tout Starter inclus</div>
+          <div class="pricing-feature">3 intégrations (M365 + GWS + GitHub)</div>
+          <div class="pricing-feature">Remédiation 1 clic</div>
+          <div class="pricing-feature">Alertes temps réel</div>
+          <div class="pricing-feature">Rapports PDF hebdomadaires</div>
+          <div class="pricing-feature">Score cyber comparatif sectoriel</div>
+          <div class="pricing-feature">Support prioritaire sous 4h</div>
+        </div>
+        <button class="pricing-btn" onclick="showToast('Essai Business démarré — 14 jours gratuits !')">Commencer l'essai</button>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-name">Premium</span>
+        <div class="pricing-price">1999€</div>
+        <span class="pricing-period">/ mois · jusqu'à 200 utilisateurs</span>
+        <div class="pricing-features">
+          <div class="pricing-feature">Tout Business inclus</div>
+          <div class="pricing-feature">Intégrations illimitées</div>
+          <div class="pricing-feature">Remédiation automatique</div>
+          <div class="pricing-feature">RSSI virtuel dédié</div>
+          <div class="pricing-feature">Rapports sur mesure</div>
+          <div class="pricing-feature">Accompagnement RGPD</div>
+          <div class="pricing-feature">Support téléphonique 24/7</div>
+        </div>
+        <button class="pricing-btn" onclick="showToast('Notre équipe vous contacte sous 24h !')">Nous contacter</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal" id="contact">
+  <div class="cta-inner">
+    <h2>Prêt à protéger votre entreprise ?</h2>
+    <p>14 jours gratuits. Sans carte bancaire. Sans engagement. Connexion en 15 minutes.</p>
+    <div class="cta-form">
+      <input class="cta-input" type="email" placeholder="votre@email.fr" id="emailInput">
+      <button class="btn-primary" onclick="handleCTA()">
+        Démarrer gratuitement
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="cta-note">🔒 Vos données ne sont jamais partagées · RGPD compliant · Hébergé en France</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ShieldFlow</div>
+  <div class="footer-links">
+    <a href="#">Mentions légales</a>
+    <a href="#">Politique de confidentialité</a>
+    <a href="#">RGPD</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 ShieldFlow. Tous droits réservés.</div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast">
+  <span>✅</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// Reveal on scroll
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+
+// Toast
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// CTA
+function handleCTA() {
+  const email = document.getElementById('emailInput').value;
+  if (email && email.includes('@')) {
+    showToast('Parfait ! Vérifiez votre email pour activer votre essai gratuit.');
+    document.getElementById('emailInput').value = '';
+  } else {
+    showToast('Veuillez entrer une adresse email valide.');
+  }
+}
+
+// Enter key on input
+document.getElementById('emailInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleCTA();
+});
+</script>
+</body>
+</html>
