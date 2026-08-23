@@ -1489,8 +1489,13 @@ app.post('/api/mssp/tenants/:id/cloud/scan', async (req, res) => {
 
 console.log('[Scheduler] Scan cloud programmé toutes les heures');
 
-// Route explicite pour le dashboard
+// Route principale — landing page
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/landing.html'));
+});
+
+// Dashboard MSSP
+app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../dashboard/index.html'));
 });
 
