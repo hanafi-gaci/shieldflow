@@ -397,7 +397,7 @@ footer{border-top:1px solid var(--border);padding:28px}
           <li class="off">Surveillance cloud</li>
           <li class="off">Support prioritaire</li>
         </ul>
-        <a href="#contact" class="p-btn p-btn-o">Commencer →</a>
+        <a href="#contact" class="p-btn p-btn-o" onclick="selectPlan('Starter — 199€/mois')">Commencer →</a>
       </div>
       <div class="price hi">
         <div class="hi-lbl">Le plus choisi</div>
@@ -412,7 +412,7 @@ footer{border-top:1px solid var(--border);padding:28px}
           <li>CVE Scanner et Threat Intelligence</li>
           <li>Rapport PDF quotidien</li>
         </ul>
-        <a href="#contact" class="p-btn p-btn-d">Commencer →</a>
+        <a href="#contact" class="p-btn p-btn-d" onclick="selectPlan('Business — 399€/mois')">Commencer →</a>
       </div>
       <div class="price">
         <div class="p-plan">Pro</div>
@@ -426,7 +426,7 @@ footer{border-top:1px solid var(--border);padding:28px}
           <li>SLA 99,9 % contractuel</li>
           <li>Support dédié 7j / 7</li>
         </ul>
-        <a href="#contact" class="p-btn p-btn-o">Nous contacter →</a>
+        <a href="#contact" class="p-btn p-btn-o" onclick="selectPlan('Pro — 599€/mois')">Nous contacter →</a>
       </div>
     </div>
   </div>
@@ -475,6 +475,8 @@ footer{border-top:1px solid var(--border);padding:28px}
         <div style="font-size:15px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px">Tester ma conformité RGPD — gratuit</div>
         <div style="font-size:13px;color:var(--ink3);margin-bottom:18px;font-weight:300">Recevez votre commande d'installation par email. Score RGPD en 5 minutes.</div>
         <div id="f-ok">✓ Demande envoyée ! Vérifiez votre email — votre commande d'installation vous a été envoyée. Notre équipe vous contacte sous 24h.</div>
+        <div id="f-plan-display" style="display:none;background:var(--blue-l);border:1px solid #bfdbfe;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:13px;font-weight:600;color:#1864ab"></div>
+        <input type="hidden" id="f-plan" value="">
         <div class="f-r"><label class="f-l">Nom complet *</label><input class="f-c" type="text" id="fn" placeholder="Jean Dupont"></div>
         <div class="f-r"><label class="f-l">Email professionnel *</label><input class="f-c" type="email" id="fe" placeholder="jean@entreprise.fr"></div>
         <div class="f-r"><label class="f-l">Entreprise</label><input class="f-c" type="text" id="fc" placeholder="Nom de votre entreprise"></div>
@@ -514,6 +516,12 @@ footer{border-top:1px solid var(--border);padding:28px}
 </footer>
 
 <script>
+function selectPlan(plan){
+  document.getElementById('f-plan').value=plan;
+  const d=document.getElementById('f-plan-display');
+  d.style.display='block';
+  d.textContent='✓ Plan sélectionné : '+plan;
+}
 async function sendForm(){
   const n=document.getElementById('fn').value.trim();
   const e=document.getElementById('fe').value.trim();
@@ -525,7 +533,7 @@ async function sendForm(){
   try{
     const r=await fetch('https://shieldflow-rfzv.onrender.com/api/signup',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name:n,email:e,company:c,machines:m})
+      body:JSON.stringify({name:n,email:e,company:c,machines:m,plan:document.getElementById("f-plan").value||"Non sélectionné"})
     });
     const d=await r.json();
     if(d.success){
