@@ -136,7 +136,7 @@ async function sendAlertEmail(tenantName, alert, deviceName, toEmail) {
       method:'POST',
       headers:{'Authorization':`Bearer ${RESEND_API_KEY}`,'Content-Type':'application/json'},
       body: JSON.stringify({
-        from:'ShieldFlow <onboarding@resend.dev>',
+        from:'ShieldFlow <contact@conformite-rgpd.org>',
         to:[toEmail],
         subject:`🚨 [${alert.severity.toUpperCase()}] ${alert.title} — ${tenantName}`,
         html
@@ -327,7 +327,7 @@ async function sendDailyReport(tenantId) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'ShieldFlow <onboarding@resend.dev>',
+        from: 'ShieldFlow <contact@conformite-rgpd.org>',
         to: [tenant.email || ALERT_EMAIL],
         subject: `Rapport de securite ShieldFlow — ${date} — ${tenant.name}`,
         html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0f1117;color:#e8edf5;border-radius:12px">
@@ -883,7 +883,7 @@ app.post('/api/signup', async (req, res) => {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'ShieldFlow <onboarding@resend.dev>',
+          from: 'ShieldFlow <contact@conformite-rgpd.org>',
           to: email,
           subject: 'Votre audit RGPD gratuit — ShieldFlow',
           html: `
@@ -920,7 +920,7 @@ app.post('/api/signup', async (req, res) => {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'ShieldFlow <onboarding@resend.dev>',
+          from: 'ShieldFlow <contact@conformite-rgpd.org>',
           to: ALERT_EMAIL,
           subject: `🎯 Nouveau prospect : ${company || name} (${email})`,
           html: `
