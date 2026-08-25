@@ -859,25 +859,10 @@ function calculateNIS2(snap) {
 
 app.post('/api/signup', async (req, res) => {
   try {
-    const { name, email, company, machines } = req.body;
+    const { name, email, company, machines, plan } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Nom et email requis' });
 
-    // Créer le tenant automatiquement
-    const agentKey = require('crypto').randomBytes(16).toString('hex');
-    const tenant = await Tenant.create({
-      name: company || name,
-      email,
-      contact_name: name,
-      password: require('crypto').randomBytes(8).toString('hex'),
-      agent_key: agentKey,
-      plan: 'trial',
-      trial_started_at: new Date()
-    });
-
-    const tenantId = tenant._id.toString();
-    const installCmd = `curl -sSL https://shieldflow-rfzv.onrender.com/install.sh | bash -s -- ${tenantId} ${agentKey}`;
-
-    // Email de bienvenue avec la commande d'installation
+    // Email simple au client
     if (RESEND_API_KEY) {
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -885,36 +870,30 @@ app.post('/api/signup', async (req, res) => {
         body: JSON.stringify({
           from: 'ShieldFlow <contact@conformite-rgpd.org>',
           to: email,
-          subject: 'Votre audit RGPD gratuit — ShieldFlow',
-          html: `
-            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#212529">
-              <div style="background:#212529;padding:28px;border-radius:8px 8px 0 0;text-align:center">
-                <h1 style="color:#ffffff;font-size:24px;margin:0">🛡 ShieldFlow</h1>
-                <p style="color:#adb5bd;margin:8px 0 0;font-size:14px">Cybersécurité Managée pour PME</p>
-              </div>
-              <div style="background:#f8f9fa;padding:32px;border:1px solid #dee2e6;border-top:none">
-                <h2 style="font-size:20px;margin:0 0 16px">Bonjour ${name},</h2>
-                <p style="color:#495057;line-height:1.7;margin:0 0 20px">Votre compte ShieldFlow a été créé. Voici votre commande d'installation pour analyser la conformité RGPD de vos machines :</p>
-                <div style="background:#212529;border-radius:8px;padding:16px;margin:20px 0">
-                  <p style="color:#adb5bd;font-size:11px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em">Commande d'installation</p>
-                  <code style="color:#69db7c;font-size:13px;word-break:break-all">${installCmd}</code>
-                </div>
-                <p style="color:#495057;line-height:1.7;margin:20px 0">Collez cette commande dans votre Terminal (Mac/Linux) ou PowerShell (Windows). L'installation prend moins de 5 minutes.</p>
-                <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:16px;margin:20px 0">
-                  <p style="color:#856404;margin:0;font-size:14px"><strong>⏱ Votre score RGPD apparaîtra dans les 30 secondes</strong> suivant l'installation. Notre équipe vous contactera avec votre rapport complet.</p>
-                </div>
-                <p style="color:#868e96;font-size:13px;margin:20px 0 0">Une question ? Répondez directement à cet email ou contactez-nous à <a href="mailto:shieldflowcontact@gmail.com" style="color:#1c7ed6">shieldflowcontact@gmail.com</a></p>
-              </div>
-              <div style="background:#dee2e6;padding:16px;border-radius:0 0 8px 8px;text-align:center">
-                <p style="color:#868e96;font-size:12px;margin:0">ShieldFlow · Marseille, France · <a href="#" style="color:#868e96">Se désabonner</a></p>
-              </div>
+          subject: "Votre demande d'audit RGPD — ShieldFlow",
+          html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#212529">
+            <div style="background:#1a1d23;padding:28px;text-align:center;border-radius:8px 8px 0 0">
+              <h1 style="color:#ffffff;font-size:22px;margin:0">🛡 ShieldFlow</h1>
+              <p style="color:#adb5bd;font-size:13px;margin:6px 0 0">Cybersécurité & Conformité RGPD</p>
             </div>
-          `
+            <div style="padding:32px;border:1px solid #dee2e6;border-top:none;background:#f9fafb">
+              <p style="font-size:16px;margin:0 0 16px">Bonjour <strong>${name}</strong>,</p>
+              <p style="color:#495057;line-height:1.7;margin:0 0 20px">Merci pour votre intérêt pour ShieldFlow. Notre équipe a bien reçu votre demande d'audit RGPD et vous contactera sous <strong>24h</strong> à cette adresse email.</p>
+              <div style="background:#e8f4fd;border-left:4px solid #1c7ed6;padding:16px;border-radius:4px;margin:20px 0">
+                <p style="margin:0;font-size:14px;color:#1864ab"><strong>Ce que nous allons faire :</strong><br>
+                Notre équipe analysera votre situation et vous enverra un plan d'action personnalisé pour mettre votre entreprise en conformité RGPD.</p>
+              </div>
+              <p style="color:#868e96;font-size:13px">Des questions ? Contactez-nous directement : <a href="mailto:shieldflowcontact@gmail.com" style="color:#1c7ed6">shieldflowcontact@gmail.com</a></p>
+            </div>
+            <div style="background:#dee2e6;padding:14px;text-align:center;border-radius:0 0 8px 8px">
+              <p style="color:#868e96;font-size:11px;margin:0">ShieldFlow · Marseille, France · Données hébergées en Europe</p>
+            </div>
+          </div>`
         })
       });
     }
 
-    // Notifier ShieldFlow (toi)
+    // Notification à ShieldFlow avec toutes les infos du prospect
     if (RESEND_API_KEY && ALERT_EMAIL) {
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -922,25 +901,23 @@ app.post('/api/signup', async (req, res) => {
         body: JSON.stringify({
           from: 'ShieldFlow <contact@conformite-rgpd.org>',
           to: ALERT_EMAIL,
-          subject: `🎯 Nouveau prospect : ${company || name} (${email})`,
-          html: `
-            <div style="font-family:Arial,sans-serif;color:#212529">
-              <h2>Nouveau prospect inscrit</h2>
-              <p><strong>Nom :</strong> ${name}</p>
-              <p><strong>Email :</strong> ${email}</p>
-              <p><strong>Entreprise :</strong> ${company || 'Non renseigné'}</p>
-              <p><strong>Machines :</strong> ${machines || 'Non renseigné'}</p>
-              <p><strong>Tenant ID :</strong> ${tenantId}</p>
-              <p><strong>Agent Key :</strong> ${agentKey}</p>
-              <hr>
-              <p>Le prospect a reçu sa commande d'installation par email. Surveillez son score RGPD dans le dashboard.</p>
-            </div>
-          `
+          subject: `🎯 Nouveau prospect : ${company || name}`,
+          html: `<div style="font-family:Arial,sans-serif;color:#212529;max-width:500px">
+            <h2 style="color:#1a1d23">🎯 Nouveau prospect ShieldFlow</h2>
+            <table style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:8px;background:#f8f9fa;font-weight:600;width:120px">Nom</td><td style="padding:8px;border:1px solid #dee2e6">${name}</td></tr>
+              <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Email</td><td style="padding:8px;border:1px solid #dee2e6"><a href="mailto:${email}">${email}</a></td></tr>
+              <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Entreprise</td><td style="padding:8px;border:1px solid #dee2e6">${company || 'Non renseigné'}</td></tr>
+              <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Machines</td><td style="padding:8px;border:1px solid #dee2e6">${machines || 'Non renseigné'}</td></tr>
+              <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Plan</td><td style="padding:8px;border:1px solid #dee2e6;color:#1c7ed6;font-weight:600">${plan || 'Non sélectionné'}</td></tr>
+            </table>
+            <p style="margin-top:20px;color:#495057">→ Contactez ce prospect dans les 24h pour maximiser la conversion.</p>
+          </div>`
         })
       });
     }
 
-    res.json({ success: true, message: 'Compte créé — email envoyé', tenant_id: tenantId });
+    res.json({ success: true, message: 'Demande envoyée' });
   } catch(e) {
     console.error('[Signup]', e.message);
     res.status(500).json({ error: e.message });
