@@ -937,6 +937,122 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
+
+// ─── ANALYSE IA DES ALERTES ──────────────────────────────────────────────────
+
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+
+async function analyzeWithAI(prompt) {
+  if (!ANTHROPIC_API_KEY) return null;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    return d.content?.[0]?.text || null;
+  } catch(e) {
+    console.error('[AI]', e.message);
+    return null;
+  }
+}
+
+app.get('/api/mssp/tenants/:tenantId/alerts/:alertId/ai-analysis', async (req, res) => {
+  try {
+    const { tenantId, alertId } = req.params;
+    const tenant = await Tenant.findById(tenantId).catch(() => null);
+    if (!tenant) return res.status(404).json({ error: 'Client non trouvé' });
+    
+    const alert = await Alert.findById(alertId).catch(() => null);
+    if (!alert) return res.status(404).json({ error: 'Alerte non trouvée' });
+
+    const device = await Device.findOne({ device_id: alert.device_id }).catch(() => null);
+    const snap = device?.snapshot || {};
+
+    const prompt = `Tu es un expert en cybersécurité senior qui analyse des alertes de sécurité pour des PME françaises. 
+    
+Contexte de l'alerte :
+- Client : ${tenant.name}
+- Type d'alerte : ${alert.type}
+- Titre : ${alert.title}
+- Appareil : ${alert.device_name}
+- Système : ${snap.platform || 'inconnu'}
+- CPU actuel : ${snap.cpu_percent || 0}%
+- RAM actuelle : ${snap.ram_percent || 0}%
+- Disque utilisé : ${snap.disk_percent || 0}%
+- Pare-feu : ${snap.firewall_enabled ? 'Activé' : 'Désactivé'}
+- Antivirus : ${snap.antivirus_status || 'inconnu'}
+- Chiffrement disque : ${snap.disk_encrypted ? 'Oui' : 'Non'}
+
+Génère une analyse professionnelle en français avec exactement ce format JSON :
+{
+  "niveau_risque": "CRITIQUE|ÉLEVÉ|MOYEN|FAIBLE",
+  "explication": "Explication claire en 2-3 phrases pour un dirigeant non-technique",
+  "impact_metier": "Impact concret sur l'activité de l'entreprise en 1-2 phrases",
+  "actions_immediates": ["Action 1", "Action 2", "Action 3"],
+  "risque_rgpd": "Oui|Non",
+  "detail_rgpd": "Explication du risque RGPD si applicable"
+}
+
+Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.`;
+
+    const analysis = await analyzeWithAI(prompt);
+    
+    if (!analysis) return res.json({ error: 'IA non disponible' });
+    
+    try {
+      const parsed = JSON.parse(analysis.replace(/```json|```/g, '').trim());
+      res.json({ success: true, analysis: parsed, alert_id: alertId });
+    } catch(e) {
+      res.json({ success: true, analysis: { explication: analysis }, alert_id: alertId });
+    }
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/mssp/tenants/:tenantId/ai-report', async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.tenantId).catch(() => null);
+    if (!tenant) return res.status(404).json({ error: 'Client non trouvé' });
+    
+    const alerts = await Alert.find({ tenant_id: req.params.tenantId, resolved: false });
+    const devices = await Device.find({ tenant_id: req.params.tenantId });
+    const criticals = alerts.filter(a => a.severity === 'critical');
+    const score = Math.max(0, 100 - criticals.length*20 - alerts.length*5);
+
+    const prompt = `Tu es un expert en cybersécurité senior. Rédige un résumé exécutif de sécurité pour un dirigeant de PME, en français, professionnel et concis.
+
+Données de l'entreprise ${tenant.name} :
+- Score de sécurité : ${score}/100
+- Nombre d'appareils : ${devices.length}
+- Alertes actives : ${alerts.length} dont ${criticals.length} critiques
+- Alertes : ${alerts.map(a => a.title).join(', ') || 'Aucune'}
+- Conformité RGPD : ${tenant.rgpd_score || 0}/100
+
+Génère un résumé en 3 paragraphes maximum :
+1. État général de la sécurité
+2. Points d'attention prioritaires
+3. Recommandations concrètes
+
+Ton langage doit être accessible à un dirigeant non-technique. Sois direct et actionnable.`;
+
+    const report = await analyzeWithAI(prompt);
+    res.json({ success: true, report, tenant: tenant.name, score, generated_at: new Date() });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── RGPD PDF REPORT ─────────────────────────────────────────────────────────
 
 app.get('/api/mssp/tenants/:id/rgpd-report', async (req, res) => {

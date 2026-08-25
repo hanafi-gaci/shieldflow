@@ -296,6 +296,7 @@ async function renderClient(){
                     ${a.auto_fixable!==false
                       ?`<button class="action-btn action-fix" onclick="fixAlert('${t.id}','${a._id}')">⚡ Régler</button>`
                       :`<button class="action-btn action-info" onclick="showInstructions('${t.id}','${a._id}')">📋 Instructions</button>`}
+                    <button class="action-btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2);margin-left:4px" onclick="showAIAnalysis('${t.id}','${a._id}')">🤖 IA</button>
                   </div>
                 </div>`).join('')}
           </div>
@@ -338,6 +339,54 @@ async function renderClient(){
 
 function copyCmd(tid,key){
   navigator.clipboard.writeText('curl -sSL '+S+'/install.sh | bash -s -- '+tid+' '+key).then(()=>showToast('Commande copiée !'));
+}
+
+async function showAIAnalysis(tid,aid){
+  openModal('🤖 Analyse IA — ShieldFlow Intelligence');
+  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:30px;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">🤖</div>Claude analyse cette alerte...<br><small style="color:var(--text3);margin-top:8px;display:block">Analyse du contexte complet de la machine en cours</small></div>';
+  try{
+    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/alerts/'+aid+'/ai-analysis');
+    const d=await r.json();
+    if(!d.success||!d.analysis){
+      document.getElementById('modal-body').innerHTML='<div style="color:var(--red);padding:20px">Analyse IA non disponible</div>';
+      return;
+    }
+    const a=d.analysis;
+    const lvlColor={'CRITIQUE':'var(--red)','ÉLEVÉ':'var(--orange)','MOYEN':'var(--amber)','FAIBLE':'var(--green)'}[a.niveau_risque]||'var(--text2)';
+    document.getElementById('modal-body').innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:8px;border-left:3px solid ${lvlColor}">
+        <div style="font-size:24px">🤖</div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Niveau de risque</div>
+          <div style="font-size:16px;font-weight:700;color:${lvlColor}">${a.niveau_risque||'—'}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Analyse</div>
+        <div style="font-size:14px;color:var(--text);line-height:1.7;background:var(--surface2);padding:12px;border-radius:8px">${a.explication||'—'}</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Impact métier</div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.7">${a.impact_metier||'—'}</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Actions immédiates</div>
+        ${(a.actions_immediates||[]).map((action,i)=>`
+          <div style="display:flex;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;font-size:13px">
+            <span style="color:var(--blue2);font-weight:700;flex-shrink:0">${i+1}.</span>
+            <span style="color:var(--text)">${action}</span>
+          </div>`).join('')}
+      </div>
+      ${a.risque_rgpd==='Oui'?`
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px">⚖️ RISQUE RGPD DÉTECTÉ</div>
+        <div style="font-size:13px;color:var(--text2)">${a.detail_rgpd||''}</div>
+      </div>`:''}
+      <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:8px">Analyse générée par Claude — ShieldFlow Intelligence</div>
+      <div class="modal-footer"><button class="btn-ghost" onclick="closeModal()">Fermer</button></div>`;
+  }catch(e){
+    document.getElementById('modal-body').innerHTML='<div style="color:var(--red);padding:20px">Erreur: '+e.message+'</div>';
+  }
 }
 
 async function fixAlert(tid,aid){
