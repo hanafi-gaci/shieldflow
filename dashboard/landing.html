@@ -480,6 +480,7 @@ footer{border-top:1px solid var(--border);padding:28px}
         <div class="f-r"><label class="f-l">Nom complet *</label><input class="f-c" type="text" id="fn" placeholder="Jean Dupont"></div>
         <div class="f-r"><label class="f-l">Email professionnel *</label><input class="f-c" type="email" id="fe" placeholder="jean@entreprise.fr"></div>
         <div class="f-r"><label class="f-l">Entreprise</label><input class="f-c" type="text" id="fc" placeholder="Nom de votre entreprise"></div>
+        <div class="f-r"><label class="f-l">Téléphone *</label><input class="f-c" type="tel" id="fphone" placeholder="06 12 34 56 78"></div>
         <div class="f-r">
           <label class="f-l">Nombre de machines</label>
           <select class="f-c" id="fm">
@@ -527,13 +528,14 @@ async function sendForm(){
   const e=document.getElementById('fe').value.trim();
   const c=document.getElementById('fc').value.trim();
   const m=document.getElementById('fm').value;
+  const phone=document.getElementById('fphone')?document.getElementById('fphone').value.trim():'';
   if(!n||!e){alert('Veuillez renseigner votre nom et votre email.');return;}
   const btn=document.getElementById('f-btn');
   btn.textContent='Envoi en cours...';btn.disabled=true;
   try{
     const r=await fetch('https://shieldflow-rfzv.onrender.com/api/signup',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name:n,email:e,company:c,machines:m,plan:document.getElementById("f-plan").value||"Non sélectionné"})
+      body:JSON.stringify({name:n,email:e,company:c,machines:m,plan:document.getElementById("f-plan").value||"Non sélectionné",phone:phone})
     });
     const d=await r.json();
     if(d.success){

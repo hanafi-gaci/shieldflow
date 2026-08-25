@@ -859,7 +859,7 @@ function calculateNIS2(snap) {
 
 app.post('/api/signup', async (req, res) => {
   try {
-    const { name, email, company, machines, plan } = req.body;
+    const { name, email, company, machines, plan, phone } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Nom et email requis' });
 
     // Email simple au client
@@ -909,6 +909,7 @@ app.post('/api/signup', async (req, res) => {
               <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Email</td><td style="padding:8px;border:1px solid #dee2e6"><a href="mailto:${email}">${email}</a></td></tr>
               <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Entreprise</td><td style="padding:8px;border:1px solid #dee2e6">${company || 'Non renseigné'}</td></tr>
               <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Machines</td><td style="padding:8px;border:1px solid #dee2e6">${machines || 'Non renseigné'}</td></tr>
+              <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Téléphone</td><td style="padding:8px;border:1px solid #dee2e6">${phone || 'Non renseigné'}</td></tr>
               <tr><td style="padding:8px;background:#f8f9fa;font-weight:600">Plan</td><td style="padding:8px;border:1px solid #dee2e6;color:#1c7ed6;font-weight:600">${plan || 'Non sélectionné'}</td></tr>
             </table>
             <p style="margin-top:20px;color:#495057">→ Contactez ce prospect dans les 24h pour maximiser la conversion.</p>
