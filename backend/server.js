@@ -212,6 +212,18 @@ function analyzeSnap(snap, deviceId, deviceName) {
   if (snap.logging_enabled === false)
     candidates.push({ type:'LOGS_DISABLED', severity:'high', title:'Journalisation systeme desactivee', description:`Les logs systeme sont desactives sur ${deviceName}. Non conforme RGPD Art.30.`, recommendation:'Activer la journalisation systeme immediatement.' });
 
+  // Ransomware
+  if (snap.ransomware_detected === true)
+    candidates.push({ type:'RANSOMWARE_DETECTED', severity:'critical', title:'Ransomware detecte — chiffrement en cours', description:`${snap.ransomware_files_count} fichier(s) chiffre(s) detecte(s) sur ${deviceName}. Comportement ransomware probable.`, recommendation:'Isoler la machine immediatement.', auto_fixable: false });
+
+  // Connexions suspectes
+  if (snap.has_suspicious_connections === true)
+    candidates.push({ type:'SUSPICIOUS_CONNECTIONS', severity:'high', title:'Connexions reseau suspectes', description:`Connexions sur ports dangereux detectees sur ${deviceName}.`, recommendation:'Verifier et bloquer les connexions suspectes.', auto_fixable: true });
+
+  // Sauvegarde absente
+  if (snap.backup_warning === true)
+    candidates.push({ type:'NO_BACKUP', severity:'high', title:'Aucune sauvegarde detectee', description:`Aucune sauvegarde recente sur ${deviceName}. Risque de perte de donnees.`, recommendation:'Configurer Time Machine ou un systeme de backup.', auto_fixable: false });
+
   return candidates;
 }
 

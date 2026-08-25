@@ -701,3 +701,187 @@ def check_nis2_compliance(snap):
         return result, alerts
     except Exception as e:
         return None, []
+
+
+# ─── NOUVEAUX CHECKS ─────────────────────────────────────────────────────────
+
+def check_ransomware_behavior() -> dict:
+    """Détecte un chiffrement massif de fichiers (comportement ransomware)."""
+    try:
+        suspicious = []
+        extensions = ['.locked','.encrypted','.crypto','.crypt','.enc','.ransom','.wnry','.wncry']
+        home = Path.home()
+        count = 0
+        for ext in extensions:
+            found = list(home.rglob(f'*{ext}'))[:10]
+            count += len(found)
+            suspicious.extend([str(f) for f in found])
+        return {
+            'ransomware_files_count': count,
+            'ransomware_detected': count > 0,
+            'suspicious_files': suspicious[:20]
+        }
+    except Exception as e:
+        return {'ransomware_detected': False, 'error': str(e)}
+
+
+def check_network_connections() -> dict:
+    """Surveille les connexions réseau actives et détecte les anomalies."""
+    try:
+        if SYSTEM == 'Darwin':
+            result = subprocess.run(['netstat', '-an', '-p', 'tcp'], capture_output=True, text=True)
+        else:
+            result = subprocess.run(['ss', '-tunp'], capture_output=True, text=True)
+        
+        lines = result.stdout.splitlines()
+        established = [l for l in lines if 'ESTABLISHED' in l]
+        listening = [l for l in lines if 'LISTEN' in l]
+        
+        # Ports suspects
+        dangerous = [4444, 5555, 6666, 7777, 8888, 9999, 1337, 31337]
+        suspicious_conns = []
+        for line in established:
+            for port in dangerous:
+                if f'.{port} ' in line or f':{port} ' in line:
+                    suspicious_conns.append(line.strip())
+        
+        return {
+            'established_connections': len(established),
+            'listening_ports': len(listening),
+            'suspicious_connections': suspicious_conns,
+            'has_suspicious_connections': len(suspicious_conns) > 0
+        }
+    except Exception as e:
+        return {'established_connections': 0, 'error': str(e)}
+
+
+def get_system_inventory() -> dict:
+    """Inventaire complet du système — matériel et logiciels."""
+    try:
+        inventory = {
+            'os': platform.platform(),
+            'hostname': socket.gethostname(),
+            'cpu_model': '',
+            'ram_total_gb': 0,
+            'disk_total_gb': 0,
+            'installed_software': [],
+        }
+        
+        if SYSTEM == 'Darwin':
+            # CPU
+            r = subprocess.run(['sysctl', '-n', 'machdep.cpu.brand_string'], capture_output=True, text=True)
+            inventory['cpu_model'] = r.stdout.strip()
+            # RAM
+            r = subprocess.run(['sysctl', '-n', 'hw.memsize'], capture_output=True, text=True)
+            inventory['ram_total_gb'] = round(int(r.stdout.strip()) / (1024**3), 1)
+            # Disk
+            r = subprocess.run(['df', '-h', '/'], capture_output=True, text=True)
+            lines = r.stdout.splitlines()
+            if len(lines) > 1:
+                inventory['disk_total_gb'] = lines[1].split()[1]
+            # Software (top 20)
+            r = subprocess.run(['system_profiler', 'SPApplicationsDataType', '-json'], capture_output=True, text=True, timeout=30)
+            try:
+                data = json.loads(r.stdout)
+                apps = data.get('SPApplicationsDataType', [])
+                inventory['installed_software'] = [{'name': a.get('_name',''), 'version': a.get('version','')} for a in apps[:50]]
+            except:
+                pass
+        elif SYSTEM == 'Linux':
+            r = subprocess.run(['cat', '/proc/cpuinfo'], capture_output=True, text=True)
+            for line in r.stdout.splitlines():
+                if 'model name' in line:
+                    inventory['cpu_model'] = line.split(':')[1].strip()
+                    break
+            r = subprocess.run(['free', '-g'], capture_output=True, text=True)
+            lines = r.stdout.splitlines()
+            if len(lines) > 1:
+                inventory['ram_total_gb'] = lines[1].split()[1]
+            # Logiciels Linux
+            r = subprocess.run(['dpkg', '--list'], capture_output=True, text=True)
+            pkgs = [l.split()[1] for l in r.stdout.splitlines() if l.startswith('ii')]
+            inventory['installed_software'] = [{'name': p, 'version': ''} for p in pkgs[:50]]
+        
+        return inventory
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def check_backup_status() -> dict:
+    """Vérifie si des sauvegardes récentes existent."""
+    try:
+        backup_found = False
+        last_backup = None
+        backup_dirs = []
+        
+        if SYSTEM == 'Darwin':
+            # Time Machine
+            r = subprocess.run(['tmutil', 'latestbackup'], capture_output=True, text=True)
+            if r.returncode == 0 and r.stdout.strip():
+                backup_found = True
+                last_backup = r.stdout.strip()
+            # Dossiers backup communs
+            for d in ['/Volumes/Backup', Path.home() / 'Backup', Path.home() / 'backups']:
+                if Path(str(d)).exists():
+                    backup_dirs.append(str(d))
+                    backup_found = True
+        elif SYSTEM == 'Linux':
+            for d in ['/backup', '/mnt/backup', '/var/backup', Path.home() / 'backup']:
+                if Path(str(d)).exists():
+                    backup_dirs.append(str(d))
+                    backup_found = True
+        
+        return {
+            'backup_found': backup_found,
+            'last_backup': last_backup,
+            'backup_dirs': backup_dirs,
+            'backup_warning': not backup_found
+        }
+    except Exception as e:
+        return {'backup_found': False, 'backup_warning': True, 'error': str(e)}
+
+
+def check_new_users() -> dict:
+    """Détecte les nouveaux comptes utilisateurs créés récemment."""
+    try:
+        recent_users = []
+        if SYSTEM == 'Darwin':
+            r = subprocess.run(['dscl', '.', '-list', '/Users'], capture_output=True, text=True)
+            users = [u for u in r.stdout.splitlines() if not u.startswith('_') and u not in ['nobody','daemon','root']]
+            recent_users = users
+        elif SYSTEM == 'Linux':
+            with open('/etc/passwd') as f:
+                lines = f.readlines()
+            users = [l.split(':')[0] for l in lines if int(l.split(':')[2]) >= 1000]
+            recent_users = users
+        return {'local_users': recent_users, 'user_count': len(recent_users)}
+    except Exception as e:
+        return {'local_users': [], 'error': str(e)}
+
+
+def check_disk_health() -> dict:
+    """Vérifie la santé du disque et l'espace disponible."""
+    try:
+        result = {}
+        if SYSTEM == 'Darwin':
+            r = subprocess.run(['df', '-h'], capture_output=True, text=True)
+            lines = r.stdout.splitlines()
+            disks = []
+            for line in lines[1:]:
+                parts = line.split()
+                if len(parts) >= 5 and parts[0].startswith('/dev/'):
+                    used_pct = int(parts[4].replace('%','')) if parts[4].endswith('%') else 0
+                    disks.append({
+                        'device': parts[0],
+                        'size': parts[1],
+                        'used': parts[2],
+                        'available': parts[3],
+                        'used_pct': used_pct,
+                        'critical': used_pct > 85
+                    })
+            result['disks'] = disks
+            result['any_critical'] = any(d['critical'] for d in disks)
+        return result
+    except Exception as e:
+        return {'error': str(e)}
+

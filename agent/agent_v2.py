@@ -29,7 +29,15 @@ from pathlib import Path
 # Import expert checks from same directory
 sys.path.insert(0, str(Path(__file__).parent))
 try:
-    from expert_checks import collect_expert_data
+    from expert_checks import (
+    collect_expert_data,
+    check_ransomware_behavior,
+    check_network_connections,
+    get_system_inventory,
+    check_backup_status,
+    check_new_users,
+    check_disk_health
+)
     EXPERT_AVAILABLE = True
 except ImportError as e:
     print(f'[Warning] Expert checks unavailable: {e}')
@@ -163,6 +171,14 @@ def send_report(payload: dict) -> bool:
             'firewall_enabled': payload.get('firewall_enabled'),
             'disk_encrypted': payload.get('disk_encrypted'),
             'pending_updates': payload.get('pending_updates', 0),
+            'ransomware_detected': payload.get('ransomware_detected', False),
+            'ransomware_files_count': payload.get('ransomware_files_count', 0),
+            'has_suspicious_connections': payload.get('has_suspicious_connections', False),
+            'suspicious_connections': payload.get('suspicious_connections', []),
+            'backup_found': payload.get('backup_found', True),
+            'backup_warning': payload.get('backup_warning', False),
+            'local_users': payload.get('local_users', []),
+            'inventory': payload.get('inventory', {}),
             'antivirus_status': payload.get('antivirus_status', 'unknown'),
             'users': payload.get('users', []),
             'logs': payload.get('logs', []),
@@ -210,6 +226,27 @@ def main():
                 logger.info('Running expert security checks...')
                 expert_data = collect_expert_data()
                 payload.update(expert_data)
+                
+                # Checks avancés
+                try:
+                    payload.update(check_ransomware_behavior())
+                except: pass
+                try:
+                    payload.update(check_network_connections())
+                except: pass
+                try:
+                    payload.update(check_backup_status())
+                except: pass
+                try:
+                    payload.update(check_new_users())
+                except: pass
+                try:
+                    payload['disk_health'] = check_disk_health()
+                except: pass
+                if iteration % 10 == 0:
+                    try:
+                        payload['inventory'] = get_system_inventory()
+                    except: pass
                 logger.info(f'Expert data: {len(payload.get("processes", []))} processes, '
                             f"{len(payload.get("open_ports") or [])} ports, "
                             f'{len(payload.get("logs", []))} log lines')
