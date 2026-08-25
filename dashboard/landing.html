@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShieldFlow — Conformité RGPD & Cybersécurité pour PME</title>
-<meta name="description" content="Toute entreprise française doit être conforme au RGPD depuis 2018. ShieldFlow analyse votre conformité en 5 minutes et corrige automatiquement les failles.">
+<title>ShieldFlow — Votre département cybersécurité externalisé</title>
+<meta name="description" content="ShieldFlow surveille, protège et corrige vos systèmes 24h/24. Votre équipe cybersécurité complète, sans recruter personne.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -41,15 +41,16 @@ a{color:inherit;text-decoration:none}
 .hero-s{background:var(--surface);border-bottom:1px solid var(--border)}
 .hero{max-width:1100px;margin:0 auto;padding:120px 28px 88px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 .hero-pill{display:inline-flex;align-items:center;gap:7px;background:var(--white);border:1px solid var(--border2);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:24px}
-.hero-pill-dot{width:7px;height:7px;border-radius:50%;background:var(--red)}
+.hero-pill-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .hero h1{font-size:72px;font-weight:700;line-height:1.02;letter-spacing:-0.05em;color:var(--ink);margin-bottom:20px}
 .hero h1 em{font-style:normal;color:var(--ink3)}
-.hero-lead{font-size:17px;color:var(--ink2);line-height:1.75;margin-bottom:32px;font-weight:300}
-.hero-lead strong{color:var(--red);font-weight:600}
+.hero-lead{font-size:18px;color:var(--ink2);line-height:1.75;margin-bottom:32px;font-weight:300}
+.hero-lead strong{color:var(--ink);font-weight:600}
 .hero-btns{display:flex;gap:10px;flex-wrap:wrap}
-.btn-dark{background:var(--dark);color:var(--white);padding:12px 22px;border-radius:7px;font-size:14px;font-weight:500;transition:background .15s}
+.btn-dark{background:var(--dark);color:var(--white);padding:13px 24px;border-radius:7px;font-size:14px;font-weight:500;transition:background .15s}
 .btn-dark:hover{background:var(--dark2)}
-.btn-ghost{border:1px solid var(--border2);color:var(--ink2);padding:12px 18px;border-radius:7px;font-size:14px;font-weight:500;transition:all .15s;background:var(--white)}
+.btn-ghost{border:1px solid var(--border2);color:var(--ink2);padding:13px 18px;border-radius:7px;font-size:14px;font-weight:500;transition:all .15s;background:var(--white)}
 .btn-ghost:hover{border-color:var(--ink3)}
 .hero-trust{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:18px;flex-wrap:wrap}
 .trust-i{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3);font-weight:500}
@@ -72,22 +73,22 @@ a{color:inherit;text-decoration:none}
 .stat-l{font-size:11px;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
 .stat-sep{width:1px;height:36px;background:var(--border);flex-shrink:0}
 
-/* ALERTE RGPD */
-.rgpd-s{background:var(--dark);padding:80px 28px}
-.rgpd-i{max-width:1100px;margin:0 auto}
-.rgpd-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.rgpd-tag{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--silver2);margin-bottom:14px}
-.rgpd-h{font-size:42px;font-weight:700;letter-spacing:-0.04em;line-height:1.1;color:var(--white);margin-bottom:16px}
-.rgpd-p{font-size:16px;color:var(--silver2);line-height:1.75;font-weight:300;margin-bottom:14px}
-.rgpd-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.rgpd-card{background:var(--dark2);border:1px solid var(--dark3);border-radius:10px;padding:22px}
-.rgpd-num{font-size:34px;font-weight:700;letter-spacing:-0.04em;margin-bottom:6px}
-.rgpd-desc{font-size:12px;color:var(--silver2)}
-.rgpd-cta{margin-top:40px;background:var(--dark2);border:1px solid var(--dark3);border-radius:10px;padding:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.rgpd-cta-t{font-size:17px;font-weight:600;color:var(--white);margin-bottom:4px}
-.rgpd-cta-s{font-size:13px;color:var(--silver2)}
-.btn-white{background:var(--white);color:var(--dark);padding:11px 22px;border-radius:7px;font-size:14px;font-weight:600;transition:opacity .15s;white-space:nowrap}
-.btn-white:hover{opacity:.9}
+/* PROBLEME SECTION */
+.problem-s{background:var(--dark);padding:80px 28px}
+.problem-i{max-width:1100px;margin:0 auto}
+.problem-tag{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--silver2);margin-bottom:14px}
+.problem-h{font-size:42px;font-weight:700;letter-spacing:-0.04em;line-height:1.1;color:var(--white);margin-bottom:16px}
+.problem-p{font-size:17px;color:var(--silver2);line-height:1.75;font-weight:300;max-width:560px;margin-bottom:48px}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.problem-card{background:var(--dark2);border:1px solid var(--dark3);border-radius:10px;padding:22px}
+.problem-card-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px}
+.problem-card-body{font-size:13px;color:var(--silver2);line-height:1.65;font-weight:300}
+.problem-cost{margin-top:40px;background:var(--dark2);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.problem-cost-t{font-size:17px;font-weight:600;color:var(--white);margin-bottom:4px}
+.problem-cost-s{font-size:13px;color:var(--silver2)}
+.cost-badge{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 20px;text-align:center}
+.cost-num{font-size:28px;font-weight:700;color:#ff8787;letter-spacing:-0.04em}
+.cost-label{font-size:11px;color:var(--silver2);margin-top:2px}
 
 /* SECTIONS */
 .s{padding:88px 28px}
@@ -97,24 +98,23 @@ a{color:inherit;text-decoration:none}
 .s-h{font-size:38px;font-weight:700;letter-spacing:-0.04em;line-height:1.1;margin-bottom:14px}
 .s-sub{font-size:16px;color:var(--ink3);max-width:500px;line-height:1.75;font-weight:300}
 
+/* SERVICES GRID */
+.services{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:48px}
+.service{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:28px;transition:all .2s}
+.service:hover{border-color:var(--dark);transform:translateY(-2px)}
+.service-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.service-icon{width:40px;height:40px;background:var(--dark);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.service-title{font-size:17px;font-weight:600;letter-spacing:-0.02em}
+.service-body{font-size:14px;color:var(--ink3);line-height:1.7;font-weight:300}
+.service-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.stag{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--bg);color:var(--ink3);border:1px solid var(--border)}
+
 /* STEPS */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);margin-top:48px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--border);gap:1px}
 .step{background:var(--white);padding:30px 26px}
 .step-n{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);margin-bottom:16px;font-family:var(--mono)}
 .step-t{font-size:16px;font-weight:600;letter-spacing:-0.02em;margin-bottom:10px}
 .step-b{font-size:14px;color:var(--ink3);line-height:1.7;font-weight:300}
-
-/* FEATURES */
-.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:48px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.feat{background:var(--white);padding:26px 24px;transition:background .2s}
-.feat:hover{background:var(--bg)}
-.feat-ic{font-size:20px;margin-bottom:14px}
-.feat-t{font-size:15px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px}
-.feat-b{font-size:13px;color:var(--ink3);line-height:1.65;font-weight:300}
-.tag{display:inline-block;margin-top:10px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px}
-.tg{background:var(--green-l);color:#2b8a3e}
-.tb{background:var(--blue-l);color:#1864ab}
-.ta{background:#fff4e6;color:#e67700}
 
 /* COMPARISON */
 .comp{margin-top:48px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
@@ -157,12 +157,13 @@ a{color:inherit;text-decoration:none}
 .faq-i.open .faq-a{display:block}
 
 /* CTA STRIP */
-.cta-s{background:var(--dark);padding:72px 28px;text-align:center}
-.cta-si{max-width:600px;margin:0 auto}
-.cta-lbl{display:inline-block;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--silver2);margin-bottom:18px}
-.cta-s h2{font-size:36px;font-weight:700;color:var(--white);letter-spacing:-0.04em;margin-bottom:12px;line-height:1.1}
-.cta-s p{font-size:16px;color:var(--silver2);margin-bottom:28px;font-weight:300}
+.cta-s{background:var(--dark);padding:80px 28px;text-align:center}
+.cta-si{max-width:640px;margin:0 auto}
+.cta-s h2{font-size:42px;font-weight:700;color:var(--white);letter-spacing:-0.04em;margin-bottom:14px;line-height:1.1}
+.cta-s p{font-size:17px;color:var(--silver2);margin-bottom:32px;font-weight:300;line-height:1.7}
 .cta-note{font-size:12px;color:#6b7280;margin-top:14px}
+.btn-white{background:var(--white);color:var(--dark);padding:13px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block;transition:opacity .15s}
+.btn-white:hover{opacity:.9}
 
 /* CONTACT */
 .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
@@ -178,10 +179,11 @@ a{color:inherit;text-decoration:none}
 .f-c{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--ink);padding:9px 12px;border-radius:6px;font-size:14px;font-family:var(--font);outline:none;transition:border-color .15s}
 .f-c:focus{border-color:var(--dark)}
 textarea.f-c{resize:vertical;min-height:88px}
-.f-sub{width:100%;background:var(--dark);color:var(--white);padding:11px;border:none;border-radius:7px;font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;transition:background .15s}
+.f-sub{width:100%;background:var(--dark);color:var(--white);padding:12px;border:none;border-radius:7px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:background .15s}
 .f-sub:hover{background:var(--dark2)}
 .f-sub:disabled{opacity:.6;cursor:not-allowed}
 #f-ok{display:none;background:var(--green-l);border:1px solid #b2f2bb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:14px;color:#2b8a3e}
+#f-plan-display{display:none;background:var(--blue-l);border:1px solid #bfdbfe;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:13px;font-weight:600;color:#1864ab}
 
 /* FOOTER */
 footer{border-top:1px solid var(--border);padding:28px}
@@ -191,12 +193,16 @@ footer{border-top:1px solid var(--border);padding:28px}
 .f-links a:hover{color:var(--ink3)}
 .f-copy{font-size:12px;color:var(--ink4)}
 
+/* RGPD BADGE */
+.rgpd-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 16px;margin-top:24px;font-size:13px;color:#c92a2a}
+.rgpd-badge strong{font-weight:600}
+
 @media(max-width:900px){
   .hero{grid-template-columns:1fr;gap:40px;padding:100px 20px 60px}
   .hero h1{font-size:46px}
-  .rgpd-grid{grid-template-columns:1fr}
-  .rgpd-cards{grid-template-columns:1fr 1fr}
-  .steps,.feats{grid-template-columns:1fr}
+  .problem-grid{grid-template-columns:1fr}
+  .services{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
   .pricing{grid-template-columns:1fr}
   .contact-grid{grid-template-columns:1fr;gap:36px}
   .nav-links{display:none}
@@ -205,11 +211,9 @@ footer{border-top:1px solid var(--border);padding:28px}
 }
 @media(max-width:600px){
   .s{padding:60px 20px}
-  .rgpd-s{padding:60px 20px}
+  .problem-s{padding:60px 20px}
   .s-h{font-size:28px}
   .hero h1{font-size:36px}
-  .rgpd-h{font-size:30px}
-  .rgpd-cards{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -222,11 +226,11 @@ footer{border-top:1px solid var(--border);padding:28px}
       <span class="logo-n">ShieldFlow</span>
     </div>
     <div class="nav-links">
+      <a href="#services">Nos services</a>
       <a href="#fonctionnement">Fonctionnement</a>
-      <a href="#fonctionnalites">Fonctionnalités</a>
       <a href="#tarifs">Tarifs</a>
       <a href="#faq">FAQ</a>
-      <a href="#contact" class="nav-btn">Tester ma conformité</a>
+      <a href="#contact" class="nav-btn">Nous contacter</a>
     </div>
   </div>
 </nav>
@@ -235,19 +239,20 @@ footer{border-top:1px solid var(--border);padding:28px}
 <div class="hero-s">
   <div class="hero">
     <div>
-      <div class="hero-pill"><div class="hero-pill-dot"></div>Obligation légale RGPD &amp; NIS2 — depuis 2018</div>
-      <h1>Votre entreprise<br>est-elle <em>conforme</em> ?</h1>
-      <p class="hero-lead">En France, toute entreprise doit être conforme au RGPD depuis le <strong>25 mai 2018</strong>. En cas de manquement, la CNIL peut infliger une amende allant jusqu'à <strong>4% de votre chiffre d'affaires mondial</strong>. ShieldFlow analyse votre conformité en 5 minutes et corrige automatiquement les failles.</p>
+      <div class="hero-pill"><div class="hero-pill-dot"></div>Surveillance active 24h/24 · 7j/7</div>
+      <h1>Votre département<br>cyber<em>sécurité.</em></h1>
+      <p class="hero-lead">Vous n'avez pas d'ingénieur cybersécurité ? <strong>ShieldFlow est votre équipe IT.</strong> Surveillance, protection et correction de vos systèmes 24h/24 — sans recruter personne.</p>
       <div class="hero-btns">
-        <a href="#contact" class="btn-dark">Tester ma conformité — gratuit</a>
-        <a href="#fonctionnement" class="btn-ghost">Comment ça marche →</a>
+        <a href="#contact" class="btn-dark">Nous contacter gratuitement</a>
+        <a href="#services" class="btn-ghost">Nos services →</a>
       </div>
       <div class="hero-trust">
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Résultat en 5 minutes</span></div>
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Sans engagement</span></div>
+        <div class="trust-i"><div class="trust-dot">✓</div><span>Surveillance 24h/24</span></div>
+        <div class="trust-i"><div class="trust-dot">✓</div><span>Correction automatique</span></div>
         <div class="trust-i"><div class="trust-dot">✓</div><span>Basé en France</span></div>
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Données hébergées en Europe</span></div>
+        <div class="trust-i"><div class="trust-dot">✓</div><span>Sans engagement</span></div>
       </div>
+      <div class="rgpd-badge">⚖️ <span>Obligation légale : <strong>conformité RGPD & NIS2</strong> incluse automatiquement</span></div>
     </div>
     <div>
       <div class="term">
@@ -255,21 +260,21 @@ footer{border-top:1px solid var(--border);padding:28px}
           <div class="td" style="background:#ff5f57"></div>
           <div class="td" style="background:#ffbd2e"></div>
           <div class="td" style="background:#28c840"></div>
-          <span class="term-lbl">ShieldFlow — Analyse RGPD</span>
+          <span class="term-lbl">ShieldFlow — Surveillance en cours</span>
         </div>
         <div class="term-b">
-<div class="tc-dim"># Installation en une commande</div><br>
-<div><span class="tc-p">$</span><span class="tc-cmd">curl -sSL shieldflow.fr/install.sh | bash</span></div><br>
-<div class="tc-b">  Système : macOS 14.5 · Entreprise Martin</div>
-<div class="tc-dim">  Analyse de conformité RGPD...</div><br>
-<div class="tc-a">⚠ Art.5  Disque non chiffré — violation RGPD</div>
-<div class="tc-dim">  → Activation FileVault en cours...</div>
-<div class="tc-g">✓ Disque chiffré — Art.5 conforme</div><br>
-<div class="tc-a">⚠ Art.25 Pare-feu désactivé</div>
+<div class="tc-dim"># Tableau de bord — Entreprise Martin</div><br>
+<div class="tc-g">✓ 12 machines surveillées · En ligne</div>
+<div class="tc-g">✓ Microsoft 365 · Connecté</div>
+<div class="tc-g">✓ AWS · Connecté</div><br>
+<div class="tc-a">⚠ CRITIQUE  Pare-feu désactivé · PC-Comptable</div>
 <div class="tc-dim">  → Correction automatique...</div>
-<div class="tc-g">✓ Pare-feu activé — Art.25 conforme</div><br>
-<div class="tc-g">✓ Score RGPD : 80 / 100 — Conforme</div>
-<div class="tc-dim">  Rapport PDF généré et envoyé par email</div>
+<div class="tc-g">✓ Pare-feu activé en 4 secondes</div><br>
+<div class="tc-a">⚠ ÉLEVÉ    3 comptes sans MFA · M365</div>
+<div class="tc-dim">  → Notification envoyée à l'admin</div><br>
+<div class="tc-b">◉ Score sécurité : 91/100</div>
+<div class="tc-b">◉ Conformité RGPD : 85/100 — Conforme</div><br>
+<div class="tc-dim">  Rapport PDF envoyé à 8h00 ✓</div>
         </div>
       </div>
     </div>
@@ -279,74 +284,132 @@ footer{border-top:1px solid var(--border);padding:28px}
 <!-- STATS -->
 <div class="stats-s">
   <div class="stats">
-    <div class="stat"><div class="stat-n">30 s</div><div class="stat-l">Délai de détection</div></div>
+    <div class="stat"><div class="stat-n">24/7</div><div class="stat-l">Surveillance continue</div></div>
     <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">5 min</div><div class="stat-l">Installation agent</div></div>
+    <div class="stat"><div class="stat-n">30 s</div><div class="stat-l">Détection des menaces</div></div>
     <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">24 / 7</div><div class="stat-l">Surveillance continue</div></div>
+    <div class="stat"><div class="stat-n">−90%</div><div class="stat-l">Coût vs équipe interne</div></div>
     <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">− 90 %</div><div class="stat-l">Coût vs RSSI interne</div></div>
+    <div class="stat"><div class="stat-n">5 min</div><div class="stat-l">Mise en service</div></div>
     <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">4 %</div><div class="stat-l">Amende max RGPD du CA</div></div>
+    <div class="stat"><div class="stat-n">3 OS</div><div class="stat-l">Mac · Windows · Linux</div></div>
   </div>
 </div>
 
-<!-- RGPD SECTION -->
-<div class="rgpd-s">
-  <div class="rgpd-i">
-    <div class="rgpd-grid">
-      <div>
-        <div class="rgpd-tag">Obligation légale</div>
-        <h2 class="rgpd-h">RGPD &amp; NIS2 :<br>vous n'avez<br>pas le choix.</h2>
-        <p class="rgpd-p">Depuis le <strong style="color:white">25 mai 2018</strong>, le RGPD s'applique à toutes les entreprises françaises traitant des données personnelles. Depuis <strong style="color:white">2024</strong>, la directive NIS2 étend ces obligations aux PME de plus de 50 employés.</p>
-        <p class="rgpd-p">La CNIL et l'ANSSI contrôlent activement. Les sanctions sont réelles et les amendes peuvent mettre en péril une PME.</p>
+<!-- PROBLEM -->
+<div class="problem-s">
+  <div class="problem-i">
+    <div class="problem-tag">Le problème</div>
+    <h2 class="problem-h">Votre entreprise est exposée.<br>Personne ne la surveille.</h2>
+    <p class="problem-p">Une PME sur deux subira une cyberattaque cette année. Sans équipe dédiée, vous êtes une cible facile. ShieldFlow change ça.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-card-title">🔓 Pas de surveillance</div>
+        <p class="problem-card-body">Vos machines, votre cloud, votre réseau — personne ne surveille en dehors des heures de bureau. Une attaque à 3h du matin passe inaperçue jusqu'au lendemain matin.</p>
       </div>
-      <div>
-        <div class="rgpd-cards">
-          <div class="rgpd-card"><div class="rgpd-num" style="color:#ff6b6b">20 M€</div><div class="rgpd-desc">Amende maximale RGPD Art. 83</div></div>
-          <div class="rgpd-card"><div class="rgpd-num" style="color:#ff6b6b">4 %</div><div class="rgpd-desc">Du CA mondial — RGPD Art. 83</div></div>
-          <div class="rgpd-card"><div class="rgpd-num" style="color:#ffd43b">10 M€</div><div class="rgpd-desc">Amende maximale NIS2</div></div>
-          <div class="rgpd-card"><div class="rgpd-num" style="color:#69db7c">5 min</div><div class="rgpd-desc">Pour connaître votre score avec ShieldFlow</div></div>
-        </div>
+      <div class="problem-card">
+        <div class="problem-card-title">💸 Recrutement impossible</div>
+        <p class="problem-card-body">Un ingénieur cybersécurité coûte 60 000 à 90 000€/an. Un RSSI encore plus. Hors de portée pour une PME de 10 à 200 employés.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-title">⚖️ Obligations légales</div>
+        <p class="problem-card-body">RGPD depuis 2018, NIS2 depuis 2024 — votre entreprise a des obligations légales de sécurité. En cas de manquement : jusqu'à 4% de votre CA d'amende.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-title">☁️ Cloud non sécurisé</div>
+        <p class="problem-card-body">Microsoft 365, Google Workspace, AWS — des dizaines de points d'entrée pour les attaquants. MFA absent, accès non révoqués, mauvaises configurations.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-title">🎯 Ransomware en hausse</div>
+        <p class="problem-card-body">Les ransomwares ciblent désormais les PME en priorité, car elles sont moins protégées. Coût moyen d'une attaque : 50 000€ pour une PME.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-card-title">📋 Zéro visibilité</div>
+        <p class="problem-card-body">Sans outil de surveillance, vous ne savez pas ce qui se passe sur vos machines. Un employé télécharge un malware — vous l'apprenez trop tard.</p>
       </div>
     </div>
-    <div class="rgpd-cta">
+    <div class="problem-cost">
       <div>
-        <div class="rgpd-cta-t">Votre score RGPD en 5 minutes — gratuitement</div>
-        <div class="rgpd-cta-s">Installez l'agent ShieldFlow, obtenez votre score instantanément. Sans engagement, sans carte bancaire.</div>
+        <div class="problem-cost-t">ShieldFlow remplace une équipe entière</div>
+        <div class="problem-cost-s">Ingénieur sécu + Admin réseau + Admin système + Responsable conformité — pour 399€/mois</div>
       </div>
-      <a href="#contact" class="btn-white">Tester ma conformité →</a>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="cost-badge"><div class="cost-num">80K€</div><div class="cost-label">RSSI interne / an</div></div>
+        <div class="cost-badge" style="background:rgba(105,219,124,0.1);border-color:rgba(105,219,124,0.3)"><div class="cost-num" style="color:#69db7c">399€</div><div class="cost-label">ShieldFlow / mois</div></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- FONCTIONNEMENT -->
-<section class="s" id="fonctionnement">
+<!-- SERVICES -->
+<section class="s" id="services">
   <div class="s-i">
-    <div class="eyebrow">Fonctionnement</div>
-    <h2 class="s-h">Simple à déployer.<br>Puissant en protection.</h2>
-    <p class="s-sub">Trois étapes suffisent. Notre équipe s'occupe du reste.</p>
-    <div class="steps">
-      <div class="step"><div class="step-n">01 — Installation</div><div class="step-t">Une commande, c'est tout</div><p class="step-b">Nous vous envoyons une ligne à coller dans votre terminal. L'agent s'installe automatiquement et démarre en moins de 5 minutes. Compatible Mac, Windows et Linux.</p></div>
-      <div class="step" style="background:var(--bg)"><div class="step-n">02 — Analyse RGPD</div><div class="step-t">Score de conformité en 30 secondes</div><p class="step-b">L'agent analyse votre conformité RGPD article par article — chiffrement, pare-feu, journalisation, antivirus, cloud. Score mis à jour toutes les 30 secondes.</p></div>
-      <div class="step"><div class="step-n">03 — Correction &amp; Rapport</div><div class="step-t">Automatique ou guidé</div><p class="step-b">Notre équipe corrige automatiquement ce qui peut l'être. Chaque matin à 8h, vous recevez un rapport PDF officiel avec votre score RGPD, utilisable comme preuve de conformité.</p></div>
+    <div class="eyebrow">Nos services</div>
+    <h2 class="s-h">Tout ce qu'une équipe cyber<br>fait pour vous — automatiquement</h2>
+    <p class="s-sub">ShieldFlow assure les missions d'un département IT sécurité complet, 24h/24, 7j/7.</p>
+    <div class="services">
+      <div class="service">
+        <div class="service-header">
+          <div class="service-icon">🔍</div>
+          <div class="service-title">Surveillance & Détection</div>
+        </div>
+        <p class="service-body">Monitoring continu de toutes vos machines et services cloud. Détection en temps réel des menaces — malware, intrusions, comportements suspects, ports dangereux, tentatives de connexion. Alerte immédiate dès qu'un problème est détecté.</p>
+        <div class="service-tags"><span class="stag">Temps réel</span><span class="stag">Mac / Windows / Linux</span><span class="stag">Cloud</span></div>
+      </div>
+      <div class="service">
+        <div class="service-header">
+          <div class="service-icon">⚡</div>
+          <div class="service-title">Correction & Remédiation</div>
+        </div>
+        <p class="service-body">Les failles détectées sont corrigées automatiquement à distance — activation du pare-feu, fermeture des ports dangereux, blocage des IPs malveillantes. Intervention de notre équipe pour les corrections complexes.</p>
+        <div class="service-tags"><span class="stag">Automatique</span><span class="stag">À distance</span><span class="stag">Sans intervention client</span></div>
+      </div>
+      <div class="service">
+        <div class="service-header">
+          <div class="service-icon">☁️</div>
+          <div class="service-title">Administration Cloud</div>
+        </div>
+        <p class="service-body">Surveillance et administration de Microsoft 365, Amazon AWS et Google Workspace. Comptes sans MFA, accès non révoqués, mauvaises configurations, backups échoués — tout est détecté et corrigé.</p>
+        <div class="service-tags"><span class="stag">M365</span><span class="stag">AWS</span><span class="stag">Google Workspace</span></div>
+      </div>
+      <div class="service">
+        <div class="service-header">
+          <div class="service-icon">📋</div>
+          <div class="service-title">Conformité Réglementaire</div>
+        </div>
+        <p class="service-body">Score RGPD calculé automatiquement article par article. Rapport de conformité PDF officiel généré chaque mois. Conformité NIS2 incluse. Évitez les sanctions CNIL jusqu'à 4% de votre chiffre d'affaires.</p>
+        <div class="service-tags"><span class="stag">RGPD</span><span class="stag">NIS2</span><span class="stag">Rapport PDF</span></div>
+      </div>
+      <div class="service">
+        <div class="service-header">
+          <div class="service-icon">🧠</div>
+          <div class="service-title">Threat Intelligence</div>
+        </div>
+        <p class="service-body">Vérification de vos connexions réseau contre 3 millions d'IPs malveillantes connues. Surveillance du dark web pour détecter si vos données ou emails ont été compromis dans des fuites.</p>
+        <div class="service-tags"><span class="stag">Dark web</span><span class="stag">3M+ IPs malveillantes</span><span class="stag">CVE Scanner</span></div>
+      </div>
+      <div class="service">
+        <div class="service-header">
+          <div class="service-icon">📄</div>
+          <div class="service-title">Reporting & Visibilité</div>
+        </div>
+        <p class="service-body">Rapport PDF quotidien envoyé chaque matin à 8h avec le score de sécurité, les alertes traitées et les actions réalisées. Dashboard temps réel accessible depuis n'importe où.</p>
+        <div class="service-tags"><span class="stag">Rapport quotidien</span><span class="stag">Dashboard</span><span class="stag">Score sécurité</span></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="s s-alt" id="fonctionnalites">
+<!-- FONCTIONNEMENT -->
+<section class="s s-alt" id="fonctionnement">
   <div class="s-i">
-    <div class="eyebrow">Fonctionnalités</div>
-    <h2 class="s-h">Tout ce dont votre entreprise<br>a besoin pour être protégée</h2>
-    <p class="s-sub">Machines, cloud, conformité réglementaire — tout en une seule plateforme.</p>
-    <div class="feats">
-      <div class="feat"><div class="feat-ic">§</div><div class="feat-t">Conformité RGPD automatique</div><p class="feat-b">Score calculé article par article. Rapport PDF officiel généré automatiquement. Évitez les sanctions CNIL jusqu'à 4% de votre CA.</p><span class="tag tb">Réglementaire</span></div>
-      <div class="feat"><div class="feat-ic">◉</div><div class="feat-t">Détection en temps réel</div><p class="feat-b">Pare-feu, chiffrement disque, antivirus, ports dangereux, brute force, processus suspects. Score mis à jour toutes les 30 secondes.</p><span class="tag ta">Temps réel</span></div>
-      <div class="feat"><div class="feat-ic">⟳</div><div class="feat-t">Remédiation automatique</div><p class="feat-b">Les failles corrigeables sont traitées à distance depuis notre dashboard, sans accès physique à vos machines.</p><span class="tag tg">Automatique</span></div>
-      <div class="feat"><div class="feat-ic">◈</div><div class="feat-t">Surveillance cloud</div><p class="feat-b">Microsoft 365, Amazon AWS et Google Workspace. Comptes sans MFA, mauvaises configurations, accès non autorisés.</p><span class="tag tb">Multi-cloud</span></div>
-      <div class="feat"><div class="feat-ic">⌖</div><div class="feat-t">Threat Intelligence</div><p class="feat-b">Vérification contre 3 millions d'IPs malveillantes. Surveillance du dark web pour détecter si vos emails ont été compromis.</p><span class="tag ta">Intelligence</span></div>
-      <div class="feat"><div class="feat-ic">◻</div><div class="feat-t">Rapports PDF quotidiens</div><p class="feat-b">PDF envoyé chaque matin à 8h. Rapport RGPD officiel généré en 1 clic — utilisable comme preuve auprès de la CNIL.</p><span class="tag tg">Automatique</span></div>
+    <div class="eyebrow">Fonctionnement</div>
+    <h2 class="s-h">Opérationnel en 5 minutes.</h2>
+    <p class="s-sub">Une commande à copier-coller. Notre équipe s'occupe du reste.</p>
+    <div class="steps">
+      <div class="step"><div class="step-n">01 — Installation</div><div class="step-t">Une commande, c'est tout</div><p class="step-b">Nous vous envoyons une ligne à coller dans votre terminal. L'agent s'installe automatiquement sur chaque machine en moins de 5 minutes. Compatible Mac, Windows et Linux. Démarre au boot, aucune maintenance.</p></div>
+      <div class="step" style="background:var(--bg)"><div class="step-n">02 — Surveillance</div><div class="step-t">Monitoring 24h/24 automatique</div><p class="step-b">L'agent analyse en continu l'état de chaque machine et de votre cloud. Toutes les 30 secondes, il vérifie l'ensemble des points de sécurité et remonte les alertes en temps réel dans notre dashboard.</p></div>
+      <div class="step"><div class="step-n">03 — Protection</div><div class="step-t">Correction et rapport quotidien</div><p class="step-b">Notre équipe corrige automatiquement depuis notre dashboard centralisé. Chaque matin à 8h, vous recevez un rapport PDF avec le score de sécurité, les menaces traitées et l'état de votre conformité RGPD.</p></div>
     </div>
   </div>
 </section>
@@ -355,21 +418,21 @@ footer{border-top:1px solid var(--border);padding:28px}
 <section class="s">
   <div class="s-i">
     <div class="eyebrow">Comparaison</div>
-    <h2 class="s-h">La protection enterprise.<br>Le budget PME.</h2>
-    <p class="s-sub">80% de la valeur des grandes solutions pour une fraction du coût.</p>
+    <h2 class="s-h">Une équipe cyber complète.<br>Pour le prix d'un abonnement.</h2>
+    <p class="s-sub">ShieldFlow remplace un département IT sécurité entier pour une fraction du coût.</p>
     <div class="comp">
       <table>
         <thead>
-          <tr><th>Fonctionnalité</th><th class="hl">ShieldFlow</th><th>CrowdStrike</th><th>RSSI interne</th><th>Sans protection</th></tr>
+          <tr><th>Ce dont vous avez besoin</th><th class="hl">ShieldFlow</th><th>Recrutement interne</th><th>Prestataire ponctuel</th><th>Sans protection</th></tr>
         </thead>
         <tbody>
-          <tr><td>Score RGPD automatique</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Rapport RGPD PDF officiel</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="maybe">Manuel</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Surveillance 24h/24</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="yes">✓</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Correction automatique</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="yes">✓</span></td><td><span class="maybe">Manuel</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Surveillance cloud M365/AWS</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="yes">✓</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Installation en 5 minutes</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Complexe</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Coût mensuel</td><td class="hl" style="color:var(--green);font-weight:600">199 – 599 €</td><td style="color:var(--red)">2 000 € +</td><td style="color:var(--red)">5 000 € +</td><td style="color:var(--green)">0 €</td></tr>
+          <tr><td>Surveillance 24h/24</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+          <tr><td>Correction automatique à distance</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Manuel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
+          <tr><td>Administration cloud M365/AWS</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
+          <tr><td>Conformité RGPD automatique</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
+          <tr><td>Rapport de sécurité quotidien</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Manuel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+          <tr><td>Threat Intelligence & Dark web</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+          <tr><td>Coût mensuel</td><td class="hl" style="color:var(--green);font-weight:600">199 – 599 €</td><td style="color:var(--red)">5 000 – 8 000 €</td><td style="color:var(--red)">1 000 – 3 000 €</td><td style="color:var(--green)">0 €</td></tr>
         </tbody>
       </table>
     </div>
@@ -380,7 +443,7 @@ footer{border-top:1px solid var(--border);padding:28px}
 <section class="s s-alt" id="tarifs">
   <div class="s-i" style="text-align:center">
     <div class="eyebrow">Tarifs</div>
-    <h2 class="s-h">Transparent. Sans surprise.</h2>
+    <h2 class="s-h">Votre équipe cyber.<br>Sans les charges sociales.</h2>
     <p class="s-sub" style="margin:0 auto">Pas de frais cachés. Résiliable à tout moment avec un mois de préavis.</p>
   </div>
   <div class="s-i">
@@ -388,14 +451,14 @@ footer{border-top:1px solid var(--border);padding:28px}
       <div class="price">
         <div class="p-plan">Starter</div>
         <div class="p-price">199 <span>€ / mois</span></div>
-        <p class="p-desc">Pour les TPE et indépendants.</p>
+        <p class="p-desc">Pour les TPE et indépendants — jusqu'à 5 postes.</p>
         <ul class="p-list">
-          <li>Jusqu'à 5 machines surveillées</li>
-          <li>Score et rapport RGPD automatique</li>
-          <li>Détection et remédiation</li>
+          <li>5 machines surveillées 24h/24</li>
+          <li>Détection et correction automatique</li>
           <li>Rapport PDF quotidien</li>
+          <li>Score et rapport RGPD</li>
           <li class="off">Surveillance cloud</li>
-          <li class="off">Support prioritaire</li>
+          <li class="off">Threat Intelligence</li>
         </ul>
         <a href="#contact" class="p-btn p-btn-o" onclick="selectPlan('Starter — 199€/mois')">Commencer →</a>
       </div>
@@ -403,12 +466,12 @@ footer{border-top:1px solid var(--border);padding:28px}
         <div class="hi-lbl">Le plus choisi</div>
         <div class="p-plan">Business</div>
         <div class="p-price">399 <span>€ / mois</span></div>
-        <p class="p-desc">Pour les PME de 10 à 50 employés.</p>
+        <p class="p-desc">Pour les PME de 10 à 50 employés — jusqu'à 20 postes.</p>
         <ul class="p-list">
-          <li>Jusqu'à 20 machines surveillées</li>
-          <li>Score et rapport RGPD complet</li>
-          <li>Détection et remédiation automatique</li>
-          <li>Cloud M365, AWS, Google Workspace</li>
+          <li>20 machines surveillées 24h/24</li>
+          <li>Détection et correction automatique</li>
+          <li>Surveillance M365, AWS, Google</li>
+          <li>Conformité RGPD & NIS2 complète</li>
           <li>CVE Scanner et Threat Intelligence</li>
           <li>Rapport PDF quotidien</li>
         </ul>
@@ -417,14 +480,14 @@ footer{border-top:1px solid var(--border);padding:28px}
       <div class="price">
         <div class="p-plan">Pro</div>
         <div class="p-price">599 <span>€ / mois</span></div>
-        <p class="p-desc">Pour les entreprises jusqu'à 200 employés.</p>
+        <p class="p-desc">Pour les entreprises jusqu'à 200 employés — jusqu'à 50 postes.</p>
         <ul class="p-list">
-          <li>Jusqu'à 50 machines surveillées</li>
+          <li>50 machines surveillées 24h/24</li>
           <li>Tout Business inclus</li>
-          <li>Rapport mensuel dédié</li>
-          <li>Audit trimestriel inclus</li>
-          <li>SLA 99,9 % contractuel</li>
-          <li>Support dédié 7j / 7</li>
+          <li>RSSI virtuel dédié</li>
+          <li>Rapport mensuel personnalisé</li>
+          <li>SLA 99,9% contractuel</li>
+          <li>Support prioritaire 7j/7</li>
         </ul>
         <a href="#contact" class="p-btn p-btn-o" onclick="selectPlan('Pro — 599€/mois')">Nous contacter →</a>
       </div>
@@ -439,23 +502,22 @@ footer{border-top:1px solid var(--border);padding:28px}
     <h2 class="s-h">Ce que vous souhaitez savoir</h2>
   </div>
   <div class="faq">
-    <div class="faq-i open"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Mon entreprise est-elle vraiment obligée d'être conforme au RGPD ?<span class="faq-ic">+</span></button><div class="faq-a">Oui, sans exception. Depuis le 25 mai 2018, toute entreprise qui traite des données personnelles de résidents européens est soumise au RGPD — quelle que soit sa taille. La CNIL prononce des sanctions régulièrement, y compris contre des PME.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Mes données restent-elles confidentielles ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Toutes vos données sont stockées en Europe, chiffrées en AES-256. Nous ne transmettons aucune donnée à des tiers. Un accord de traitement des données (DPA) conforme au RGPD est signé avec chaque client.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">L'agent ralentit-il nos machines ?<span class="faq-ic">+</span></button><div class="faq-a">Non. L'agent consomme moins de 1% de CPU en fonctionnement normal. Il tourne silencieusement en arrière-plan sans impacter les performances.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Faut-il des compétences techniques pour l'installation ?<span class="faq-ic">+</span></button><div class="faq-a">Non. L'installation se fait en copiant-collant une commande dans le terminal. Nous vous accompagnons par visioconférence si nécessaire. La mise en service prend moins d'une heure.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Le rapport RGPD généré est-il utilisable comme preuve ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Le rapport PDF ShieldFlow est daté, signé et détaillé article par article. Il peut être présenté à la CNIL, à vos clients ou à vos partenaires comme preuve de votre démarche de conformité.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on résilier à tout moment ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Aucun engagement annuel obligatoire. Résiliation possible à tout moment avec un préavis d'un mois.</div></div>
+    <div class="faq-i open"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">ShieldFlow remplace-t-il vraiment un ingénieur cybersécurité ?<span class="faq-ic">+</span></button><div class="faq-a">Pour une PME de 10 à 200 employés, oui dans la grande majorité des cas. ShieldFlow assure la surveillance continue, la détection des menaces, la correction automatique et la conformité réglementaire — ce sont les missions principales d'un ingénieur sécurité. Pour des besoins très spécifiques (tests d'intrusion, architecture réseau complexe), une prestation ponctuelle reste nécessaire.</div></div>
+    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Faut-il des compétences techniques pour utiliser ShieldFlow ?<span class="faq-ic">+</span></button><div class="faq-a">Non, aucune. L'installation se fait en copiant-collant une commande dans le terminal. Ensuite vous ne touchez plus à rien — ShieldFlow surveille et corrige automatiquement. Vous recevez un rapport simple chaque matin.</div></div>
+    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Nos données sont-elles en sécurité ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Toutes les données sont stockées en Europe, chiffrées en AES-256. Nous ne transmettons aucune donnée à des tiers. Un accord de traitement des données (DPA) conforme au RGPD est signé avec chaque client.</div></div>
+    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">L'agent ralentit-il nos machines ?<span class="faq-ic">+</span></button><div class="faq-a">Non. L'agent consomme moins de 1% de CPU. Il tourne silencieusement en arrière-plan sans affecter les performances de vos machines.</div></div>
+    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on résilier à tout moment ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Aucun engagement annuel. Résiliation possible à tout moment avec un préavis d'un mois.</div></div>
+    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Intervenez-vous en cas de cyberattaque ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. En cas d'incident détecté, notre équipe intervient immédiatement — isolation de la machine compromise, blocage des accès non autorisés, analyse des logs. Pour les plans Business et Pro, une hotline est disponible en cas d'urgence.</div></div>
   </div>
 </section>
 
-<!-- CTA STRIP -->
+<!-- CTA -->
 <div class="cta-s">
   <div class="cta-si">
-    <div class="cta-lbl">Obligation légale depuis le 25 mai 2018</div>
-    <h2>Votre entreprise risque jusqu'à<br>4% de son CA d'amende.</h2>
-    <p>Le RGPD et la NIS2 s'appliquent à votre entreprise. La CNIL contrôle. Découvrez votre score de conformité en 5 minutes — gratuitement, sans engagement.</p>
-    <a href="#contact" class="btn-white">Tester ma conformité gratuitement →</a>
-    <div class="cta-note">Sans engagement · Sans carte bancaire · Résultat en 5 minutes</div>
+    <h2>Votre département cyber.<br>Opérationnel en 5 minutes.</h2>
+    <p>Surveillance 24h/24, correction automatique, conformité RGPD — sans recruter personne. Contactez-nous, notre équipe vous rappelle sous 24h.</p>
+    <a href="#contact" class="btn-white">Nous contacter gratuitement →</a>
+    <div class="cta-note">Sans engagement · Sans carte bancaire · Réponse sous 24h</div>
   </div>
 </div>
 
@@ -465,22 +527,21 @@ footer{border-top:1px solid var(--border);padding:28px}
     <div class="contact-grid">
       <div>
         <div class="eyebrow">Contact</div>
-        <h2 class="c-h">Parlons de votre conformité</h2>
-        <p class="c-sub">Notre équipe analyse votre situation et vous envoie votre commande d'installation par email. Score RGPD obtenu en 5 minutes. Réponse garantie sous 24h.</p>
+        <h2 class="c-h">Parlons de votre sécurité</h2>
+        <p class="c-sub">Notre équipe analyse votre situation et vous propose une solution adaptée. Réponse garantie sous 24h ouvrées.</p>
         <div class="c-det"><div class="c-ic">✉</div><div><div class="c-lbl">Email</div><div class="c-val">shieldflowcontact@gmail.com</div></div></div>
         <div class="c-det"><div class="c-ic">◎</div><div><div class="c-lbl">Siège</div><div class="c-val">Marseille, France — opérationnel partout</div></div></div>
         <div class="c-det"><div class="c-ic">◷</div><div><div class="c-lbl">Réponse</div><div class="c-val">Sous 24h ouvrées</div></div></div>
       </div>
       <div class="form-box">
-        <div style="font-size:15px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px">Tester ma conformité RGPD — gratuit</div>
-        <div style="font-size:13px;color:var(--ink3);margin-bottom:18px;font-weight:300">Recevez votre commande d'installation par email. Score RGPD en 5 minutes.</div>
-        <div id="f-ok">✓ Demande envoyée ! Vérifiez votre email — votre commande d'installation vous a été envoyée. Notre équipe vous contacte sous 24h.</div>
-        <div id="f-plan-display" style="display:none;background:var(--blue-l);border:1px solid #bfdbfe;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:13px;font-weight:600;color:#1864ab"></div>
-        <input type="hidden" id="f-plan" value="">
+        <div style="font-size:15px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px">Demander un audit gratuit</div>
+        <div style="font-size:13px;color:var(--ink3);margin-bottom:18px;font-weight:300">Notre équipe vous rappelle sous 24h pour analyser votre situation.</div>
+        <div id="f-ok">✓ Demande envoyée ! Notre équipe vous contacte sous 24h.</div>
+        <div id="f-plan-display"></div>
         <div class="f-r"><label class="f-l">Nom complet *</label><input class="f-c" type="text" id="fn" placeholder="Jean Dupont"></div>
         <div class="f-r"><label class="f-l">Email professionnel *</label><input class="f-c" type="email" id="fe" placeholder="jean@entreprise.fr"></div>
-        <div class="f-r"><label class="f-l">Entreprise</label><input class="f-c" type="text" id="fc" placeholder="Nom de votre entreprise"></div>
         <div class="f-r"><label class="f-l">Téléphone *</label><input class="f-c" type="tel" id="fphone" placeholder="06 12 34 56 78"></div>
+        <div class="f-r"><label class="f-l">Entreprise</label><input class="f-c" type="text" id="fc" placeholder="Nom de votre entreprise"></div>
         <div class="f-r">
           <label class="f-l">Nombre de machines</label>
           <select class="f-c" id="fm">
@@ -490,7 +551,8 @@ footer{border-top:1px solid var(--border);padding:28px}
             <option>Plus de 50 machines</option>
           </select>
         </div>
-        <button class="f-sub" id="f-btn" onclick="sendForm()">Obtenir mon audit RGPD gratuit →</button>
+        <input type="hidden" id="f-plan" value="">
+        <button class="f-sub" id="f-btn" onclick="sendForm()">Demander mon audit gratuit →</button>
         <div style="font-size:11px;color:var(--ink4);text-align:center;margin-top:10px">Sans engagement · Données hébergées en Europe · Conforme RGPD</div>
       </div>
     </div>
@@ -505,7 +567,7 @@ footer{border-top:1px solid var(--border);padding:28px}
       <span class="f-copy" style="margin-left:12px">© 2026 ShieldFlow. Tous droits réservés.</span>
     </div>
     <div class="f-links">
-      <a href="#fonctionnement">Fonctionnement</a>
+      <a href="#services">Services</a>
       <a href="#tarifs">Tarifs</a>
       <a href="#faq">FAQ</a>
       <a href="#contact">Contact</a>
@@ -523,33 +585,37 @@ function selectPlan(plan){
   d.style.display='block';
   d.textContent='✓ Plan sélectionné : '+plan;
 }
+
 async function sendForm(){
   const n=document.getElementById('fn').value.trim();
   const e=document.getElementById('fe').value.trim();
+  const phone=document.getElementById('fphone').value.trim();
   const c=document.getElementById('fc').value.trim();
   const m=document.getElementById('fm').value;
-  const phone=document.getElementById('fphone')?document.getElementById('fphone').value.trim():'';
+  const plan=document.getElementById('f-plan').value;
   if(!n||!e){alert('Veuillez renseigner votre nom et votre email.');return;}
   const btn=document.getElementById('f-btn');
   btn.textContent='Envoi en cours...';btn.disabled=true;
   try{
     const r=await fetch('https://shieldflow-rfzv.onrender.com/api/signup',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name:n,email:e,company:c,machines:m,plan:document.getElementById("f-plan").value||"Non sélectionné",phone:phone})
+      body:JSON.stringify({name:n,email:e,phone:phone,company:c,machines:m,plan:plan||'Non sélectionné'})
     });
     const d=await r.json();
     if(d.success){
       document.getElementById('f-ok').style.display='block';
       btn.style.display='none';
+      document.getElementById('f-plan-display').style.display='none';
     } else {
       alert('Erreur: '+(d.error||'Réessayez.'));
-      btn.textContent='Obtenir mon audit RGPD gratuit →';btn.disabled=false;
+      btn.textContent='Demander mon audit gratuit →';btn.disabled=false;
     }
   }catch(err){
-    alert('Erreur de connexion. Réessayez dans quelques instants.');
-    btn.textContent='Obtenir mon audit RGPD gratuit →';btn.disabled=false;
+    alert('Erreur de connexion. Réessayez.');
+    btn.textContent='Demander mon audit gratuit →';btn.disabled=false;
   }
 }
+
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
     const t=document.querySelector(a.getAttribute('href'));
