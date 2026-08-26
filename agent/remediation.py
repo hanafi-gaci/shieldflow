@@ -425,3 +425,281 @@ if __name__ == '__main__':
     
     result = execute(alert_type, params)
     print(json.dumps(result, indent=2, ensure_ascii=False))
+
+
+# ─── REMEDIATIONS AVANCEES ────────────────────────────────────────────────────
+
+def kill_process(params=None):
+    """Tuer un processus suspect par nom ou PID."""
+    params = params or {}
+    process_name = params.get('process_name', '')
+    pid = params.get('pid', '')
+    try:
+        if pid:
+            subprocess.run(['kill', '-9', str(pid)], check=True)
+            return {'success': True, 'output': f'Processus {pid} terminé'}
+        elif process_name:
+            if OS == 'Darwin' or OS == 'Linux':
+                r = subprocess.run(['pkill', '-9', '-f', process_name], capture_output=True)
+                return {'success': True, 'output': f'Processus {process_name} terminé'}
+            elif OS == 'Windows':
+                r = subprocess.run(['taskkill', '/F', '/IM', process_name], capture_output=True)
+                return {'success': r.returncode == 0, 'output': f'Processus {process_name} terminé'}
+        return {'success': False, 'output': 'Nom de processus ou PID requis'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def block_ip(params=None):
+    """Bloquer une adresse IP suspecte."""
+    params = params or {}
+    ip = params.get('ip', '')
+    if not ip:
+        return {'success': False, 'output': 'IP requise'}
+    try:
+        if OS == 'Darwin':
+            r = subprocess.run(['sudo', 'pfctl', '-t', 'blocklist', '-T', 'add', ip], capture_output=True)
+            return {'success': True, 'output': f'IP {ip} bloquée via pfctl'}
+        elif OS == 'Linux':
+            r = subprocess.run(['sudo', 'iptables', '-A', 'INPUT', '-s', ip, '-j', 'DROP'], capture_output=True)
+            subprocess.run(['sudo', 'iptables', '-A', 'OUTPUT', '-d', ip, '-j', 'DROP'], capture_output=True)
+            return {'success': True, 'output': f'IP {ip} bloquée via iptables'}
+        elif OS == 'Windows':
+            r = subprocess.run(['netsh', 'advfirewall', 'firewall', 'add', 'rule',
+                               f'name=Block_{ip}', 'dir=in', 'action=block', f'remoteip={ip}'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': f'IP {ip} bloquée'}
+        return {'success': False, 'output': 'OS non supporté'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def disable_user(params=None):
+    """Désactiver un compte utilisateur local."""
+    params = params or {}
+    username = params.get('username', '')
+    if not username:
+        return {'success': False, 'output': 'Nom utilisateur requis'}
+    try:
+        if OS == 'Darwin':
+            r = subprocess.run(['sudo', 'dscl', '.', '-create', f'/Users/{username}', 'AuthenticationAuthority', ';DisabledUser;'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': f'Utilisateur {username} désactivé'}
+        elif OS == 'Linux':
+            r = subprocess.run(['sudo', 'usermod', '-L', username], capture_output=True)
+            return {'success': r.returncode == 0, 'output': f'Utilisateur {username} verrouillé'}
+        elif OS == 'Windows':
+            r = subprocess.run(['net', 'user', username, '/active:no'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': f'Utilisateur {username} désactivé'}
+        return {'success': False, 'output': 'OS non supporté'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def flush_dns(params=None):
+    """Vider le cache DNS."""
+    try:
+        if OS == 'Darwin':
+            subprocess.run(['sudo', 'dscacheutil', '-flushcache'], check=True)
+            subprocess.run(['sudo', 'killall', '-HUP', 'mDNSResponder'], check=True)
+            return {'success': True, 'output': 'Cache DNS vidé'}
+        elif OS == 'Linux':
+            subprocess.run(['sudo', 'systemd-resolve', '--flush-caches'], capture_output=True)
+            return {'success': True, 'output': 'Cache DNS vidé'}
+        elif OS == 'Windows':
+            r = subprocess.run(['ipconfig', '/flushdns'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'Cache DNS vidé'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def force_system_update(params=None):
+    """Forcer les mises à jour système."""
+    try:
+        if OS == 'Darwin':
+            r = subprocess.run(['sudo', 'softwareupdate', '-ia', '--restart'], capture_output=True, timeout=300)
+            return {'success': True, 'output': 'Mises à jour système lancées'}
+        elif OS == 'Linux':
+            subprocess.run(['sudo', 'apt-get', 'update', '-y'], capture_output=True, timeout=120)
+            r = subprocess.run(['sudo', 'apt-get', 'upgrade', '-y'], capture_output=True, timeout=300)
+            return {'success': r.returncode == 0, 'output': 'Mises à jour Linux appliquées'}
+        elif OS == 'Windows':
+            r = subprocess.run(['powershell', 'Install-WindowsUpdate', '-AcceptAll', '-AutoReboot'], capture_output=True)
+            return {'success': True, 'output': 'Mises à jour Windows lancées'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def restart_service(params=None):
+    """Redémarrer un service système."""
+    params = params or {}
+    service = params.get('service', '')
+    if not service:
+        return {'success': False, 'output': 'Nom du service requis'}
+    try:
+        if OS == 'Darwin':
+            r = subprocess.run(['sudo', 'launchctl', 'kickstart', '-k', f'system/{service}'], capture_output=True)
+            return {'success': True, 'output': f'Service {service} redémarré'}
+        elif OS == 'Linux':
+            r = subprocess.run(['sudo', 'systemctl', 'restart', service], capture_output=True)
+            return {'success': r.returncode == 0, 'output': f'Service {service} redémarré'}
+        elif OS == 'Windows':
+            subprocess.run(['net', 'stop', service], capture_output=True)
+            r = subprocess.run(['net', 'start', service], capture_output=True)
+            return {'success': r.returncode == 0, 'output': f'Service {service} redémarré'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def delete_malicious_file(params=None):
+    """Supprimer un fichier malveillant."""
+    params = params or {}
+    filepath = params.get('filepath', '')
+    if not filepath:
+        return {'success': False, 'output': 'Chemin fichier requis'}
+    try:
+        import os as _os
+        if _os.path.exists(filepath):
+            _os.remove(filepath)
+            return {'success': True, 'output': f'Fichier {filepath} supprimé'}
+        return {'success': False, 'output': 'Fichier non trouvé'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def lock_session(params=None):
+    """Verrouiller la session utilisateur."""
+    try:
+        if OS == 'Darwin':
+            subprocess.run(['/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession', '-suspend'], capture_output=True)
+            return {'success': True, 'output': 'Session verrouillée'}
+        elif OS == 'Linux':
+            subprocess.run(['loginctl', 'lock-sessions'], capture_output=True)
+            return {'success': True, 'output': 'Session verrouillée'}
+        elif OS == 'Windows':
+            r = subprocess.run(['rundll32.exe', 'user32.dll,LockWorkStation'], capture_output=True)
+            return {'success': True, 'output': 'Session verrouillée'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def clean_temp_files(params=None):
+    """Nettoyer les fichiers temporaires."""
+    try:
+        import shutil
+        cleaned = 0
+        if OS == 'Darwin':
+            temp_dirs = ['/tmp', '/var/tmp', str(Path.home() / 'Library/Caches')]
+        elif OS == 'Linux':
+            temp_dirs = ['/tmp', '/var/tmp']
+        elif OS == 'Windows':
+            temp_dirs = ['C:\\Windows\\Temp', str(Path.home() / 'AppData\\Local\\Temp')]
+        else:
+            temp_dirs = ['/tmp']
+        
+        for d in temp_dirs:
+            if Path(d).exists():
+                for f in Path(d).iterdir():
+                    try:
+                        if f.is_file():
+                            f.unlink()
+                            cleaned += 1
+                        elif f.is_dir():
+                            shutil.rmtree(f, ignore_errors=True)
+                            cleaned += 1
+                    except:
+                        pass
+        return {'success': True, 'output': f'{cleaned} fichier(s) temporaire(s) supprimé(s)'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def disable_wifi(params=None):
+    """Désactiver le WiFi (isolation réseau)."""
+    try:
+        if OS == 'Darwin':
+            r = subprocess.run(['sudo', 'networksetup', '-setairportpower', 'en0', 'off'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'WiFi désactivé'}
+        elif OS == 'Linux':
+            r = subprocess.run(['sudo', 'nmcli', 'radio', 'wifi', 'off'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'WiFi désactivé'}
+        elif OS == 'Windows':
+            r = subprocess.run(['netsh', 'interface', 'set', 'interface', 'Wi-Fi', 'disable'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'WiFi désactivé'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def enable_wifi(params=None):
+    """Réactiver le WiFi."""
+    try:
+        if OS == 'Darwin':
+            r = subprocess.run(['sudo', 'networksetup', '-setairportpower', 'en0', 'on'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'WiFi réactivé'}
+        elif OS == 'Linux':
+            r = subprocess.run(['sudo', 'nmcli', 'radio', 'wifi', 'on'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'WiFi réactivé'}
+        elif OS == 'Windows':
+            r = subprocess.run(['netsh', 'interface', 'set', 'interface', 'Wi-Fi', 'enable'], capture_output=True)
+            return {'success': r.returncode == 0, 'output': 'WiFi réactivé'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+def isolate_machine(params=None):
+    """Isolation complète de la machine du réseau — urgence ransomware."""
+    results = []
+    try:
+        wifi = disable_wifi()
+        results.append(f'WiFi: {wifi["output"]}')
+        if OS == 'Darwin':
+            subprocess.run(['sudo', 'pfctl', '-e'], capture_output=True)
+            subprocess.run(['sudo', 'pfctl', '-F', 'all'], capture_output=True)
+            results.append('Pare-feu total activé')
+        elif OS == 'Linux':
+            subprocess.run(['sudo', 'iptables', '-P', 'INPUT', 'DROP'], capture_output=True)
+            subprocess.run(['sudo', 'iptables', '-P', 'OUTPUT', 'DROP'], capture_output=True)
+            subprocess.run(['sudo', 'iptables', '-P', 'FORWARD', 'DROP'], capture_output=True)
+            results.append('Toutes connexions bloquées')
+        return {'success': True, 'output': ' | '.join(results), 'isolated': True}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+
+# Enregistrer les nouvelles actions dans le registre
+REMEDIATION_MAP.update({
+    'KILL_PROCESS':          {'action': 'kill_process',         'label': 'Tuer processus suspect',        'auto': False, 'risk': 'medium'},
+    'BLOCK_IP':              {'action': 'block_ip',              'label': 'Bloquer IP suspecte',           'auto': True,  'risk': 'low'},
+    'DISABLE_USER':          {'action': 'disable_user',          'label': 'Désactiver utilisateur',        'auto': False, 'risk': 'high'},
+    'FLUSH_DNS':             {'action': 'flush_dns',             'label': 'Vider cache DNS',               'auto': True,  'risk': 'low'},
+    'FORCE_UPDATE':          {'action': 'force_system_update',   'label': 'Forcer mises à jour',           'auto': False, 'risk': 'medium'},
+    'RESTART_SERVICE':       {'action': 'restart_service',       'label': 'Redémarrer service',            'auto': False, 'risk': 'medium'},
+    'DELETE_MALICIOUS_FILE': {'action': 'delete_malicious_file', 'label': 'Supprimer fichier malveillant', 'auto': False, 'risk': 'high'},
+    'LOCK_SESSION':          {'action': 'lock_session',          'label': 'Verrouiller session',           'auto': True,  'risk': 'low'},
+    'CLEAN_TEMP':            {'action': 'clean_temp_files',      'label': 'Nettoyer fichiers temp',        'auto': True,  'risk': 'low'},
+    'DISABLE_WIFI':          {'action': 'disable_wifi',          'label': 'Désactiver WiFi',               'auto': False, 'risk': 'high'},
+    'ENABLE_WIFI':           {'action': 'enable_wifi',           'label': 'Réactiver WiFi',                'auto': False, 'risk': 'low'},
+    'ISOLATE_MACHINE':       {'action': 'isolate_machine',       'label': 'Isoler machine — urgence',      'auto': False, 'risk': 'critical'},
+})
+
+# Ajouter dans la fonction execute
+_ADVANCED_ACTIONS = {
+    'KILL_PROCESS': kill_process,
+    'BLOCK_IP': block_ip,
+    'DISABLE_USER': disable_user,
+    'FLUSH_DNS': flush_dns,
+    'FORCE_UPDATE': force_system_update,
+    'RESTART_SERVICE': restart_service,
+    'DELETE_MALICIOUS_FILE': delete_malicious_file,
+    'LOCK_SESSION': lock_session,
+    'CLEAN_TEMP': clean_temp_files,
+    'DISABLE_WIFI': disable_wifi,
+    'ENABLE_WIFI': enable_wifi,
+    'ISOLATE_MACHINE': isolate_machine,
+}
+
+_original_execute = execute
+
+def execute(alert_type, params=None):
+    if alert_type in _ADVANCED_ACTIONS:
+        return _ADVANCED_ACTIONS[alert_type](params)
+    return _original_execute(alert_type, params)
+
