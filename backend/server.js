@@ -384,10 +384,11 @@ app.get('/api/mssp/tenants/:id/report', async (req, res) => {
 
 // Scheduler — rapport PDF tous les jours à 8h00
 cron.schedule('0 8 * * *', async () => {
-  console.log('[Scheduler] Envoi des rapports PDF quotidiens...');
+  console.log('[Scheduler] Envoi des rapports quotidiens...');
   const tenants = await Tenant.find({ email: { $exists: true, $ne: '' } });
   for (const t of tenants) {
     await sendDailyReport(t._id.toString());
+    await sendAIReport(t);
   }
 }, { timezone: 'Europe/Paris' });
 
@@ -1607,6 +1608,105 @@ app.get('/dashboard', (req, res) => {
 
 // Static files
 app.use(express.static(path.join(__dirname, '../dashboard')));
+
+// ─── RAPPORT IA QUOTIDIEN ────────────────────────────────────────────────────
+
+async function sendAIReport(tenant) {
+  if (!ANTHROPIC_API_KEY || !RESEND_API_KEY) return;
+  try {
+    const alerts = await Alert.find({ tenant_id: tenant._id.toString(), resolved: false });
+    const devices = await Device.find({ tenant_id: tenant._id.toString() });
+    const criticals = alerts.filter(a => a.severity === 'critical');
+    const score = Math.max(0, 100 - criticals.length*20 - alerts.length*5);
+
+    // Générer le rapport IA
+    const prompt = `Tu es un expert cybersécurité senior. Rédige un rapport de sécurité quotidien professionnel en français pour le dirigeant de l'entreprise "${tenant.name}".
+
+Données du jour :
+- Score de sécurité : ${score}/100
+- Appareils surveillés : ${devices.length}
+- Alertes actives : ${alerts.length} dont ${criticals.length} critiques
+- Alertes : ${alerts.map(a => a.title).slice(0,5).join(', ') || 'Aucune'}
+- Conformité RGPD : ${tenant.rgpd_score || 0}/100
+
+Rédige un rapport en 3 paragraphes courts :
+1. Bilan de sécurité du jour (1-2 phrases)
+2. Points d'attention (si alertes) ou félicitations (si tout va bien)
+3. Recommandation du jour
+
+Ton langage doit être accessible, professionnel et rassurant. Maximum 150 mots.`;
+
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 500, messages: [{ role: 'user', content: prompt }] })
+    });
+    const aiData = await r.json();
+    const aiText = aiData.content?.[0]?.text || 'Rapport non disponible';
+
+    const scoreColor = score >= 80 ? '#0ea572' : score >= 50 ? '#d97706' : '#e8334a';
+    const scoreLabel = score >= 80 ? 'Bon niveau' : score >= 50 ? 'À améliorer' : 'Critique';
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'ShieldFlow <contact@conformite-rgpd.org>',
+        to: tenant.email,
+        subject: `🛡 Rapport de sécurité du ${new Date().toLocaleDateString('fr-FR')} — ${tenant.name}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1d23">
+          <div style="background:#1a1d23;padding:24px;border-radius:12px 12px 0 0;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.03em">🛡 ShieldFlow</div>
+            <div style="font-size:12px;color:#8896a8;margin-top:4px">Rapport de sécurité quotidien — ${new Date().toLocaleDateString('fr-FR')}</div>
+          </div>
+          <div style="background:#f8f9fa;padding:28px;border:1px solid #e9ecef;border-top:none">
+            <h2 style="font-size:18px;margin:0 0 20px;color:#1a1d23">${tenant.name}</h2>
+            
+            <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+              <div style="flex:1;min-width:100px;background:white;border:1px solid #e9ecef;border-radius:8px;padding:16px;text-align:center">
+                <div style="font-size:32px;font-weight:800;color:${scoreColor}">${score}</div>
+                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Score /100</div>
+                <div style="font-size:11px;color:${scoreColor};font-weight:600;margin-top:2px">${scoreLabel}</div>
+              </div>
+              <div style="flex:1;min-width:100px;background:white;border:1px solid #e9ecef;border-radius:8px;padding:16px;text-align:center">
+                <div style="font-size:32px;font-weight:800;color:${alerts.length>0?'#e8334a':'#0ea572'}">${alerts.length}</div>
+                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Alertes</div>
+                <div style="font-size:11px;color:${criticals.length>0?'#e8334a':'#6b7280'};margin-top:2px">${criticals.length} critique(s)</div>
+              </div>
+              <div style="flex:1;min-width:100px;background:white;border:1px solid #e9ecef;border-radius:8px;padding:16px;text-align:center">
+                <div style="font-size:32px;font-weight:800;color:#2b6de8">${devices.length}</div>
+                <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em">Appareils</div>
+                <div style="font-size:11px;color:#0ea572;margin-top:2px">Surveillés</div>
+              </div>
+            </div>
+
+            <div style="background:white;border:1px solid #e9ecef;border-radius:8px;padding:20px;margin-bottom:20px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:12px">🤖 Analyse IA du jour</div>
+              <div style="font-size:14px;color:#3d4452;line-height:1.75;white-space:pre-wrap">${aiText}</div>
+            </div>
+
+            ${alerts.length > 0 ? `
+            <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:16px;margin-bottom:20px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#e8334a;margin-bottom:8px">Alertes actives</div>
+              ${alerts.slice(0,3).map(a => `<div style="font-size:13px;padding:6px 0;border-bottom:1px solid #fecaca;color:#3d4452">⚠ ${a.title} — ${a.device_name}</div>`).join('')}
+            </div>` : `
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:20px;text-align:center">
+              <div style="font-size:14px;color:#0ea572;font-weight:600">✅ Aucune alerte — Infrastructure saine</div>
+            </div>`}
+
+            <p style="font-size:12px;color:#9ca3af;margin:0">Ce rapport est généré automatiquement par ShieldFlow chaque matin à 8h. Pour toute question : <a href="mailto:shieldflowcontact@gmail.com" style="color:#2b6de8">shieldflowcontact@gmail.com</a></p>
+          </div>
+          <div style="background:#e9ecef;padding:12px;border-radius:0 0 12px 12px;text-align:center">
+            <p style="font-size:11px;color:#9ca3af;margin:0">ShieldFlow · Cybersécurité Managée · conformite-rgpd.org</p>
+          </div>
+        </div>`
+      })
+    });
+    console.log('[AI Report] Envoyé à', tenant.email);
+  } catch(e) {
+    console.error('[AI Report] Erreur:', e.message);
+  }
+}
 
 // ─── START ────────────────────────────────────────────────────────────────────
 
