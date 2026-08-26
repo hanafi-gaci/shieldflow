@@ -653,6 +653,8 @@ app.post('/api/agent/:tenantId/heartbeat', async (req, res) => {
       if (c.severity === 'critical' || c.severity === 'high') {
         sendAlertEmail(tenant.name, newAlert, device.name, ALERT_EMAIL);
       }
+      // Remédiation autonome IA
+      setTimeout(() => autoRemediateWithAI(tenantId, newAlert, snap), 3000);
     }
   }
   res.json({ success: true, timestamp: new Date() });
@@ -1608,6 +1610,72 @@ app.get('/dashboard', (req, res) => {
 
 // Static files
 app.use(express.static(path.join(__dirname, '../dashboard')));
+
+
+// ─── REMÉDIATION AUTONOME IA ─────────────────────────────────────────────────
+
+async function autoRemediateWithAI(tenantId, alert, snap) {
+  if (!ANTHROPIC_API_KEY) return;
+  
+  // Seulement pour les alertes auto-fixables
+  const autoFixable = ['FIREWALL_OFF', 'SCREENSAVER_OFF', 'REMOTE_LOGIN_ON', 
+                        'FILE_SHARING_ON', 'LOGS_DISABLED', 'DANGER_PORTS',
+                        'SUSPICIOUS_CONNECTIONS'];
+  
+  if (!autoFixable.includes(alert.type)) return;
+  
+  try {
+    const prompt = `Tu es un système de remédiation automatique cybersécurité. 
+    
+Alerte détectée : ${alert.type} — ${alert.title}
+Système : ${snap.platform || 'Darwin'}
+Contexte : pare-feu=${snap.firewall_enabled}, antivirus=${snap.antivirus_status}, CPU=${snap.cpu_percent}%
+
+Décide si cette alerte peut être corrigée automatiquement et en toute sécurité sans intervention humaine.
+Réponds UNIQUEMENT en JSON :
+{
+  "can_auto_fix": true/false,
+  "reason": "raison courte",
+  "command_type": "FIREWALL_OFF|SCREENSAVER_OFF|REMOTE_LOGIN_ON|FILE_SHARING_ON|LOGS_DISABLED|DANGER_PORTS|none",
+  "confidence": 0-100
+}`;
+
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+    });
+    const d = await r.json();
+    const text = d.content?.[0]?.text || '';
+    
+    let decision;
+    try { decision = JSON.parse(text.replace(/```json|```/g, '').trim()); } catch(e) { return; }
+    
+    if (decision.can_auto_fix && decision.confidence >= 80) {
+      console.log(`[AI Remediation] Auto-fix ${alert.type} sur ${alert.device_name} (confiance: ${decision.confidence}%)`);
+      
+      // Envoyer la commande de remédiation
+      const device = await Device.findOne({ device_id: alert.device_id });
+      if (!device) return;
+      
+      const command = {
+        id: require('crypto').randomUUID(),
+        alert_type: decision.command_type,
+        alert_id: alert._id.toString(),
+        params: {},
+        source: 'ai_auto',
+        created_at: new Date()
+      };
+      
+      await Device.findByIdAndUpdate(device._id, { $push: { pending_commands: command } });
+      await Alert.findByIdAndUpdate(alert._id, { ai_auto_fix: true, ai_confidence: decision.confidence });
+      
+      console.log(`[AI Remediation] Commande envoyée automatiquement pour ${alert.type}`);
+    }
+  } catch(e) {
+    console.error('[AI Remediation]', e.message);
+  }
+}
 
 // ─── RAPPORT IA QUOTIDIEN ────────────────────────────────────────────────────
 
