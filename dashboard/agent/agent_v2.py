@@ -36,7 +36,9 @@ try:
     get_system_inventory,
     check_backup_status,
     check_new_users,
-    check_disk_health
+    check_disk_health,
+    collect_user_behavior,
+    detect_behavioral_anomaly
 )
     EXPERT_AVAILABLE = True
 except ImportError as e:
@@ -247,6 +249,35 @@ def main():
                     try:
                         payload['inventory'] = get_system_inventory()
                     except: pass
+
+                # Zero Trust Behavioral Monitoring
+                try:
+                    behavior = collect_user_behavior()
+                    payload['behavior'] = behavior
+                    
+                    # Charger la baseline depuis le fichier local
+                    baseline_file = os.path.join(os.path.dirname(__file__), '.sf_baseline.json')
+                    if os.path.exists(baseline_file):
+                        with open(baseline_file) as f:
+                            baseline = json.load(f)
+                        anomaly = detect_behavioral_anomaly(behavior, baseline)
+                        payload['behavioral_anomaly'] = anomaly
+                        payload['has_behavioral_anomaly'] = anomaly.get('has_anomaly', False)
+                        payload['behavioral_risk_score'] = anomaly.get('risk_score', 0)
+                        payload['behavioral_anomalies'] = anomaly.get('anomalies', [])
+                    else:
+                        # Créer la baseline initiale
+                        baseline = {
+                            'usually_business_hours': behavior.get('is_business_hours', True),
+                            'usual_country': behavior.get('country', ''),
+                            'usual_city': behavior.get('city', ''),
+                            'works_weekends': False,
+                            'created_at': behavior.get('timestamp', '')
+                        }
+                        with open(baseline_file, 'w') as f:
+                            json.dump(baseline, f)
+                        payload['has_behavioral_anomaly'] = False
+                except: pass
                 logger.info(f'Expert data: {len(payload.get("processes", []))} processes, '
                             f"{len(payload.get("open_ports") or [])} ports, "
                             f'{len(payload.get("logs", []))} log lines')

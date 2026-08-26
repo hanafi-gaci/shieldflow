@@ -885,3 +885,106 @@ def check_disk_health() -> dict:
     except Exception as e:
         return {'error': str(e)}
 
+
+
+# ─── ZERO TRUST BEHAVIORAL MONITORING ────────────────────────────────────────
+
+def collect_user_behavior() -> dict:
+    """Surveille le comportement des utilisateurs — heure, localisation, fichiers accédés."""
+    try:
+        import datetime
+        now = datetime.datetime.now()
+        
+        behavior = {
+            'timestamp': now.isoformat(),
+            'hour': now.hour,
+            'day_of_week': now.weekday(),  # 0=lundi, 6=dimanche
+            'is_business_hours': 8 <= now.hour <= 19 and now.weekday() < 5,
+            'is_night_access': now.hour < 6 or now.hour >= 22,
+            'is_weekend': now.weekday() >= 5,
+        }
+
+        # Utilisateur connecté actuellement
+        if SYSTEM == 'Darwin' or SYSTEM == 'Linux':
+            r = subprocess.run(['who'], capture_output=True, text=True)
+            behavior['logged_users'] = [l.split()[0] for l in r.stdout.splitlines() if l]
+            
+            # Dernières connexions
+            r2 = subprocess.run(['last', '-n', '10'], capture_output=True, text=True)
+            behavior['recent_logins'] = r2.stdout.splitlines()[:10]
+
+        # Localisation IP publique
+        try:
+            import urllib.request
+            with urllib.request.urlopen('https://ipapi.co/json/', timeout=5) as resp:
+                geo = json.loads(resp.read())
+                behavior['ip'] = geo.get('ip','')
+                behavior['country'] = geo.get('country_name','')
+                behavior['city'] = geo.get('city','')
+                behavior['org'] = geo.get('org','')
+        except:
+            behavior['ip'] = ''
+            behavior['country'] = ''
+            behavior['city'] = ''
+
+        # Fichiers récemment accédés (dernière heure)
+        suspicious_paths = []
+        sensitive_keywords = ['password', 'mdp', 'secret', 'credential', 'bank', 'compta', 'facture', 'rh', 'salaire']
+        try:
+            if SYSTEM == 'Darwin':
+                r = subprocess.run(['mdfind', '-onlyin', str(Path.home()), 
+                    'kMDItemLastUsedDate >= $time.now(-3600)'], 
+                    capture_output=True, text=True, timeout=10)
+                recent_files = r.stdout.splitlines()[:20]
+                for f in recent_files:
+                    if any(kw in f.lower() for kw in sensitive_keywords):
+                        suspicious_paths.append(f)
+        except:
+            pass
+        behavior['sensitive_files_accessed'] = suspicious_paths
+        behavior['suspicious_file_access'] = len(suspicious_paths) > 0
+
+        return behavior
+    except Exception as e:
+        return {'error': str(e), 'is_business_hours': True}
+
+
+def detect_behavioral_anomaly(current: dict, baseline: dict) -> dict:
+    """Compare le comportement actuel avec la baseline habituelle."""
+    anomalies = []
+    risk_score = 0
+
+    # Accès hors heures de bureau
+    if not current.get('is_business_hours') and baseline.get('usually_business_hours', True):
+        anomalies.append('Connexion hors heures de bureau inhabituelles')
+        risk_score += 30
+
+    # Accès de nuit
+    if current.get('is_night_access'):
+        anomalies.append('Connexion nocturne détectée')
+        risk_score += 40
+
+    # Accès le weekend
+    if current.get('is_weekend') and not baseline.get('works_weekends', False):
+        anomalies.append('Connexion weekend inhabituelle')
+        risk_score += 20
+
+    # Changement de pays
+    current_country = current.get('country', '')
+    baseline_country = baseline.get('usual_country', '')
+    if current_country and baseline_country and current_country != baseline_country:
+        anomalies.append(f'Connexion depuis pays inhabituel: {current_country} (habituel: {baseline_country})')
+        risk_score += 80
+
+    # Accès fichiers sensibles
+    if current.get('suspicious_file_access'):
+        anomalies.append(f'Accès à des fichiers sensibles détecté')
+        risk_score += 25
+
+    return {
+        'anomalies': anomalies,
+        'risk_score': risk_score,
+        'has_anomaly': len(anomalies) > 0,
+        'is_critical': risk_score >= 70
+    }
+

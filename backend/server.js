@@ -224,6 +224,45 @@ function analyzeSnap(snap, deviceId, deviceName) {
   if (snap.backup_warning === true)
     candidates.push({ type:'NO_BACKUP', severity:'high', title:'Aucune sauvegarde detectee', description:`Aucune sauvegarde recente sur ${deviceName}. Risque de perte de donnees.`, recommendation:'Configurer Time Machine ou un systeme de backup.', auto_fixable: false });
 
+  // Zero Trust — Anomalie comportementale
+  if (snap.has_behavioral_anomaly === true && snap.behavioral_risk_score >= 50) {
+    const anomalies = (snap.behavioral_anomalies || []).join(', ');
+    const severity = snap.behavioral_risk_score >= 70 ? 'critical' : 'high';
+    candidates.push({ 
+      type: 'BEHAVIORAL_ANOMALY', 
+      severity, 
+      title: 'Comportement utilisateur suspect detecte', 
+      description: `Zero Trust: ${anomalies} sur ${deviceName}. Score de risque: ${snap.behavioral_risk_score}/100.`, 
+      recommendation: 'Verifier immediatement si cet acces est legitime. Contacter l utilisateur concerne.', 
+      auto_fixable: false 
+    });
+  }
+
+  // Connexion depuis pays etranger — critique
+  if (snap.behavior?.country && snap.behavior.country !== '' && 
+      snap.behavior.country !== 'France' && snap.behavioral_risk_score >= 70) {
+    candidates.push({ 
+      type: 'FOREIGN_CONNECTION', 
+      severity: 'critical', 
+      title: `Connexion depuis pays etranger: ${snap.behavior.country}`, 
+      description: `Une connexion depuis ${snap.behavior.city || ''} (${snap.behavior.country}) a ete detectee sur ${deviceName}. Acces potentiellement non autorise.`, 
+      recommendation: 'Bloquer immediatement cet acces et contacter l utilisateur pour confirmer.', 
+      auto_fixable: false 
+    });
+  }
+
+  // Acces nocturne suspect
+  if (snap.behavior?.is_night_access === true) {
+    candidates.push({ 
+      type: 'NIGHT_ACCESS', 
+      severity: 'high', 
+      title: 'Connexion nocturne inhabituelle', 
+      description: `Acces detecte entre 22h et 6h sur ${deviceName}. Comportement inhabituel pouvant indiquer un acces non autorise.`, 
+      recommendation: 'Verifier si cet acces est legitime. Activer l authentification forte sur ce poste.', 
+      auto_fixable: false 
+    });
+  }
+
   return candidates;
 }
 
