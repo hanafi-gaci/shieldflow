@@ -212,9 +212,9 @@ function analyzeSnap(snap, deviceId, deviceName) {
   if (snap.logging_enabled === false)
     candidates.push({ type:'LOGS_DISABLED', severity:'high', title:'Journalisation systeme desactivee', description:`Les logs systeme sont desactives sur ${deviceName}. Non conforme RGPD Art.30.`, recommendation:'Activer la journalisation systeme immediatement.' });
 
-  // Ransomware
+  // Ransomware — isolation automatique immédiate
   if (snap.ransomware_detected === true)
-    candidates.push({ type:'RANSOMWARE_DETECTED', severity:'critical', title:'Ransomware detecte — chiffrement en cours', description:`${snap.ransomware_files_count} fichier(s) chiffre(s) detecte(s) sur ${deviceName}. Comportement ransomware probable.`, recommendation:'Isoler la machine immediatement.', auto_fixable: false });
+    candidates.push({ type:'RANSOMWARE_DETECTED', severity:'critical', title:'Ransomware detecte — chiffrement en cours', description:`${snap.ransomware_files_count} fichier(s) chiffre(s) detecte(s) sur ${deviceName}. Comportement ransomware probable.`, recommendation:'Isoler la machine immediatement.', auto_fixable: true });
 
   // Connexions suspectes
   if (snap.has_suspicious_connections === true)
@@ -652,6 +652,43 @@ app.post('/api/agent/:tenantId/heartbeat', async (req, res) => {
       const newAlert = await Alert.create({ tenant_id: tenantId, device_id, device_name: device.name, ...c });
       if (c.severity === 'critical' || c.severity === 'high') {
         sendAlertEmail(tenant.name, newAlert, device.name, ALERT_EMAIL);
+      }
+      // Isolation automatique si ransomware
+      if (newAlert.type === 'RANSOMWARE_DETECTED') {
+        console.log('[URGENCE] Ransomware détecté sur', device.name, '— isolation automatique');
+        const isolateCmd = {
+          id: require('crypto').randomUUID(),
+          alert_type: 'ISOLATE_MACHINE',
+          alert_id: newAlert._id.toString(),
+          params: {},
+          source: 'auto_ransomware',
+          created_at: new Date()
+        };
+        await Device.findByIdAndUpdate(device._id, { $push: { pending_commands: isolateCmd } });
+        // Alerter immédiatement
+        if (RESEND_API_KEY && ALERT_EMAIL) {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'ShieldFlow <contact@conformite-rgpd.org>',
+              to: ALERT_EMAIL,
+              subject: `🚨 URGENCE RANSOMWARE — ${tenant.name} — ${device.name}`,
+              html: `<div style="font-family:Arial;color:#1a1d23;max-width:500px">
+                <div style="background:#e8334a;padding:20px;border-radius:8px 8px 0 0;text-align:center">
+                  <h1 style="color:white;margin:0;font-size:20px">🚨 RANSOMWARE DÉTECTÉ</h1>
+                </div>
+                <div style="background:#fff5f5;border:1px solid #fecaca;padding:20px;border-radius:0 0 8px 8px">
+                  <p><strong>Client :</strong> ${tenant.name}</p>
+                  <p><strong>Machine :</strong> ${device.name}</p>
+                  <p><strong>Fichiers chiffrés :</strong> ${snap.ransomware_files_count}</p>
+                  <p><strong>Action automatique :</strong> Machine isolée du réseau</p>
+                  <p style="color:#e8334a;font-weight:600">→ Contactez le client IMMÉDIATEMENT</p>
+                </div>
+              </div>`
+            })
+          });
+        }
       }
       // Remédiation autonome IA
       setTimeout(() => autoRemediateWithAI(tenantId, newAlert, snap), 3000);
