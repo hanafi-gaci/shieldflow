@@ -1098,6 +1098,154 @@ app.post('/api/signup', async (req, res) => {
 });
 
 
+
+// ─── SOC — ANALYSTE VIRTUEL IA ───────────────────────────────────────────────
+
+async function runSOCAnalysis(tenantId) {
+  if (!ANTHROPIC_API_KEY) return null;
+  try {
+    const tenant = await Tenant.findById(tenantId).catch(() => null);
+    if (!tenant) return null;
+
+    const alerts = await Alert.find({ tenant_id: tenantId, resolved: false });
+    const devices = await Device.find({ tenant_id: tenantId });
+    const criticals = alerts.filter(a => a.severity === 'critical');
+    const score = Math.max(0, 100 - criticals.length*20 - alerts.length*5);
+
+    // Collecter les logs de tous les devices
+    const logsData = devices.map(d => ({
+      device: d.name,
+      platform: d.platform,
+      failed_logins: d.snapshot?.soc_failed_logins || 0,
+      brute_force: d.snapshot?.soc_brute_force || false,
+      suspicious: d.snapshot?.soc_has_suspicious || false,
+      critical_events: d.snapshot?.soc_critical_events || 0,
+      behavioral_anomaly: d.snapshot?.has_behavioral_anomaly || false,
+      behavioral_risk: d.snapshot?.behavioral_risk_score || 0,
+      anomalies: d.snapshot?.behavioral_anomalies || [],
+      cpu: d.snapshot?.cpu_percent || 0,
+      connections: d.snapshot?.established_connections || 0,
+    }));
+
+    const prompt = `Tu es un analyste SOC (Security Operations Center) senior avec 15 ans d'expérience. 
+Tu travailles pour ShieldFlow et tu analyses la sécurité de l'entreprise "${tenant.name}".
+
+DONNÉES DE LA DERNIÈRE HEURE :
+- Score sécurité global : ${score}/100
+- Alertes actives : ${alerts.length} dont ${criticals.length} critiques
+- Appareils surveillés : ${devices.length}
+
+LOGS ET ÉVÉNEMENTS PAR APPAREIL :
+${logsData.map(d => `
+Appareil: ${d.device} (${d.platform})
+- Tentatives connexion échouées: ${d.failed_logins}
+- Brute force suspecté: ${d.brute_force ? 'OUI' : 'non'}
+- Activité suspecte: ${d.suspicious ? 'OUI' : 'non'}
+- Événements critiques logs: ${d.critical_events}
+- Anomalie comportementale: ${d.behavioral_anomaly ? 'OUI (score: '+d.behavioral_risk+'/100)' : 'non'}
+- Connexions réseau actives: ${d.connections}
+- CPU: ${d.cpu}%
+${d.anomalies.length > 0 ? '- Anomalies: ' + d.anomalies.join(', ') : ''}
+`).join('')}
+
+ALERTES ACTIVES : ${alerts.map(a => `[${a.severity.toUpperCase()}] ${a.title}`).join(' | ') || 'Aucune'}
+
+En tant qu'analyste SOC, génère un rapport d'analyse en JSON avec exactement ce format :
+{
+  "niveau_menace": "CRITIQUE|ÉLEVÉ|MOYEN|FAIBLE",
+  "resume_executif": "Résumé en 2 phrases pour le dirigeant",
+  "evenements_detectes": ["événement 1", "événement 2"],
+  "analyse_technique": "Analyse détaillée pour le technicien en 3-4 phrases",
+  "vecteurs_attaque_potentiels": ["vecteur 1", "vecteur 2"],
+  "actions_immediates": ["action 1", "action 2", "action 3"],
+  "recommandations_24h": ["reco 1", "reco 2"],
+  "indicateurs_compromission": ["ioc 1"],
+  "score_risque_soc": 0
+}
+
+Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après.`;
+
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
+    });
+    const d = await r.json();
+    const text = d.content?.[0]?.text || '';
+    
+    try {
+      return JSON.parse(text.replace(/```json|```/g, '').trim());
+    } catch(e) {
+      return { resume_executif: text, niveau_menace: 'MOYEN', score_risque_soc: 50 };
+    }
+  } catch(e) {
+    console.error('[SOC]', e.message);
+    return null;
+  }
+}
+
+// Route SOC manuel
+app.get('/api/mssp/tenants/:id/soc-report', async (req, res) => {
+  try {
+    const analysis = await runSOCAnalysis(req.params.id);
+    if (!analysis) return res.status(503).json({ error: 'SOC non disponible' });
+    res.json({ success: true, analysis, generated_at: new Date() });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Scheduler SOC — toutes les heures, email si anomalie détectée
+cron.schedule('0 * * * *', async () => {
+  console.log('[SOC Scheduler] Analyse SOC horaire...');
+  try {
+    const tenants = await Tenant.find({ email: { $exists: true, $ne: '' } });
+    for (const tenant of tenants) {
+      const analysis = await runSOCAnalysis(tenant._id.toString());
+      if (!analysis) continue;
+      
+      // Envoyer email seulement si menace ÉLEVÉE ou CRITIQUE
+      if (['ÉLEVÉ', 'CRITIQUE'].includes(analysis.niveau_menace) && RESEND_API_KEY && ALERT_EMAIL) {
+        const lvlColor = analysis.niveau_menace === 'CRITIQUE' ? '#e8334a' : '#d97706';
+        
+        // Email à ShieldFlow
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'ShieldFlow SOC <contact@conformite-rgpd.org>',
+            to: ALERT_EMAIL,
+            subject: `🔍 [SOC] ${analysis.niveau_menace} — ${tenant.name}`,
+            html: `<div style="font-family:Arial;max-width:600px;color:#1a1d23">
+              <div style="background:${lvlColor};padding:20px;border-radius:8px 8px 0 0;text-align:center">
+                <h1 style="color:white;margin:0;font-size:18px">🔍 Rapport SOC — ${analysis.niveau_menace}</h1>
+                <div style="color:rgba(255,255,255,.8);font-size:12px;margin-top:4px">${tenant.name} · ${new Date().toLocaleString('fr-FR')}</div>
+              </div>
+              <div style="background:#f8f9fa;border:1px solid #e9ecef;border-top:none;padding:24px;border-radius:0 0 8px 8px">
+                <h3 style="margin:0 0 12px;font-size:15px">Résumé exécutif</h3>
+                <p style="font-size:14px;color:#3d4452;line-height:1.7">${analysis.resume_executif}</p>
+                
+                <h3 style="margin:16px 0 8px;font-size:14px">Événements détectés</h3>
+                ${(analysis.evenements_detectes||[]).map(e => `<div style="padding:6px 10px;background:#fff;border-left:3px solid ${lvlColor};margin-bottom:4px;font-size:13px">${e}</div>`).join('')}
+                
+                <h3 style="margin:16px 0 8px;font-size:14px">Actions immédiates</h3>
+                ${(analysis.actions_immediates||[]).map((a,i) => `<div style="padding:6px 10px;background:#fff;border:1px solid #e9ecef;border-radius:4px;margin-bottom:4px;font-size:13px"><strong>${i+1}.</strong> ${a}</div>`).join('')}
+                
+                <div style="margin-top:16px;padding:10px;background:#e7f5ff;border-radius:6px;font-size:12px;color:#1864ab">
+                  Score risque SOC : <strong>${analysis.score_risque_soc}/100</strong>
+                </div>
+              </div>
+            </div>`
+          })
+        });
+        console.log(`[SOC] Rapport ${analysis.niveau_menace} envoyé pour ${tenant.name}`);
+      }
+    }
+  } catch(e) {
+    console.error('[SOC Scheduler]', e.message);
+  }
+}, { timezone: 'Europe/Paris' });
+
 // ─── ANALYSE IA DES ALERTES ──────────────────────────────────────────────────
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';

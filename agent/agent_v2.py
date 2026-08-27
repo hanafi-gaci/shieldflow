@@ -38,7 +38,8 @@ try:
     check_new_users,
     check_disk_health,
     collect_user_behavior,
-    detect_behavioral_anomaly
+    detect_behavioral_anomaly,
+    collect_system_logs
 )
     EXPERT_AVAILABLE = True
 except ImportError as e:
@@ -248,6 +249,17 @@ def main():
                 if iteration % 10 == 0:
                     try:
                         payload['inventory'] = get_system_inventory()
+                    except: pass
+
+                # SOC — Collecte logs système toutes les 5 itérations
+                if iteration % 5 == 0:
+                    try:
+                        logs = collect_system_logs()
+                        payload['system_logs'] = logs
+                        payload['soc_failed_logins'] = logs.get('stats', {}).get('failed_logins_count', 0)
+                        payload['soc_brute_force'] = logs.get('stats', {}).get('brute_force_suspected', False)
+                        payload['soc_has_suspicious'] = logs.get('stats', {}).get('has_suspicious_activity', False)
+                        payload['soc_critical_events'] = logs.get('stats', {}).get('critical_events_count', 0)
                     except: pass
 
                 # Zero Trust Behavioral Monitoring

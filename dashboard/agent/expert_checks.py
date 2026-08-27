@@ -988,3 +988,95 @@ def detect_behavioral_anomaly(current: dict, baseline: dict) -> dict:
         'is_critical': risk_score >= 70
     }
 
+
+
+# ─── SOC — COLLECTE DES LOGS SYSTÈME ─────────────────────────────────────────
+
+def collect_system_logs() -> dict:
+    """Collecte et analyse les logs système pour le SOC."""
+    try:
+        logs = {
+            'auth_events': [],
+            'failed_logins': [],
+            'sudo_events': [],
+            'network_events': [],
+            'process_events': [],
+            'critical_events': [],
+        }
+
+        if SYSTEM == 'Darwin':
+            # Logs d'authentification
+            r = subprocess.run(
+                ['log', 'show', '--predicate',
+                 'eventMessage contains "authentication" OR eventMessage contains "login" OR eventMessage contains "sudo" OR eventMessage contains "failed"',
+                 '--last', '1h', '--style', 'compact'],
+                capture_output=True, text=True, timeout=15
+            )
+            lines = r.stdout.splitlines()[-100:]
+            for line in lines:
+                line_l = line.lower()
+                if 'failed' in line_l or 'error' in line_l:
+                    logs['failed_logins'].append(line[:200])
+                elif 'sudo' in line_l:
+                    logs['sudo_events'].append(line[:200])
+                elif 'auth' in line_l or 'login' in line_l:
+                    logs['auth_events'].append(line[:200])
+
+            # Logs kernel/sécurité
+            r2 = subprocess.run(
+                ['log', 'show', '--predicate',
+                 'subsystem == "com.apple.securityd" OR eventMessage contains "denied" OR eventMessage contains "blocked"',
+                 '--last', '1h', '--style', 'compact'],
+                capture_output=True, text=True, timeout=15
+            )
+            for line in r2.stdout.splitlines()[-50:]:
+                if any(kw in line.lower() for kw in ['denied', 'blocked', 'reject']):
+                    logs['critical_events'].append(line[:200])
+
+        elif SYSTEM == 'Linux':
+            # Auth log
+            for logfile in ['/var/log/auth.log', '/var/log/secure']:
+                if Path(logfile).exists():
+                    r = subprocess.run(['tail', '-n', '500', logfile],
+                                      capture_output=True, text=True)
+                    for line in r.stdout.splitlines():
+                        line_l = line.lower()
+                        if 'failed' in line_l or 'invalid' in line_l:
+                            logs['failed_logins'].append(line[:200])
+                        elif 'sudo' in line_l:
+                            logs['sudo_events'].append(line[:200])
+                        elif 'accepted' in line_l or 'opened' in line_l:
+                            logs['auth_events'].append(line[:200])
+
+            # Syslog
+            if Path('/var/log/syslog').exists():
+                r = subprocess.run(['tail', '-n', '200', '/var/log/syslog'],
+                                  capture_output=True, text=True)
+                for line in r.stdout.splitlines():
+                    if any(kw in line.lower() for kw in ['error', 'crit', 'alert', 'emerg']):
+                        logs['critical_events'].append(line[:200])
+
+        elif SYSTEM == 'Windows':
+            # Event logs via PowerShell
+            r = subprocess.run([
+                'powershell', '-Command',
+                'Get-EventLog -LogName Security -Newest 100 | Where-Object {$_.EventID -in @(4625,4624,4648,4720,4732)} | Select-Object -ExpandProperty Message'
+            ], capture_output=True, text=True, timeout=15)
+            for line in r.stdout.splitlines():
+                if line.strip():
+                    logs['auth_events'].append(line[:200])
+
+        # Statistiques
+        logs['stats'] = {
+            'failed_logins_count': len(logs['failed_logins']),
+            'sudo_events_count': len(logs['sudo_events']),
+            'auth_events_count': len(logs['auth_events']),
+            'critical_events_count': len(logs['critical_events']),
+            'has_suspicious_activity': len(logs['failed_logins']) > 5 or len(logs['critical_events']) > 0,
+            'brute_force_suspected': len(logs['failed_logins']) > 10,
+        }
+
+        return logs
+    except Exception as e:
+        return {'error': str(e), 'stats': {'has_suspicious_activity': False}}
+
