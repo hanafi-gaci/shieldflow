@@ -1204,7 +1204,72 @@ cron.schedule('0 * * * *', async () => {
       const analysis = await runSOCAnalysis(tenant._id.toString());
       if (!analysis) continue;
       
-      // Envoyer email seulement si menace ÉLEVÉE ou CRITIQUE
+      // Réponse automatique selon le niveau de menace
+      if (['ÉLEVÉ', 'CRITIQUE'].includes(analysis.niveau_menace)) {
+        
+        // Récupérer tous les devices du tenant
+        const devices = await Device.find({ tenant_id: tenant._id.toString() });
+        
+        for (const device of devices) {
+          const snap = device.snapshot || {};
+          
+          // BRUTE FORCE — bloquer l'IP et verrouiller la session
+          if (snap.soc_brute_force === true) {
+            console.log(`[SOC Auto] Brute force détecté sur ${device.name} — verrouillage session`);
+            const cmd1 = {
+              id: require('crypto').randomUUID(),
+              alert_type: 'LOCK_SESSION',
+              params: {},
+              source: 'soc_auto',
+              created_at: new Date()
+            };
+            await Device.findByIdAndUpdate(device._id, { $push: { pending_commands: cmd1 } });
+            
+            // Créer alerte brute force si pas déjà présente
+            const existsBF = await Alert.findOne({ device_id: device.device_id, type: 'BRUTE_FORCE', resolved: false });
+            if (!existsBF) {
+              await Alert.create({
+                tenant_id: tenant._id.toString(),
+                device_id: device.device_id,
+                device_name: device.name,
+                type: 'BRUTE_FORCE',
+                severity: 'critical',
+                title: 'Brute force détecté — session verrouillée automatiquement',
+                description: `${snap.soc_failed_logins || '10+'} tentatives de connexion échouées détectées. Session verrouillée par le SOC ShieldFlow.`,
+                recommendation: 'Vérifier l'origine des tentatives et renforcer le mot de passe.',
+                auto_fixable: false
+              });
+            }
+          }
+          
+          // ÉVÉNEMENTS CRITIQUES — isoler si score très élevé
+          if (analysis.score_risque_soc >= 90 && snap.soc_critical_events > 5) {
+            console.log(`[SOC Auto] Score SOC critique ${analysis.score_risque_soc}/100 sur ${device.name} — isolation`);
+            const cmdIsolate = {
+              id: require('crypto').randomUUID(),
+              alert_type: 'ISOLATE_MACHINE',
+              params: {},
+              source: 'soc_auto_critical',
+              created_at: new Date()
+            };
+            await Device.findByIdAndUpdate(device._id, { $push: { pending_commands: cmdIsolate } });
+          }
+          
+          // CONNEXIONS SUSPECTES — bloquer via DNS flush + session lock
+          if (snap.has_suspicious_connections === true) {
+            const cmdDNS = {
+              id: require('crypto').randomUUID(),
+              alert_type: 'FLUSH_DNS',
+              params: {},
+              source: 'soc_auto',
+              created_at: new Date()
+            };
+            await Device.findByIdAndUpdate(device._id, { $push: { pending_commands: cmdDNS } });
+          }
+        }
+      }
+      
+      // Email ShieldFlow si menace ÉLEVÉE ou CRITIQUE
       if (['ÉLEVÉ', 'CRITIQUE'].includes(analysis.niveau_menace) && RESEND_API_KEY && ALERT_EMAIL) {
         const lvlColor = analysis.niveau_menace === 'CRITIQUE' ? '#e8334a' : '#d97706';
         
@@ -1239,6 +1304,40 @@ cron.schedule('0 * * * *', async () => {
           })
         });
         console.log(`[SOC] Rapport ${analysis.niveau_menace} envoyé pour ${tenant.name}`);
+        
+        // Email au client si son infrastructure est menacée
+        if (tenant.email && analysis.niveau_menace === 'CRITIQUE') {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'ShieldFlow SOC <contact@conformite-rgpd.org>',
+              to: tenant.email,
+              subject: `🔍 Alerte sécurité détectée — ${tenant.name}`,
+              html: `<div style="font-family:Arial;max-width:560px;margin:0 auto;color:#1a1d23">
+                <div style="background:#1a1d23;padding:24px;border-radius:8px 8px 0 0;text-align:center">
+                  <div style="font-size:20px;font-weight:800;color:#fff">🛡 ShieldFlow SOC</div>
+                  <div style="font-size:12px;color:#8896a8;margin-top:4px">Security Operations Center</div>
+                </div>
+                <div style="background:#f8f9fa;border:1px solid #e9ecef;border-top:none;padding:28px;border-radius:0 0 8px 8px">
+                  <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:14px;margin-bottom:20px">
+                    <div style="font-size:13px;font-weight:700;color:#e8334a;margin-bottom:6px">⚠ Activité suspecte détectée sur votre infrastructure</div>
+                    <div style="font-size:13px;color:#3d4452">${analysis.resume_executif}</div>
+                  </div>
+                  <div style="margin-bottom:16px">
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Actions automatiques réalisées par ShieldFlow</div>
+                    <div style="font-size:13px;color:#3d4452;padding:10px;background:#ecfdf5;border-radius:6px;border:1px solid #bbf7d0">✓ Notre SOC a automatiquement sécurisé vos machines. Aucune action de votre part n'est requise pour le moment.</div>
+                  </div>
+                  <div style="margin-bottom:16px">
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Ce que vous devez savoir</div>
+                    ${(analysis.actions_immediates||[]).slice(0,2).map(a => `<div style="padding:6px 10px;background:#fff;border:1px solid #e9ecef;border-radius:4px;margin-bottom:4px;font-size:13px">→ ${a}</div>`).join('')}
+                  </div>
+                  <p style="font-size:12px;color:#9ca3af">Notre équipe surveille la situation. En cas d'urgence : <a href="mailto:shieldflowcontact@gmail.com" style="color:#2b6de8">shieldflowcontact@gmail.com</a></p>
+                </div>
+              </div>`
+            })
+          });
+        }
       }
     }
   } catch(e) {
