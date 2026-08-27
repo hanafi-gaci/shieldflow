@@ -1236,7 +1236,7 @@ cron.schedule('0 * * * *', async () => {
                 severity: 'critical',
                 title: 'Brute force détecté — session verrouillée automatiquement',
                 description: `${snap.soc_failed_logins || '10+'} tentatives de connexion échouées détectées. Session verrouillée par le SOC ShieldFlow.`,
-                recommendation: 'Vérifier l'origine des tentatives et renforcer le mot de passe.',
+                recommendation: 'Verifier l origine des tentatives et renforcer le mot de passe.',
                 auto_fixable: false
               });
             }
