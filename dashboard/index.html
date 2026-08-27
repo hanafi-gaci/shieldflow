@@ -395,7 +395,7 @@ async function showAIAnalysis(tid,aid){
 
 async function showSOCReport(tid){
   openModal('🔍 Rapport SOC — Analyste IA');
-  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:30px;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">🔍</div>Analyse SOC en cours...<br><small style="color:var(--text3);margin-top:8px;display:block">L'analyste IA examine tous les logs et événements</small></div>';
+  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:30px;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">🔍</div>Analyse SOC en cours...<br><small style="color:var(--text3);margin-top:8px;display:block">L analyste IA examine tous les logs et evenements</small></div>';
   try{
     const r=await fetch(S+'/api/mssp/tenants/'+tid+'/soc-report');
     const d=await r.json();
