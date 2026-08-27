@@ -147,7 +147,8 @@ const S='https://shieldflow-rfzv.onrender.com';
 let state={tenants:[],selectedTenant:null,view:'overview'};
 
 function doLogin(){
-  const pw=document.getElementById('login-pw').value;
+  const pw=document.getElementById('login-pw').value.trim();
+  console.log('Login attempt:', pw.length, 'chars');
   if(pw==='Tarahanafi13.'){
     document.getElementById('login-screen').style.display='none';
     const app=document.getElementById('app');
@@ -155,6 +156,7 @@ function doLogin(){
     init();
   } else {
     document.getElementById('login-error').style.display='block';
+    console.log('Wrong password');
   }
 }
 
