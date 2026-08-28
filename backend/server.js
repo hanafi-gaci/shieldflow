@@ -1195,8 +1195,8 @@ app.get('/api/mssp/tenants/:id/soc-report', async (req, res) => {
   }
 });
 
-// Scheduler SOC — toutes les heures, email si anomalie détectée
-cron.schedule('0 * * * *', async () => {
+// Scheduler SOC — toutes les heures à H+30 (décalé du scan cloud)
+cron.schedule('30 * * * *', async () => {
   console.log('[SOC Scheduler] Analyse SOC horaire...');
   try {
     const tenants = await Tenant.find({ email: { $exists: true, $ne: '' } });
