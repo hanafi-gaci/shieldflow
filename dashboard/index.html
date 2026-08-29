@@ -123,7 +123,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="topbar-title" id="topbar-title">Vue d'ensemble</div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost" onclick="refreshAll()" id="refresh-btn">↻ Actualiser</button>
-      <button class="btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2)" id="soc-btn" onclick="if(state.selectedTenant)showSOCReport(state.selectedTenant.id)" >🔍 Rapport SOC</button>
+      <button class="btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2);display:none" id="soc-btn" onclick="showSOCReport(state.selectedTenant.id)">🔍 Rapport SOC</button>
     </div>
   </div>
   <div class="content" id="content"></div>
@@ -206,7 +206,11 @@ function showView(view){
   state.view=view;
   document.getElementById('nav-overview').classList.toggle('active',view==='overview');
   if(view==='overview'){document.getElementById('topbar-title').textContent="Vue d'ensemble";renderOverview();}
-  else if(view==='client'){document.getElementById('topbar-title').textContent=state.selectedTenant?.name||'Client';renderClient();}
+  else if(view==='client'){
+    document.getElementById('topbar-title').textContent=state.selectedTenant?.name||'Client';
+    document.getElementById('soc-btn').style.display='inline-flex';
+    renderClient();
+  }
 }
 
 async function refreshAll(){
