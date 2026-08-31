@@ -1080,3 +1080,159 @@ def collect_system_logs() -> dict:
     except Exception as e:
         return {'error': str(e), 'stats': {'has_suspicious_activity': False}}
 
+
+
+# ─── SUPPORT WINDOWS COMPLET ─────────────────────────────────────────────────
+
+def check_windows_security() -> dict:
+    """Checks de sécurité complets pour Windows."""
+    if SYSTEM != 'Windows':
+        return {}
+    try:
+        result = {}
+
+        # Pare-feu Windows
+        r = subprocess.run(['netsh', 'advfirewall', 'show', 'allprofiles', 'state'],
+                          capture_output=True, text=True)
+        result['firewall_enabled'] = 'ON' in r.stdout.upper()
+
+        # Windows Defender / Antivirus
+        r = subprocess.run(['powershell', '-Command',
+            'Get-MpComputerStatus | Select-Object AntivirusEnabled,RealTimeProtectionEnabled | ConvertTo-Json'],
+            capture_output=True, text=True, timeout=15)
+        try:
+            import json
+            av = json.loads(r.stdout)
+            result['antivirus_enabled'] = av.get('AntivirusEnabled', False)
+            result['antivirus_status'] = 'enabled' if av.get('AntivirusEnabled') else 'disabled'
+            result['realtime_protection'] = av.get('RealTimeProtectionEnabled', False)
+        except:
+            result['antivirus_enabled'] = False
+            result['antivirus_status'] = 'unknown'
+
+        # BitLocker
+        r = subprocess.run(['manage-bde', '-status', 'C:'],
+                          capture_output=True, text=True)
+        result['disk_encrypted'] = 'Protection On' in r.stdout or 'Fully Encrypted' in r.stdout
+
+        # Mises à jour Windows
+        r = subprocess.run(['powershell', '-Command',
+            '(New-Object -ComObject Microsoft.Update.AutoUpdate).Settings.NotificationLevel'],
+            capture_output=True, text=True, timeout=10)
+        result['auto_update_enabled'] = r.stdout.strip() == '4'
+
+        # Screensaver et verrouillage
+        r = subprocess.run(['reg', 'query',
+            'HKCU\\Control Panel\\Desktop', '/v', 'ScreenSaveActive'],
+            capture_output=True, text=True)
+        result['screensaver_enabled'] = '0x1' in r.stdout or '1' in r.stdout
+
+        # Utilisateurs locaux Windows
+        r = subprocess.run(['net', 'user'], capture_output=True, text=True)
+        users = [u for u in r.stdout.split() if u and not u.startswith('-') and '\\\\' not in u]
+        result['local_users'] = users[:20]
+
+        # Ports dangereux Windows
+        r = subprocess.run(['netstat', '-an'], capture_output=True, text=True)
+        dangerous = [4444, 1337, 5555, 6666, 7777, 8888, 9999, 31337]
+        open_dangerous = []
+        for port in dangerous:
+            if f':{port} ' in r.stdout or f':{port}\t' in r.stdout:
+                open_dangerous.append(port)
+        result['dangerous_ports'] = open_dangerous
+        result['has_dangerous_ports'] = len(open_dangerous) > 0
+
+        # Connexions réseau actives
+        established = [l for l in r.stdout.splitlines() if 'ESTABLISHED' in l]
+        result['established_connections'] = len(established)
+
+        # Ransomware — fichiers chiffrés
+        import os
+        suspicious = []
+        extensions = ['.locked', '.encrypted', '.crypto', '.crypt', '.enc', '.wncry', '.wnry']
+        home = os.path.expanduser('~')
+        for ext in extensions:
+            try:
+                for root, dirs, files in os.walk(home):
+                    dirs[:] = [d for d in dirs if not d.startswith('.')][:5]
+                    for f in files:
+                        if f.endswith(ext):
+                            suspicious.append(os.path.join(root, f))
+                            if len(suspicious) >= 20:
+                                break
+                    if len(suspicious) >= 20:
+                        break
+            except:
+                pass
+        result['ransomware_detected'] = len(suspicious) > 0
+        result['ransomware_files_count'] = len(suspicious)
+
+        # Logs Windows — tentatives connexion échouées
+        r = subprocess.run(['powershell', '-Command',
+            '(Get-EventLog -LogName Security -InstanceId 4625 -Newest 50 -ErrorAction SilentlyContinue).Count'],
+            capture_output=True, text=True, timeout=15)
+        try:
+            failed = int(r.stdout.strip())
+            result['soc_failed_logins'] = failed
+            result['soc_brute_force'] = failed > 10
+        except:
+            result['soc_failed_logins'] = 0
+            result['soc_brute_force'] = False
+
+        # Inventaire logiciels Windows
+        r = subprocess.run(['powershell', '-Command',
+            'Get-ItemProperty HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* | Select-Object DisplayName,DisplayVersion | ConvertTo-Json'],
+            capture_output=True, text=True, timeout=20)
+        try:
+            import json
+            apps = json.loads(r.stdout)
+            if isinstance(apps, list):
+                result['installed_software'] = [{'name': a.get('DisplayName',''), 'version': a.get('DisplayVersion','')} for a in apps[:50] if a.get('DisplayName')]
+        except:
+            result['installed_software'] = []
+
+        # Backup Windows
+        r = subprocess.run(['powershell', '-Command',
+            'Get-WBSummary -ErrorAction SilentlyContinue | Select-Object LastSuccessfulBackupTime'],
+            capture_output=True, text=True, timeout=10)
+        result['backup_found'] = 'LastSuccessfulBackupTime' in r.stdout and 'NULL' not in r.stdout
+        result['backup_warning'] = not result['backup_found']
+
+        # CPU et RAM Windows
+        r = subprocess.run(['powershell', '-Command',
+            '(Get-Counter "\\Processor(_Total)\\% Processor Time").CounterSamples.CookedValue'],
+            capture_output=True, text=True, timeout=10)
+        try:
+            result['cpu_percent'] = float(r.stdout.strip())
+        except:
+            result['cpu_percent'] = 0
+
+        r2 = subprocess.run(['powershell', '-Command',
+            '$mem = Get-CimInstance Win32_OperatingSystem; [math]::Round(($mem.TotalVisibleMemorySize - $mem.FreePhysicalMemory) / $mem.TotalVisibleMemorySize * 100, 1)'],
+            capture_output=True, text=True, timeout=10)
+        try:
+            result['ram_percent'] = float(r2.stdout.strip())
+        except:
+            result['ram_percent'] = 0
+
+        result['platform'] = 'Windows'
+        return result
+
+    except Exception as e:
+        return {'error': str(e), 'platform': 'Windows'}
+
+
+def check_disk_encryption_windows() -> dict:
+    """Vérifie BitLocker sur Windows."""
+    if SYSTEM != 'Windows':
+        return {}
+    try:
+        r = subprocess.run(['manage-bde', '-status'], capture_output=True, text=True)
+        encrypted = 'Protection On' in r.stdout
+        return {
+            'disk_encrypted': encrypted,
+            'encryption_type': 'BitLocker' if encrypted else 'None'
+        }
+    except:
+        return {'disk_encrypted': False, 'encryption_type': 'Unknown'}
+

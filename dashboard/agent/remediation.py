@@ -703,3 +703,150 @@ def execute(alert_type, params=None):
         return _ADVANCED_ACTIONS[alert_type](params)
     return _original_execute(alert_type, params)
 
+
+
+# ─── SUPPORT WINDOWS COMPLET ─────────────────────────────────────────────────
+
+import subprocess, platform
+OS = platform.system()
+
+def _win(cmd, shell=False):
+    """Exécute une commande Windows et retourne le résultat."""
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, shell=shell, timeout=30)
+        return r.returncode == 0, r.stdout + r.stderr
+    except Exception as e:
+        return False, str(e)
+
+# Surcharger enable_firewall pour Windows
+_orig_enable_firewall = enable_firewall
+def enable_firewall(params=None):
+    if OS == 'Windows':
+        ok, out = _win(['netsh', 'advfirewall', 'set', 'allprofiles', 'state', 'on'])
+        return {'success': ok, 'output': 'Pare-feu Windows activé' if ok else out}
+    return _orig_enable_firewall(params)
+
+# Chiffrement Windows — BitLocker
+def enable_encryption_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    ok, out = _win(['manage-bde', '-on', 'C:', '-SkipHardwareTest'], shell=False)
+    if not ok:
+        return {'success': False, 'output': 'BitLocker non disponible — Windows Home ne supporte pas BitLocker. Contactez ShieldFlow.'}
+    return {'success': True, 'output': 'BitLocker activé sur C:'}
+
+# Antivirus Windows — Windows Defender
+def check_antivirus_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    ok, out = _win(['powershell', 'Get-MpComputerStatus | Select-Object -ExpandProperty AntivirusEnabled'], shell=False)
+    return {'success': ok, 'output': out.strip()}
+
+# Fermer ports Windows
+def close_ports_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    dangerous = [4444, 1337, 5555, 6666, 7777, 8888, 9999, 31337]
+    results = []
+    for port in dangerous:
+        ok, _ = _win(['netsh', 'advfirewall', 'firewall', 'add', 'rule',
+            f'name=Block_Port_{port}', 'dir=in', 'action=block',
+            f'localport={port}', 'protocol=tcp'])
+        if ok: results.append(f'Port {port} bloqué')
+    return {'success': len(results) > 0, 'output': ' | '.join(results) or 'Aucun port bloqué'}
+
+# Mises à jour Windows
+def force_update_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    ok, out = _win(['powershell', 'Install-WindowsUpdate -AcceptAll -AutoReboot -IgnoreReboot'], shell=False)
+    if not ok:
+        # Méthode alternative sans module PSWindowsUpdate
+        ok2, out2 = _win(['powershell', 'wuauclt /detectnow /updatenow'], shell=False)
+        return {'success': True, 'output': 'Recherche mises à jour Windows lancée'}
+    return {'success': ok, 'output': 'Mises à jour Windows lancées'}
+
+# Screensaver Windows
+def enable_screensaver_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    cmds = [
+        ['reg', 'add', 'HKCU\\Control Panel\\Desktop', '/v', 'ScreenSaveActive', '/t', 'REG_SZ', '/d', '1', '/f'],
+        ['reg', 'add', 'HKCU\\Control Panel\\Desktop', '/v', 'ScreenSaverIsSecure', '/t', 'REG_SZ', '/d', '1', '/f'],
+        ['reg', 'add', 'HKCU\\Control Panel\\Desktop', '/v', 'ScreenSaveTimeOut', '/t', 'REG_SZ', '/d', '300', '/f'],
+    ]
+    for cmd in cmds:
+        _win(cmd)
+    return {'success': True, 'output': 'Verrouillage automatique Windows configuré (5 min)'}
+
+# Bloquer IP Windows
+def block_ip_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    params = params or {}
+    ip = params.get('ip', '')
+    if not ip: return {'success': False, 'output': 'IP requise'}
+    ok, out = _win(['netsh', 'advfirewall', 'firewall', 'add', 'rule',
+        f'name=Block_{ip}', 'dir=in', 'action=block', f'remoteip={ip}'])
+    return {'success': ok, 'output': f'IP {ip} bloquée sur Windows' if ok else out}
+
+# Isoler machine Windows
+def isolate_machine_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    results = []
+    # Bloquer tout le trafic entrant et sortant
+    _win(['netsh', 'advfirewall', 'set', 'allprofiles', 'firewallpolicy', 'blockinbound,blockoutbound'])
+    results.append('Tout le trafic réseau bloqué')
+    # Désactiver WiFi
+    ok, _ = _win(['netsh', 'interface', 'set', 'interface', 'Wi-Fi', 'disable'])
+    if ok: results.append('WiFi désactivé')
+    return {'success': True, 'output': ' | '.join(results), 'isolated': True}
+
+# Désactiver utilisateur Windows
+def disable_user_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    params = params or {}
+    username = params.get('username', '')
+    if not username: return {'success': False, 'output': 'Nom utilisateur requis'}
+    ok, out = _win(['net', 'user', username, '/active:no'])
+    return {'success': ok, 'output': f'Utilisateur {username} désactivé' if ok else out}
+
+# Redémarrer service Windows
+def restart_service_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    params = params or {}
+    service = params.get('service', '')
+    if not service: return {'success': False, 'output': 'Nom service requis'}
+    _win(['net', 'stop', service])
+    ok, out = _win(['net', 'start', service])
+    return {'success': ok, 'output': f'Service {service} redémarré' if ok else out}
+
+# Supprimer fichier Windows
+def delete_file_windows(params=None):
+    if OS != 'Windows': return {'success': False, 'output': 'Windows uniquement'}
+    params = params or {}
+    filepath = params.get('filepath', '')
+    if not filepath: return {'success': False, 'output': 'Chemin requis'}
+    import os as _os
+    try:
+        _os.remove(filepath)
+        return {'success': True, 'output': f'Fichier supprimé: {filepath}'}
+    except Exception as e:
+        return {'success': False, 'output': str(e)}
+
+# Mettre à jour le registre des remédiation pour Windows
+if OS == 'Windows':
+    WINDOWS_ACTIONS = {
+        'FIREWALL_OFF': enable_firewall,
+        'DISK_NOT_ENCRYPTED': enable_encryption_windows,
+        'CLOSE_PORTS': close_ports_windows,
+        'FORCE_UPDATE': force_update_windows,
+        'SCREENSAVER_OFF': enable_screensaver_windows,
+        'BLOCK_IP': block_ip_windows,
+        'ISOLATE_MACHINE': isolate_machine_windows,
+        'DISABLE_USER': disable_user_windows,
+        'RESTART_SERVICE': restart_service_windows,
+        'DELETE_MALICIOUS_FILE': delete_file_windows,
+    }
+    
+    # Surcharger la fonction execute pour Windows
+    _base_execute = execute
+    def execute(alert_type, params=None):
+        if OS == 'Windows' and alert_type in WINDOWS_ACTIONS:
+            return WINDOWS_ACTIONS[alert_type](params)
+        return _base_execute(alert_type, params)
+

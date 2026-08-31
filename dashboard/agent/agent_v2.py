@@ -39,7 +39,9 @@ try:
     check_disk_health,
     collect_user_behavior,
     detect_behavioral_anomaly,
-    collect_system_logs
+    collect_system_logs,
+    check_windows_security,
+    check_disk_encryption_windows
 )
     EXPERT_AVAILABLE = True
 except ImportError as e:
@@ -260,6 +262,14 @@ def main():
                         payload['soc_brute_force'] = logs.get('stats', {}).get('brute_force_suspected', False)
                         payload['soc_has_suspicious'] = logs.get('stats', {}).get('has_suspicious_activity', False)
                         payload['soc_critical_events'] = logs.get('stats', {}).get('critical_events_count', 0)
+                    except: pass
+
+                # Support Windows complet
+                import platform as _plat
+                if _plat.system() == 'Windows':
+                    try:
+                        win_data = check_windows_security()
+                        payload.update(win_data)
                     except: pass
 
                 # Zero Trust Behavioral Monitoring
