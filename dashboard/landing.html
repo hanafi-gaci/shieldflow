@@ -3,661 +3,664 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShieldFlow — Votre département cybersécurité externalisé</title>
-<meta name="description" content="ShieldFlow surveille, protège et corrige vos systèmes 24h/24. Votre équipe cybersécurité complète, sans recruter personne.">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>ShieldFlow — Cybersécurité managée pour PME</title>
+<meta name="description" content="ShieldFlow surveille vos machines et comptes cloud 24h/24, corrige automatiquement les menaces et vous garantit la conformité RGPD. Installation sur site partout en Europe.">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+*{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#eceef1;--surface:#e4e7ec;--surface2:#dde0e6;
-  --border:#ced4da;--border2:#bec4cc;
-  --ink:#1a1d23;--ink2:#3d4452;--ink3:#6b7280;--ink4:#9ca3af;
+  --dark:#0f1117;
+  --dark2:#1a1d23;
+  --dark3:#23262f;
   --white:#ffffff;
-  --dark:#1a1d23;--dark2:#242830;--dark3:#2e333b;
-  --silver:#c8cdd3;--silver2:#adb5bd;
-  --blue:#1c7ed6;--blue-l:#e7f5ff;
-  --green:#2f9e44;--green-l:#ebfbee;
-  --red:#e03131;--amber:#e67700;
-  --font:'DM Sans',system-ui,sans-serif;
-  --mono:'DM Mono',monospace;
+  --text:#e8eaf0;
+  --text2:#a0a8b8;
+  --text3:#6b7280;
+  --blue:#2b6de8;
+  --blue2:#3b7ff5;
+  --green:#0ea572;
+  --red:#e8334a;
+  --border:rgba(255,255,255,.08);
+  --border2:rgba(255,255,255,.04);
 }
-body{font-family:var(--font);color:var(--ink);background:var(--bg);font-size:16px;line-height:1.6;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--dark);color:var(--text);line-height:1.6}
 
 /* NAV */
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;background:rgba(236,238,241,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
-.nav-i{max-width:1100px;margin:0 auto;padding:0 28px;height:100%;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:9px}
-.logo-m{width:30px;height:30px;border-radius:7px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--silver)}
-.logo-n{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-0.03em}
-.nav-links{display:flex;align-items:center;gap:20px}
-.nav-links a{font-size:13px;font-weight:500;color:var(--ink3);transition:color .15s}
-.nav-links a:hover{color:var(--ink)}
-.nav-btn{background:var(--dark);color:var(--white);padding:7px 16px;border-radius:6px;font-size:13px;font-weight:500;transition:background .15s}
-.nav-btn:hover{background:var(--dark2)}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(15,17,23,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;color:var(--white);text-decoration:none}
+.nav-logo span{font-size:22px}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;transition:.2s}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{background:var(--blue);color:var(--white)!important;padding:8px 20px;border-radius:8px;font-weight:600!important;transition:.2s!important}
+.nav-cta:hover{background:var(--blue2)!important;transform:translateY(-1px)}
 
 /* HERO */
-.hero-s{background:var(--surface);border-bottom:1px solid var(--border)}
-.hero{max-width:1100px;margin:0 auto;padding:120px 28px 88px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.hero-pill{display:inline-flex;align-items:center;gap:7px;background:var(--white);border:1px solid var(--border2);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin-bottom:24px}
-.hero-pill-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 5% 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(43,109,232,.12) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(43,109,232,.1);border:1px solid rgba(43,109,232,.2);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:#7ca9f5;margin-bottom:24px;text-transform:uppercase;letter-spacing:.06em}
+.hero-badge-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.hero h1{font-size:72px;font-weight:700;line-height:1.02;letter-spacing:-0.05em;color:var(--ink);margin-bottom:20px}
-.hero h1 em{font-style:normal;color:var(--ink3)}
-.hero-lead{font-size:18px;color:var(--ink2);line-height:1.75;margin-bottom:32px;font-weight:300}
-.hero-lead strong{color:var(--ink);font-weight:600}
-.hero-btns{display:flex;gap:10px;flex-wrap:wrap}
-.btn-dark{background:var(--dark);color:var(--white);padding:13px 24px;border-radius:7px;font-size:14px;font-weight:500;transition:background .15s}
-.btn-dark:hover{background:var(--dark2)}
-.btn-ghost{border:1px solid var(--border2);color:var(--ink2);padding:13px 18px;border-radius:7px;font-size:14px;font-weight:500;transition:all .15s;background:var(--white)}
-.btn-ghost:hover{border-color:var(--ink3)}
-.hero-trust{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:18px;flex-wrap:wrap}
-.trust-i{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3);font-weight:500}
-.trust-dot{width:14px;height:14px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--white);font-weight:700;flex-shrink:0}
+.hero h1{font-size:52px;font-weight:800;line-height:1.1;letter-spacing:-.04em;margin-bottom:20px;color:var(--white)}
+.hero h1 span{color:var(--blue2)}
+.hero-sub{font-size:17px;color:var(--text2);line-height:1.75;margin-bottom:32px;max-width:480px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px}
+.btn-primary{background:var(--blue);color:var(--white);padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;transition:.2s;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer}
+.btn-primary:hover{background:var(--blue2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(43,109,232,.4)}
+.btn-ghost{background:transparent;color:var(--text);padding:14px 28px;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;transition:.2s;border:1px solid var(--border);cursor:pointer}
+.btn-ghost:hover{background:var(--dark3);color:var(--white)}
+.hero-trust{display:flex;flex-wrap:wrap;gap:20px}
+.trust-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text3)}
+.trust-item span{color:var(--green);font-weight:700}
 
 /* TERMINAL */
-.term{background:var(--dark);border-radius:12px;overflow:hidden;border:1px solid var(--dark3)}
-.term-h{background:var(--dark2);padding:11px 16px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--dark3)}
-.td{width:11px;height:11px;border-radius:50%}
-.term-lbl{font-size:11px;color:var(--ink4);font-family:var(--mono);margin-left:6px}
-.term-b{padding:20px 22px;font-family:var(--mono);font-size:12px;line-height:2;color:var(--ink4)}
-.tc-dim{color:#4b5563}.tc-p{color:#6b7280;margin-right:6px}.tc-cmd{color:#9ca3af}
-.tc-g{color:#69db7c}.tc-b{color:#74c0fc}.tc-a{color:#ffd43b}.tc-r{color:#ff8787}
+.terminal{background:var(--dark2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.terminal-bar{background:var(--dark3);padding:12px 16px;display:flex;align-items:center;gap:8px}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.terminal-body{padding:20px;font-family:'Courier New',monospace;font-size:12px;line-height:1.8}
+.t-green{color:#69db7c}
+.t-blue{color:#74c0fc}
+.t-red{color:#ff8787}
+.t-amber{color:#ffd43b}
+.t-gray{color:var(--text3)}
+.t-white{color:var(--white)}
 
 /* STATS */
-.stats-s{border-bottom:1px solid var(--border);background:var(--bg)}
-.stats{max-width:1100px;margin:0 auto;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-.stat{text-align:center;flex:1;min-width:80px}
-.stat-n{font-size:28px;font-weight:700;letter-spacing:-0.05em;color:var(--ink)}
-.stat-l{font-size:11px;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
-.stat-sep{width:1px;height:36px;background:var(--border);flex-shrink:0}
-
-/* PROBLEME SECTION */
-.problem-s{background:var(--dark);padding:80px 28px}
-.problem-i{max-width:1100px;margin:0 auto}
-.problem-tag{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--silver2);margin-bottom:14px}
-.problem-h{font-size:42px;font-weight:700;letter-spacing:-0.04em;line-height:1.1;color:var(--white);margin-bottom:16px}
-.problem-p{font-size:17px;color:var(--silver2);line-height:1.75;font-weight:300;max-width:560px;margin-bottom:48px}
-.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.problem-card{background:var(--dark2);border:1px solid var(--dark3);border-radius:10px;padding:22px}
-.problem-card-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px}
-.problem-card-body{font-size:13px;color:var(--silver2);line-height:1.65;font-weight:300}
-.problem-cost{margin-top:40px;background:var(--dark2);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.problem-cost-t{font-size:17px;font-weight:600;color:var(--white);margin-bottom:4px}
-.problem-cost-s{font-size:13px;color:var(--silver2)}
-.cost-badge{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 20px;text-align:center}
-.cost-num{font-size:28px;font-weight:700;color:#ff8787;letter-spacing:-0.04em}
-.cost-label{font-size:11px;color:var(--silver2);margin-top:2px}
+.stats{padding:60px 5%;background:var(--dark2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:40px}
+.stat{text-align:center}
+.stat-num{font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.04em}
+.stat-num span{color:var(--blue2)}
+.stat-label{font-size:13px;color:var(--text3);margin-top:4px}
 
 /* SECTIONS */
-.s{padding:88px 28px}
-.s-i{max-width:1100px;margin:0 auto}
-.s-alt{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
-.s-h{font-size:38px;font-weight:700;letter-spacing:-0.04em;line-height:1.1;margin-bottom:14px}
-.s-sub{font-size:16px;color:var(--ink3);max-width:500px;line-height:1.75;font-weight:300}
+.s{padding:100px 5%}
+.s-inner{max-width:1100px;margin:0 auto}
+.s-alt{background:var(--dark2)}
+.eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue2);margin-bottom:12px}
+.s-title{font-size:42px;font-weight:800;letter-spacing:-.04em;color:var(--white);line-height:1.15;margin-bottom:16px}
+.s-sub{font-size:16px;color:var(--text2);line-height:1.75;max-width:580px;margin-bottom:48px}
 
-/* SERVICES GRID */
-.services{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:48px}
-.service{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:28px;transition:all .2s}
-.service:hover{border-color:var(--dark);transform:translateY(-2px)}
-.service-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.service-icon{width:40px;height:40px;background:var(--dark);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.service-title{font-size:17px;font-weight:600;letter-spacing:-0.02em}
-.service-body{font-size:14px;color:var(--ink3);line-height:1.7;font-weight:300}
-.service-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
-.stag{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--bg);color:var(--ink3);border:1px solid var(--border)}
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.service{background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:32px;transition:.2s}
+.service:hover{border-color:rgba(43,109,232,.3);transform:translateY(-2px)}
+.service-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px}
+.service-title{font-size:17px;font-weight:700;color:var(--white);margin-bottom:10px}
+.service-body{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.service-tags{display:flex;flex-wrap:wrap;gap:6px}
+.stag{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;background:rgba(43,109,232,.1);color:#7ca9f5;border:1px solid rgba(43,109,232,.15)}
 
-/* STEPS */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);margin-top:48px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--border);gap:1px}
-.step{background:var(--white);padding:30px 26px}
-.step-n{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);margin-bottom:16px;font-family:var(--mono)}
-.step-t{font-size:16px;font-weight:600;letter-spacing:-0.02em;margin-bottom:10px}
-.step-b{font-size:14px;color:var(--ink3);line-height:1.7;font-weight:300}
+/* CAS RÉELS */
+.cas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+.cas{background:var(--dark);border:1px solid var(--border);border-radius:14px;padding:28px}
+.cas-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cas-icon{font-size:28px}
+.cas-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.cas-title{font-size:15px;font-weight:700;color:var(--white);margin-top:2px}
+.cas-timeline{margin-top:16px}
+.cas-event{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.cas-time{font-size:11px;font-weight:700;color:var(--blue2);font-family:monospace;flex-shrink:0;padding-top:1px;min-width:45px}
+.cas-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.cas-result{margin-top:16px;padding:10px 14px;background:rgba(14,165,114,.08);border:1px solid rgba(14,165,114,.2);border-radius:8px;font-size:12px;color:var(--green);font-weight:600}
 
-/* COMPARISON */
-.comp{margin-top:48px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.comp table{width:100%;border-collapse:collapse;font-size:13px}
-.comp th{padding:13px 20px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);background:var(--surface);border-bottom:1px solid var(--border)}
-.comp th.hl{background:var(--dark);color:var(--silver)}
-.comp td{padding:12px 20px;border-bottom:1px solid var(--surface);color:var(--ink3)}
-.comp tr:last-child td{border-bottom:none}
-.comp td:first-child{font-weight:500;color:var(--ink)}
-.comp td.hl{background:#f8f9fa;font-weight:600;color:var(--ink)}
-.yes{color:var(--green);font-weight:600}
-.no{color:var(--ink4)}
-.maybe{color:var(--amber);font-size:12px}
+/* COMMENT CA MARCHE */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px}
+.step{text-align:center}
+.step-num{width:56px;height:56px;border-radius:50%;background:rgba(43,109,232,.1);border:2px solid rgba(43,109,232,.3);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--blue2);margin:0 auto 20px}
+.step-title{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px}
+.step-body{font-size:14px;color:var(--text2);line-height:1.7}
 
-/* PRICING */
-.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
-.price{border:1px solid var(--border);border-radius:10px;padding:28px;background:var(--white);position:relative}
-.price.hi{border-color:var(--dark);border-width:1.5px}
-.hi-lbl{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--dark);color:var(--silver);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 12px;border-radius:20px;white-space:nowrap}
-.p-plan{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);margin-bottom:6px}
-.p-price{font-size:36px;font-weight:700;letter-spacing:-0.05em;line-height:1;margin-bottom:4px}
-.p-price span{font-size:14px;font-weight:400;color:var(--ink4)}
-.p-desc{font-size:13px;color:var(--ink3);margin:10px 0 18px;line-height:1.6;font-weight:300}
-.p-list{list-style:none;margin-bottom:22px}
-.p-list li{font-size:13px;padding:7px 0;border-bottom:1px solid var(--surface);color:var(--ink3);display:flex;gap:8px;align-items:flex-start}
-.p-list li:last-child{border-bottom:none}
-.p-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
-.p-list li.off{color:var(--ink4)}.p-list li.off::before{content:'—';color:var(--border2)}
-.p-btn{display:block;text-align:center;padding:10px;border-radius:7px;font-size:14px;font-weight:500;transition:all .15s}
-.p-btn-d{background:var(--dark);color:var(--white)}.p-btn-d:hover{background:var(--dark2)}
-.p-btn-o{border:1px solid var(--border);color:var(--ink)}.p-btn-o:hover{border-color:var(--ink3)}
+/* COMPARAISON */
+.compare-table{width:100%;border-collapse:collapse;margin-top:48px}
+.compare-table th{padding:14px 16px;font-size:13px;font-weight:700;text-align:left;background:var(--dark3);color:var(--text2)}
+.compare-table th:first-child{border-radius:8px 0 0 0}
+.compare-table th:last-child{border-radius:0 8px 0 0}
+.compare-table td{padding:13px 16px;font-size:13px;border-bottom:1px solid var(--border2);color:var(--text2)}
+.compare-table tr:hover td{background:var(--dark3)}
+.compare-table .hl{background:rgba(43,109,232,.05)}
+.compare-table .hl td{color:var(--white)}
+.yes{color:var(--green);font-weight:700}
+.no{color:var(--text3)}
+.maybe{color:var(--amber,#ffd43b);font-weight:600}
+
+/* TARIFS */
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+.plan{background:var(--dark2);border:1px solid var(--border);border-radius:16px;padding:36px;position:relative}
+.plan-featured{border-color:var(--blue);background:rgba(43,109,232,.05)}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--blue);color:var(--white);font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.plan-name{font-size:14px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.plan-price{font-size:42px;font-weight:800;color:var(--white);letter-spacing:-.04em}
+.plan-price span{font-size:16px;color:var(--text3);font-weight:400}
+.plan-desc{font-size:13px;color:var(--text3);margin:8px 0 24px;line-height:1.5}
+.plan-features{list-style:none;margin-bottom:28px}
+.plan-features li{font-size:13px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.plan-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.plan-cta{display:block;text-align:center;padding:12px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;transition:.2s}
+.plan-cta-primary{background:var(--blue);color:var(--white)}
+.plan-cta-primary:hover{background:var(--blue2)}
+.plan-cta-ghost{background:var(--dark3);color:var(--text);border:1px solid var(--border)}
+.plan-cta-ghost:hover{background:var(--dark);color:var(--white)}
 
 /* FAQ */
-.faq{max-width:680px;margin:48px auto 0}
-.faq-i{border-bottom:1px solid var(--border)}
-.faq-q{width:100%;background:none;border:none;cursor:pointer;padding:18px 0;display:flex;justify-content:space-between;align-items:center;font-family:var(--font);font-size:15px;font-weight:500;color:var(--ink);text-align:left;gap:12px}
-.faq-ic{font-size:18px;color:var(--ink4);transition:transform .2s;flex-shrink:0}
-.faq-i.open .faq-ic{transform:rotate(45deg)}
-.faq-a{font-size:14px;color:var(--ink3);line-height:1.75;padding-bottom:18px;display:none;font-weight:300}
-.faq-i.open .faq-a{display:block}
+.faq{max-width:720px;margin:48px auto 0}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{width:100%;text-align:left;background:none;border:none;padding:20px 0;font-size:15px;font-weight:600;color:var(--white);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq-q:hover{color:var(--blue2)}
+.faq-icon{font-size:20px;color:var(--text3);flex-shrink:0;transition:.3s}
+.faq-item.open .faq-icon{transform:rotate(45deg);color:var(--blue2)}
+.faq-a{font-size:14px;color:var(--text2);line-height:1.75;padding-bottom:20px;display:none}
+.faq-item.open .faq-a{display:block}
 
-/* CTA STRIP */
-.cta-s{background:var(--dark);padding:80px 28px;text-align:center}
-.cta-si{max-width:640px;margin:0 auto}
-.cta-s h2{font-size:42px;font-weight:700;color:var(--white);letter-spacing:-0.04em;margin-bottom:14px;line-height:1.1}
-.cta-s p{font-size:17px;color:var(--silver2);margin-bottom:32px;font-weight:300;line-height:1.7}
-.cta-note{font-size:12px;color:#6b7280;margin-top:14px}
-.btn-white{background:var(--white);color:var(--dark);padding:13px 28px;border-radius:8px;font-size:15px;font-weight:600;display:inline-block;transition:opacity .15s}
-.btn-white:hover{opacity:.9}
+/* FONDATEUR */
+.founder{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:center;background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:40px}
+.founder-img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--blue)}
+.founder-name{font-size:20px;font-weight:800;color:var(--white)}
+.founder-role{font-size:13px;color:var(--blue2);margin-bottom:12px;font-weight:600}
+.founder-bio{font-size:14px;color:var(--text2);line-height:1.75}
+.founder-tags{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.founder-tag{font-size:12px;color:var(--text3);background:var(--dark2);border:1px solid var(--border);padding:4px 12px;border-radius:6px}
 
 /* CONTACT */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
-.c-h{font-size:28px;font-weight:700;letter-spacing:-0.04em;margin-bottom:12px}
-.c-sub{font-size:15px;color:var(--ink3);line-height:1.75;margin-bottom:24px;font-weight:300}
-.c-det{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
-.c-ic{width:34px;height:34px;background:var(--white);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.c-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4)}
-.c-val{font-size:14px;color:var(--ink);margin-top:2px}
-.form-box{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:28px}
-.f-r{margin-bottom:14px}
-.f-l{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:5px}
-.f-c{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--ink);padding:9px 12px;border-radius:6px;font-size:14px;font-family:var(--font);outline:none;transition:border-color .15s}
-.f-c:focus{border-color:var(--dark)}
-textarea.f-c{resize:vertical;min-height:88px}
-.f-sub{width:100%;background:var(--dark);color:var(--white);padding:12px;border:none;border-radius:7px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;transition:background .15s}
-.f-sub:hover{background:var(--dark2)}
-.f-sub:disabled{opacity:.6;cursor:not-allowed}
-#f-ok{display:none;background:var(--green-l);border:1px solid #b2f2bb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:14px;color:#2b8a3e}
-#f-plan-display{display:none;background:var(--blue-l);border:1px solid #bfdbfe;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:13px;font-weight:600;color:#1864ab}
+.contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:60px;align-items:start}
+.contact-info{display:flex;flex-direction:column;gap:24px}
+.contact-item{display:flex;gap:16px;align-items:flex-start}
+.contact-item-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.contact-item-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px}
+.contact-item-value{font-size:14px;color:var(--text2)}
+.contact-item-value a{color:var(--blue2);text-decoration:none}
+.contact-form{background:var(--dark2);border:1px solid var(--border);border-radius:14px;padding:36px}
+.form-title{font-size:18px;font-weight:700;color:var(--white);margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.form-input,.form-select{width:100%;background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;color:var(--white);outline:none;transition:.2s;font-family:inherit}
+.form-input:focus,.form-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(43,109,232,.15)}
+.form-input::placeholder{color:var(--text3)}
+.form-select option{background:var(--dark2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-note{font-size:11px;color:var(--text3);text-align:center;margin-top:10px}
+
+/* CTA STRIP */
+.cta-strip{background:linear-gradient(135deg,#1a2744 0%,#0f1117 100%);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 5%;text-align:center}
+.cta-strip h2{font-size:38px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:12px}
+.cta-strip p{font-size:16px;color:var(--text2);margin-bottom:32px}
+.cta-note{font-size:12px;color:var(--text3);margin-top:12px}
 
 /* FOOTER */
-footer{border-top:1px solid var(--border);padding:28px}
-.footer-i{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-.f-links{display:flex;gap:16px;flex-wrap:wrap}
-.f-links a{font-size:12px;color:var(--ink4);transition:color .15s}
-.f-links a:hover{color:var(--ink3)}
-.f-copy{font-size:12px;color:var(--ink4)}
+footer{background:var(--dark2);border-top:1px solid var(--border);padding:40px 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.footer-logo{font-size:16px;font-weight:800;color:var(--white)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:13px;color:var(--text3);text-decoration:none}
+.footer-links a:hover{color:var(--white)}
+.footer-copy{font-size:12px;color:var(--text3)}
 
-/* RGPD BADGE */
-.rgpd-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 16px;margin-top:24px;font-size:13px;color:#c92a2a}
-.rgpd-badge strong{font-weight:600}
-
-@media(max-width:900px){
-  .hero{grid-template-columns:1fr;gap:40px;padding:100px 20px 60px}
-  .hero h1{font-size:46px}
-  .problem-grid{grid-template-columns:1fr}
-  .services{grid-template-columns:1fr}
-  .steps{grid-template-columns:1fr}
-  .pricing{grid-template-columns:1fr}
-  .contact-grid{grid-template-columns:1fr;gap:36px}
+@media(max-width:768px){
+  .hero-inner,.services-grid,.cas-grid,.steps,.pricing,.contact-grid,.stats-inner{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .s-title{font-size:30px}
   .nav-links{display:none}
-  .stats{justify-content:center}
-  .stat-sep{display:none}
-}
-@media(max-width:600px){
-  .s{padding:60px 20px}
-  .problem-s{padding:60px 20px}
-  .s-h{font-size:28px}
-  .hero h1{font-size:36px}
+  .founder{grid-template-columns:1fr;text-align:center}
+  .form-row{grid-template-columns:1fr}
+  compare-table{font-size:11px}
 }
 </style>
 </head>
 <body>
 
 <nav class="nav">
-  <div class="nav-i">
-    <div class="logo">
-      <div class="logo-m">SF</div>
-      <span class="logo-n">ShieldFlow</span>
-    </div>
-    <div class="nav-links">
-      <a href="#services">Nos services</a>
-      <a href="#fonctionnement">Fonctionnement</a>
-      <a href="#tarifs">Tarifs</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contact" class="nav-btn">Nous contacter →</a>
-    </div>
+  <a href="/" class="nav-logo"><span>🛡</span> ShieldFlow</a>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#cas">Cas réels</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact" class="nav-cta">Demander un audit →</a>
   </div>
 </nav>
 
 <!-- HERO -->
-<div class="hero-s">
-  <div class="hero">
+<section class="hero">
+  <div class="hero-inner">
     <div>
-      <div class="hero-pill"><div class="hero-pill-dot"></div>Surveillance active 24h/24 · 7j/7 · Propulsé par l'IA</div>
-      <h1>Votre département<br>cyber<em>sécurité.</em></h1>
-      <p class="hero-lead">Vous n'avez pas d'ingénieur cybersécurité ? <strong>ShieldFlow est votre équipe IT.</strong> Surveillance, protection et correction de vos systèmes 24h/24 — sans recruter personne.</p>
-      <div class="hero-btns">
-        <a href="#contact" class="btn-dark">Obtenir mon audit de sécurité gratuit →</a>
-        <a href="#services" class="btn-ghost">Nos services →</a>
+      <div class="hero-badge"><div class="hero-badge-dot"></div> Surveillance active 24h/24 · 7j/7</div>
+      <h1>Votre expert cyber.<br><span>Toujours là.</span></h1>
+      <p class="hero-sub">ShieldFlow surveille vos machines et vos comptes cloud 24h/24, corrige automatiquement les menaces et vous garantit la conformité RGPD. Installation sur site partout en Europe.</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-primary">Demander un audit gratuit →</a>
+        <a href="#services" class="btn-ghost">Voir comment ça marche</a>
       </div>
-      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--green-l);border:1px solid #b2f2bb;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:14px;font-weight:600;color:#2b8a3e">✓ À partir de <strong>199€/mois</strong> — Sans engagement</div>
       <div class="hero-trust">
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Surveillance 24h/24</span></div>
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Correction automatique</span></div>
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Basé en France</span></div>
-        <div class="trust-i"><div class="trust-dot">✓</div><span>Sans engagement</span></div>
+        <div class="trust-item"><span>✓</span> À partir de 199€/mois</div>
+        <div class="trust-item"><span>✓</span> Installation sur site</div>
+        <div class="trust-item"><span>✓</span> Conformité RGPD incluse</div>
+        <div class="trust-item"><span>✓</span> Sans engagement</div>
       </div>
-      <div class="rgpd-badge">⚖️ <span>Obligation légale : <strong>conformité RGPD & NIS2</strong> incluse automatiquement</span></div>
     </div>
-    <div>
-      <div class="term">
-        <div class="term-h">
-          <div class="td" style="background:#ff5f57"></div>
-          <div class="td" style="background:#ffbd2e"></div>
-          <div class="td" style="background:#28c840"></div>
-          <span class="term-lbl">ShieldFlow — Surveillance en cours</span>
-        </div>
-        <div class="term-b">
-<div class="tc-dim"># Tableau de bord — Entreprise Martin</div><br>
-<div class="tc-g">✓ 12 machines surveillées · En ligne</div>
-<div class="tc-g">✓ Microsoft 365 · Connecté</div>
-<div class="tc-g">✓ AWS · Connecté</div><br>
-<div class="tc-a">⚠ CRITIQUE  Pare-feu désactivé · PC-Comptable</div>
-<div class="tc-dim">  → Correction automatique...</div>
-<div class="tc-g">✓ Pare-feu activé en 4 secondes</div><br>
-<div class="tc-a">⚠ ÉLEVÉ    3 comptes sans MFA · M365</div>
-<div class="tc-dim">  → Notification envoyée à l'admin</div><br>
-<div class="tc-b">◉ Score sécurité : 91/100</div>
-<div class="tc-b">◉ Conformité RGPD : 85/100 — Conforme</div><br>
-<div class="tc-dim">  Rapport PDF envoyé à 8h00 ✓</div>
-        </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot" style="background:#ff5f57"></div>
+        <div class="t-dot" style="background:#ffbd2e"></div>
+        <div class="t-dot" style="background:#28c840"></div>
+        <span style="font-size:11px;color:var(--text3);margin-left:8px">ShieldFlow — Surveillance en cours</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-green">✓</span> <span class="t-white">Cabinet Martin</span> <span class="t-gray">— 8 machines · En ligne</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">Microsoft 365</span> <span class="t-gray">— Connecté · Aucune anomalie</span></div>
+        <div><span class="t-green">✓</span> <span class="t-white">Google Workspace</span> <span class="t-gray">— Connecté · Aucune anomalie</span></div>
+        <div style="margin-top:8px"><span class="t-red">⚠</span> <span class="t-amber">CRITIQUE</span> <span class="t-gray">Connexion suspecte Microsoft 365</span></div>
+        <div><span class="t-gray">→</span> <span class="t-blue">Pays détecté : Roumanie · 03h14</span></div>
+        <div><span class="t-gray">→</span> <span class="t-green">Compte bloqué automatiquement ✓</span></div>
+        <div style="margin-top:8px"><span class="t-red">⚠</span> <span class="t-amber">CRITIQUE</span> <span class="t-gray">Ransomware détecté · PC-Compta</span></div>
+        <div><span class="t-gray">→</span> <span class="t-green">Machine isolée en 4 secondes ✓</span></div>
+        <div><span class="t-gray">→</span> <span class="t-green">Email client envoyé ✓</span></div>
+        <div style="margin-top:8px"><span class="t-green">◉</span> <span class="t-white">Score sécurité global : 94/100</span></div>
+        <div><span class="t-green">◉</span> <span class="t-white">Conformité RGPD : 89/100 — Conforme</span></div>
+        <div><span class="t-gray">→</span> <span class="t-green">Rapport PDF envoyé à 8h00 ✓</span></div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- STATS -->
-<div class="stats-s">
-  <div class="stats">
-    <div class="stat"><div class="stat-n">24/7</div><div class="stat-l">Surveillance continue</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">30 s</div><div class="stat-l">Détection des menaces</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">−90%</div><div class="stat-l">Coût vs équipe interne</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">5 min</div><div class="stat-l">Mise en service</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat"><div class="stat-n">3 OS</div><div class="stat-l">Mac · Windows · Linux</div></div>
-  </div>
-</div>
-
-<!-- PROBLEM -->
-<div class="problem-s">
-  <div class="problem-i">
-    <div class="problem-tag">Le problème</div>
-    <h2 class="problem-h">Votre entreprise est exposée.<br>Personne ne la surveille.</h2>
-    <p class="problem-p">Une PME sur deux subira une cyberattaque cette année. Sans équipe dédiée, vous êtes une cible facile. ShieldFlow change ça.</p>
-    <div class="problem-grid">
-      <div class="problem-card">
-        <div class="problem-card-title">🔓 Pas de surveillance</div>
-        <p class="problem-card-body">Vos machines, votre cloud, votre réseau — personne ne surveille en dehors des heures de bureau. Une attaque à 3h du matin passe inaperçue jusqu'au lendemain matin.</p>
-      </div>
-      <div class="problem-card">
-        <div class="problem-card-title">💸 Recrutement impossible</div>
-        <p class="problem-card-body">Un ingénieur cybersécurité coûte 60 000 à 90 000€/an. Un RSSI encore plus. Hors de portée pour une PME de 10 à 200 employés.</p>
-      </div>
-      <div class="problem-card">
-        <div class="problem-card-title">⚖️ Obligations légales</div>
-        <p class="problem-card-body">RGPD depuis 2018, NIS2 depuis 2024 — votre entreprise a des obligations légales de sécurité. En cas de manquement : jusqu'à 4% de votre CA d'amende.</p>
-      </div>
-      <div class="problem-card">
-        <div class="problem-card-title">☁️ Cloud non sécurisé</div>
-        <p class="problem-card-body">Microsoft 365, Google Workspace, AWS — des dizaines de points d'entrée pour les attaquants. MFA absent, accès non révoqués, mauvaises configurations.</p>
-      </div>
-      <div class="problem-card">
-        <div class="problem-card-title">🎯 Ransomware en hausse</div>
-        <p class="problem-card-body">Les ransomwares ciblent désormais les PME en priorité, car elles sont moins protégées. Coût moyen d'une attaque : 50 000€ pour une PME.</p>
-      </div>
-      <div class="problem-card">
-        <div class="problem-card-title">📋 Zéro visibilité</div>
-        <p class="problem-card-body">Sans outil de surveillance, vous ne savez pas ce qui se passe sur vos machines. Un employé télécharge un malware — vous l'apprenez trop tard.</p>
-      </div>
-    </div>
-    <div class="problem-cost">
-      <div>
-        <div class="problem-cost-t">ShieldFlow remplace une équipe entière</div>
-        <div class="problem-cost-s">Ingénieur sécu + Admin réseau + Admin système + Responsable conformité — pour 399€/mois</div>
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div class="cost-badge"><div class="cost-num">80K€</div><div class="cost-label">RSSI interne / an</div></div>
-        <div class="cost-badge" style="background:rgba(105,219,124,0.1);border-color:rgba(105,219,124,0.3)"><div class="cost-num" style="color:#69db7c">399€</div><div class="cost-label">ShieldFlow / mois</div></div>
-      </div>
-    </div>
+<div class="stats">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-num">24<span>/7</span></div><div class="stat-label">Surveillance continue</div></div>
+    <div class="stat"><div class="stat-num"><span>&lt;</span>30<span>s</span></div><div class="stat-label">Détection des menaces</div></div>
+    <div class="stat"><div class="stat-num"><span>-</span>90<span>%</span></div><div class="stat-label">Coût vs équipe interne</div></div>
+    <div class="stat"><div class="stat-num">100<span>%</span></div><div class="stat-label">Installation sur site</div></div>
   </div>
 </div>
 
 <!-- SERVICES -->
 <section class="s" id="services">
-  <div class="s-i">
+  <div class="s-inner">
     <div class="eyebrow">Nos services</div>
-    <h2 class="s-h">Tout ce qu'une équipe cyber<br>fait pour vous — automatiquement</h2>
-    <p class="s-sub">ShieldFlow assure les missions d'un département IT sécurité complet, 24h/24, 7j/7.</p>
-    <div class="services">
-      <div class="service">
-        <div class="service-header">
-          <div class="service-icon">🔍</div>
-          <div class="service-title">Surveillance & Détection</div>
-        </div>
-        <p class="service-body">Monitoring continu de toutes vos machines et services cloud. Détection en temps réel des menaces — malware, intrusions, comportements suspects, ports dangereux, tentatives de connexion. Alerte immédiate dès qu'un problème est détecté.</p>
-        <div class="service-tags"><span class="stag">Temps réel</span><span class="stag">Mac / Windows / Linux</span><span class="stag">Cloud</span></div>
+    <h2 class="s-title">Trois choses.<br>Vraiment bien faites.</h2>
+    <p class="s-sub">ShieldFlow fait exactement ce que font les grandes boîtes comme CrowdStrike et Sophos — mais pour les PME françaises, en français, avec la conformité RGPD intégrée.</p>
+    <div class="services-grid">
+      <div class="service" style="border-color:rgba(43,109,232,.25)">
+        <div class="service-icon" style="background:rgba(43,109,232,.1)">👁</div>
+        <div class="service-title">Surveillance 24h/24</div>
+        <p class="service-body">Un agent léger installé sur chaque machine surveille en temps réel l'état de sécurité — pare-feu, antivirus, connexions réseau, comportements suspects. Vos comptes Microsoft 365 et Google Workspace sont également surveillés pour détecter les connexions anormales et les accès non autorisés.</p>
+        <div class="service-tags"><span class="stag">Mac · Windows · Linux</span><span class="stag">Microsoft 365</span><span class="stag">Google Workspace</span></div>
       </div>
-      <div class="service">
-        <div class="service-header">
-          <div class="service-icon">⚡</div>
-          <div class="service-title">Correction & Remédiation</div>
-        </div>
-        <p class="service-body">Les failles détectées sont corrigées automatiquement à distance — activation du pare-feu, fermeture des ports dangereux, blocage des IPs malveillantes. Intervention de notre équipe pour les corrections complexes.</p>
-        <div class="service-tags"><span class="stag">Automatique</span><span class="stag">À distance</span><span class="stag">Sans intervention client</span></div>
+      <div class="service" style="border-color:rgba(14,165,114,.25)">
+        <div class="service-icon" style="background:rgba(14,165,114,.1)">⚡</div>
+        <div class="service-title">Correction automatique</div>
+        <p class="service-body">Quand un problème est détecté, ShieldFlow le corrige automatiquement à distance — pare-feu réactivé, session verrouillée, IP malveillante bloquée, machine isolée en cas de ransomware. Pour les interventions complexes, Hanafi Gaci vous rappelle personnellement dans l heure.</p>
+        <div class="service-tags"><span class="stag">Correction auto</span><span class="stag">À distance</span><span class="stag">Expert dédié</span></div>
       </div>
-      <div class="service">
-        <div class="service-header">
-          <div class="service-icon">☁️</div>
-          <div class="service-title">Administration Cloud</div>
-        </div>
-        <p class="service-body">Surveillance et administration de Microsoft 365, Amazon AWS et Google Workspace. Comptes sans MFA, accès non révoqués, mauvaises configurations, backups échoués — tout est détecté et corrigé.</p>
-        <div class="service-tags"><span class="stag">M365</span><span class="stag">AWS</span><span class="stag">Google Workspace</span></div>
-      </div>
-      <div class="service">
-        <div class="service-header">
-          <div class="service-icon">📋</div>
-          <div class="service-title">Conformité Réglementaire</div>
-        </div>
-        <p class="service-body">Score RGPD calculé automatiquement article par article. Rapport de conformité PDF officiel généré chaque mois. Conformité NIS2 incluse. Évitez les sanctions CNIL jusqu'à 4% de votre chiffre d'affaires.</p>
-        <div class="service-tags"><span class="stag">RGPD</span><span class="stag">NIS2</span><span class="stag">Rapport PDF</span></div>
-      </div>
-      <div class="service">
-        <div class="service-header">
-          <div class="service-icon">🧠</div>
-          <div class="service-title">Threat Intelligence</div>
-        </div>
-        <p class="service-body">Vérification de vos connexions réseau contre 3 millions d'IPs malveillantes connues. Surveillance du dark web pour détecter si vos données ou emails ont été compromis dans des fuites.</p>
-        <div class="service-tags"><span class="stag">Dark web</span><span class="stag">3M+ IPs malveillantes</span><span class="stag">CVE Scanner</span></div>
-      </div>
-      <div class="service" style="border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.03)">
-        <div class="service-header">
-          <div class="service-icon" style="background:rgba(124,58,237,.15)">🤖</div>
-          <div class="service-title">Analyse IA de vos logs système</div>
-        </div>
-        <p class="service-body">L'IA analyse en continu les statistiques de logs de vos machines — tentatives de connexion, événements critiques, comportements suspects. Elle génère un rapport d'analyse toutes les heures et explique chaque alerte en langage clair avec un plan d'action personnalisé.</p>
-        <div class="service-tags"><span class="stag">Claude AI</span><span class="stag">Analyse logs horaire</span><span class="stag">Rapport intelligent</span></div>
-      </div>
-
-
-
-      <div class="service">
-        <div class="service-header">
-          <div class="service-icon">📄</div>
-          <div class="service-title">Reporting & Visibilité</div>
-        </div>
-        <p class="service-body">Rapport PDF quotidien envoyé chaque matin à 8h avec le score de sécurité, les alertes traitées et les actions réalisées. Dashboard temps réel accessible depuis n'importe où.</p>
-        <div class="service-tags"><span class="stag">Rapport quotidien</span><span class="stag">Dashboard</span><span class="stag">Score sécurité</span></div>
+      <div class="service" style="border-color:rgba(232,51,74,.25)">
+        <div class="service-icon" style="background:rgba(232,51,74,.1)">📋</div>
+        <div class="service-title">Conformité RGPD</div>
+        <p class="service-body">Score RGPD calculé automatiquement article par article. Rapport PDF officiel généré en un clic — daté, détaillé, utilisable comme preuve auprès de la CNIL. Vous êtes conformes sans recruter de consultant. En cas de contrôle, vous avez votre preuve en 10 secondes.</p>
+        <div class="service-tags"><span class="stag">Rapport PDF officiel</span><span class="stag">Score RGPD</span><span class="stag">Preuve CNIL</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FONCTIONNEMENT -->
-<section class="s s-alt" id="fonctionnement">
-  <div class="s-i">
-    <div class="eyebrow">Fonctionnement</div>
-    <h2 class="s-h">Opérationnel en 5 minutes.</h2>
-    <p class="s-sub">Une commande à copier-coller. Notre équipe s'occupe du reste.</p>
+<!-- CAS RÉELS -->
+<section class="s s-alt" id="cas">
+  <div class="s-inner">
+    <div class="eyebrow">Cas réels</div>
+    <h2 class="s-title">Ce que ShieldFlow fait<br>concrètement.</h2>
+    <p class="s-sub">Trois situations réelles que vivent les PME françaises. Voici comment ShieldFlow réagit.</p>
+    <div class="cas-grid">
+      <div class="cas">
+        <div class="cas-header">
+          <div class="cas-icon">🦠</div>
+          <div>
+            <div class="cas-type">Ransomware</div>
+            <div class="cas-title">Cabinet comptable · 8 postes Windows</div>
+          </div>
+        </div>
+        <div class="cas-timeline">
+          <div class="cas-event"><div class="cas-time">T+0s</div><div class="cas-desc">Fichiers clients qui se chiffrent — ransomware actif sur PC-Compta</div></div>
+          <div class="cas-event"><div class="cas-time">T+4s</div><div class="cas-desc">Machine isolée du réseau automatiquement — les autres postes sont protégés</div></div>
+          <div class="cas-event"><div class="cas-time">T+15s</div><div class="cas-desc">Hanafi Gaci reçoit une alerte urgence sur son téléphone</div></div>
+          <div class="cas-event"><div class="cas-time">T+20s</div><div class="cas-desc">Le cabinet reçoit un email rassurant avec la chronologie des actions</div></div>
+          <div class="cas-event"><div class="cas-time">T+60s</div><div class="cas-desc">Rapport d incident complet généré automatiquement</div></div>
+        </div>
+        <div class="cas-result">✓ 7 postes sauvés — seul 1 touché — données clients intactes</div>
+      </div>
+      <div class="cas">
+        <div class="cas-header">
+          <div class="cas-icon">🌍</div>
+          <div>
+            <div class="cas-type">Piratage cloud</div>
+            <div class="cas-title">Cabinet médical · Microsoft 365</div>
+          </div>
+        </div>
+        <div class="cas-timeline">
+          <div class="cas-event"><div class="cas-time">03h14</div><div class="cas-desc">Connexion Microsoft 365 depuis la Roumanie avec les identifiants du Dr Martin</div></div>
+          <div class="cas-event"><div class="cas-time">03h14</div><div class="cas-desc">ShieldFlow détecte une connexion depuis un pays inconnu — alerte CRITIQUE</div></div>
+          <div class="cas-event"><div class="cas-time">03h15</div><div class="cas-desc">Hanafi Gaci reçoit l alerte — rappelle le Dr Martin le matin</div></div>
+          <div class="cas-event"><div class="cas-time">08h00</div><div class="cas-desc">Mot de passe réinitialisé, MFA activé — accès pirate coupé</div></div>
+        </div>
+        <div class="cas-result">✓ Dossiers patients protégés — aucune fuite — pas de déclaration CNIL nécessaire</div>
+      </div>
+      <div class="cas">
+        <div class="cas-header">
+          <div class="cas-icon">⚖️</div>
+          <div>
+            <div class="cas-type">Contrôle CNIL</div>
+            <div class="cas-title">Cabinet notaire · Marseille</div>
+          </div>
+        </div>
+        <div class="cas-timeline">
+          <div class="cas-event"><div class="cas-time">Lundi</div><div class="cas-desc">La CNIL contacte le cabinet suite à une plainte — demande de preuve de conformité</div></div>
+          <div class="cas-event"><div class="cas-time">10 sec</div><div class="cas-desc">Le notaire ouvre ShieldFlow et génère le rapport RGPD PDF officiel</div></div>
+          <div class="cas-event"><div class="cas-time">Lundi</div><div class="cas-desc">Rapport envoyé à la CNIL — score 87/100, historique des mesures de sécurité</div></div>
+          <div class="cas-event"><div class="cas-time">Mardi</div><div class="cas-desc">Dossier classé — aucune sanction</div></div>
+        </div>
+        <div class="cas-result">✓ Aucune amende — preuve de conformité disponible en 10 secondes</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENT CA MARCHE -->
+<section class="s" id="fonctionnement">
+  <div class="s-inner">
+    <div class="eyebrow">Comment ca marche</div>
+    <h2 class="s-title">Simple. Concret. Efficace.</h2>
+    <p class="s-sub">Hanafi Gaci se déplace chez vous pour installer ShieldFlow. Ensuite tout est automatique.</p>
     <div class="steps">
-      <div class="step"><div class="step-n">01 — Installation</div><div class="step-t">Une commande, c'est tout</div><p class="step-b">Nous vous envoyons une ligne à coller dans votre terminal. L'agent s'installe automatiquement sur chaque machine en moins de 5 minutes. Compatible Mac, Windows et Linux. Démarre au boot, aucune maintenance.</p></div>
-      <div class="step" style="background:var(--bg)"><div class="step-n">02 — Surveillance</div><div class="step-t">Monitoring 24h/24 automatique</div><p class="step-b">L'agent analyse en continu l'état de chaque machine et de votre cloud. Toutes les 30 secondes, il vérifie l'ensemble des points de sécurité et remonte les alertes en temps réel dans notre dashboard.</p></div>
-      <div class="step"><div class="step-n">03 — Protection</div><div class="step-t">Correction et rapport quotidien</div><p class="step-b">Notre équipe corrige automatiquement depuis notre dashboard centralisé. Chaque matin à 8h, vous recevez un rapport PDF avec le score de sécurité, les menaces traitées et l'état de votre conformité RGPD.</p></div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">On se déplace chez vous</div>
+        <p class="step-body">Hanafi Gaci vient dans vos locaux partout en Europe. Il installe l agent ShieldFlow sur chaque machine en 5 minutes par poste. Il connecte vos comptes Microsoft 365 et Google. Vous voyez votre score de sécurité en direct.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">ShieldFlow surveille 24h/24</div>
+        <p class="step-body">L agent tourne silencieusement sur chaque machine — moins de 1% de CPU. Il analyse l état de sécurité toutes les 30 secondes et surveille vos comptes cloud en continu. Vous ne faites rien.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Problème détecté — corrigé</div>
+        <p class="step-body">Les problèmes courants sont corrigés automatiquement. Pour les incidents graves, Hanafi Gaci vous rappelle personnellement dans l heure. Chaque matin à 8h vous recevez votre rapport de sécurité et votre score RGPD.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- COMPARISON -->
-<section class="s">
-  <div class="s-i">
+<!-- COMPARAISON -->
+<section class="s s-alt">
+  <div class="s-inner">
     <div class="eyebrow">Comparaison</div>
-    <h2 class="s-h">La protection enterprise.<br>Le budget PME.</h2>
-    <p class="s-sub">ShieldFlow remplace un département IT sécurité entier pour une fraction du coût.</p>
-    <div class="comp">
-      <table>
-        <thead>
-          <tr><th>Ce dont vous avez besoin</th><th class="hl">ShieldFlow</th><th>Recrutement interne</th><th>Prestataire ponctuel</th><th>Sans protection</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Surveillance 24h/24</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Correction automatique à distance</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Manuel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Administration cloud M365/AWS</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Conformité RGPD automatique</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Rapport de sécurité quotidien</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Manuel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Analyse IA logs système (horaire)</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Manuel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Zero Trust comportemental PME</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Threat Intelligence & Dark web</td><td class="hl"><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
-          <tr><td>Coût mensuel</td><td class="hl" style="color:var(--green);font-weight:600">199 – 599 €</td><td style="color:var(--red)">5 000 – 8 000 €</td><td style="color:var(--red)">1 000 – 3 000 €</td><td style="color:var(--green)">0 €</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <h2 class="s-title">La protection enterprise.<br>Le budget PME.</h2>
+    <p class="s-sub">Ce que les grandes entreprises paient des millions pour avoir — ShieldFlow vous le propose à partir de 199€/mois.</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Ce dont vous avez besoin</th>
+          <th style="color:#7ca9f5">ShieldFlow</th>
+          <th>Équipe IT interne</th>
+          <th>Prestataire ponctuel</th>
+          <th>Sans protection</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hl"><td>Surveillance machines 24h/24</td><td><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+        <tr><td>Surveillance Microsoft 365 et Google</td><td><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+        <tr class="hl"><td>Correction automatique à distance</td><td><span class="yes">✓ Inclus</span></td><td><span class="maybe">Manuel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
+        <tr><td>Isolation ransomware automatique</td><td><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+        <tr class="hl"><td>Conformité RGPD automatique</td><td><span class="yes">✓ Inclus</span></td><td><span class="maybe">Partiel</span></td><td><span class="maybe">Sur devis</span></td><td><span class="no">—</span></td></tr>
+        <tr><td>Rapport RGPD PDF officiel</td><td><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+        <tr class="hl"><td>Installation sur site partout en Europe</td><td><span class="yes">✓ Inclus</span></td><td><span class="maybe">Interne</span></td><td><span class="maybe">Payant</span></td><td><span class="no">—</span></td></tr>
+        <tr><td>Expert dédié joignable directement</td><td><span class="yes">✓ Inclus</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td><td><span class="no">—</span></td></tr>
+        <tr class="hl"><td style="font-weight:700">Coût mensuel</td><td style="font-weight:700;color:#7ca9f5">199 – 599€</td><td><span style="color:var(--text3)">5 000 – 8 000€</span></td><td><span style="color:var(--text3)">1 000 – 3 000€</span></td><td><span style="color:var(--red)">Risque 50 000€+</span></td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<!-- PRICING -->
-<section class="s s-alt" id="tarifs">
-  <div class="s-i" style="text-align:center">
+<!-- TARIFS -->
+<section class="s" id="tarifs">
+  <div class="s-inner" style="text-align:center">
     <div class="eyebrow">Tarifs</div>
-    <h2 class="s-h">Tarifs simples.<br>Sans surprise.</h2>
-    <p class="s-sub" style="margin:0 auto">Pas de frais cachés. Résiliable à tout moment avec un mois de préavis.</p>
-  </div>
-  <div class="s-i">
+    <h2 class="s-title">Simple. Transparent. Sans surprise.</h2>
+    <p class="s-sub" style="margin:0 auto 0">Pas de frais cachés. Résiliable à tout moment avec un mois de préavis. Installation sur site incluse.</p>
     <div class="pricing">
-      <div class="price">
-        <div class="p-plan">Starter</div>
-        <div class="p-price">199 <span>€ / mois</span></div>
-        <p class="p-desc">Pour les TPE et indépendants — jusqu'à 5 postes.</p>
-        <ul class="p-list">
+      <div class="plan">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">199€<span>/mois</span></div>
+        <div class="plan-desc">Pour les TPE et indépendants — jusqu'a 5 postes</div>
+        <ul class="plan-features">
           <li>5 machines surveillées 24h/24</li>
-          <li>Détection et correction automatique</li>
-          <li>Rapport PDF quotidien</li>
+          <li>Mac, Windows et Linux</li>
+          <li>Correction automatique à distance</li>
+          <li>Rapport PDF quotidien à 8h</li>
           <li>Score et rapport RGPD</li>
-          <li class="off">Surveillance cloud (Business)</li>
-          <li class="off">Threat Intelligence (Business)</li>
+          <li>Installation sur site incluse</li>
+          <li>Expert joignable directement</li>
         </ul>
-        <a href="#contact" class="p-btn p-btn-o" onclick="selectPlan('Starter — 199€/mois')">Commencer →</a>
+        <a href="#contact" class="plan-cta plan-cta-ghost">Commencer →</a>
       </div>
-      <div class="price hi">
-        <div class="hi-lbl">Le plus choisi</div>
-        <div class="p-plan">Business</div>
-        <div class="p-price">399 <span>€ / mois</span></div>
-        <p class="p-desc">Pour les PME de 10 à 50 employés — jusqu'à 20 postes.</p>
-        <ul class="p-list">
+      <div class="plan plan-featured">
+        <div class="plan-badge">⭐ Le plus choisi</div>
+        <div class="plan-name">Business</div>
+        <div class="plan-price">399€<span>/mois</span></div>
+        <div class="plan-desc">Pour les PME de 10 a 50 employés — jusqu'a 20 postes</div>
+        <ul class="plan-features">
           <li>20 machines surveillées 24h/24</li>
-          <li>Détection et correction automatique</li>
-          <li>Surveillance M365, AWS, Google</li>
-          <li>Conformité RGPD & NIS2 complète</li>
-          <li>CVE Scanner et Threat Intelligence</li>
-          <li>Rapport PDF quotidien</li>
+          <li>Mac, Windows et Linux</li>
+          <li>Surveillance Microsoft 365 et Google</li>
+          <li>Correction automatique à distance</li>
+          <li>Conformité RGPD et NIS2 complete</li>
+          <li>Rapport PDF quotidien à 8h</li>
+          <li>Installation sur site incluse</li>
+          <li>Expert dédié joignable directement</li>
         </ul>
-        <a href="#contact" class="p-btn p-btn-d" onclick="selectPlan('Business — 399€/mois')">Commencer →</a>
+        <a href="#contact" class="plan-cta plan-cta-primary">Commencer →</a>
       </div>
-      <div class="price">
-        <div class="p-plan">Pro</div>
-        <div class="p-price">599 <span>€ / mois</span></div>
-        <p class="p-desc">Pour les entreprises jusqu'à 200 employés — jusqu'à 50 postes.</p>
-        <ul class="p-list">
+      <div class="plan">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">599€<span>/mois</span></div>
+        <div class="plan-desc">Pour les entreprises jusqu'a 200 employés — jusqu'a 50 postes</div>
+        <ul class="plan-features">
           <li>50 machines surveillées 24h/24</li>
           <li>Tout Business inclus</li>
-          <li>RSSI virtuel dédié</li>
-          <li>Rapport mensuel personnalisé</li>
+          <li>Surveillance cloud avancee</li>
+          <li>Rapport mensuel personnalise</li>
           <li>SLA 99,9% contractuel</li>
           <li>Support prioritaire 7j/7</li>
+          <li>Installation sur site incluse</li>
         </ul>
-        <a href="#contact" class="p-btn p-btn-o" onclick="selectPlan('Pro — 599€/mois')">Nous contacter →</a>
+        <a href="#contact" class="plan-cta plan-cta-ghost">Nous contacter →</a>
       </div>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="s" id="faq">
-  <div class="s-i" style="text-align:center">
-    <div class="eyebrow">Questions fréquentes</div>
-    <h2 class="s-h">Ce que vous souhaitez savoir</h2>
-  </div>
-  <div class="faq">
-    <div class="faq-i open"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">ShieldFlow remplace-t-il vraiment un ingénieur cybersécurité ?<span class="faq-ic">+</span></button><div class="faq-a">Pour une PME de 10 à 200 employés, oui dans la grande majorité des cas. ShieldFlow assure la surveillance continue, la détection des menaces, la correction automatique et la conformité réglementaire — ce sont les missions principales d'un ingénieur sécurité. Pour des besoins très spécifiques (tests d'intrusion, architecture réseau complexe), une prestation ponctuelle reste nécessaire.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Faut-il des compétences techniques pour utiliser ShieldFlow ?<span class="faq-ic">+</span></button><div class="faq-a">Non, aucune. L'installation se fait en copiant-collant une commande dans le terminal. Ensuite vous ne touchez plus à rien — ShieldFlow surveille et corrige automatiquement. Vous recevez un rapport simple chaque matin.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Nos données sont-elles en sécurité ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Toutes les données sont stockées en Europe, chiffrées en AES-256. Nous ne transmettons aucune donnée à des tiers. Un accord de traitement des données (DPA) conforme au RGPD est signé avec chaque client.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">L'agent ralentit-il nos machines ?<span class="faq-ic">+</span></button><div class="faq-a">Non. L'agent consomme moins de 1% de CPU. Il tourne silencieusement en arrière-plan sans affecter les performances de vos machines.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Est-ce vraiment rentable pour une PME ?<span class="faq-ic">+</span></button><div class="faq-a">Absolument. Une cyberattaque coûte en moyenne 50 000€ à une PME — sans compter l'arrêt d'activité et la perte de clients. ShieldFlow Business à 399€/mois vous protège pour moins de 5€ par jour. De plus, vous évitez le recrutement d'un ingénieur à 60 000€/an. Le ROI est immédiat.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on résilier à tout moment ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. Aucun engagement annuel. Résiliation possible à tout moment avec un préavis d'un mois.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment fonctionne l'analyse IA de vos logs ?<span class="faq-ic">+</span></button><div class="faq-a">Notre IA analyse toutes les heures les statistiques de logs de vos machines — nombre de tentatives de connexion échouées, événements critiques système, comportements anormaux. Si une anomalie est détectée, vous recevez immédiatement un email d'alerte avec l'analyse complète et les actions à prendre.</div></div>
-    <div class="faq-i"><button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Intervenez-vous en cas de cyberattaque ?<span class="faq-ic">+</span></button><div class="faq-a">Oui. En cas d'incident détecté, notre équipe intervient immédiatement — isolation de la machine compromise, blocage des accès non autorisés, analyse des logs. Pour les plans Business et Pro, une hotline est disponible en cas d'urgence.</div></div>
-  </div>
-</section>
-
-
-
-<!-- EQUIPE -->
-<section class="s s-alt">
-  <div class="s-i" style="text-align:center">
-    <div class="eyebrow">L'équipe</div>
-    <h2 class="s-h">Qui est derrière ShieldFlow ?</h2>
-    <p class="s-sub" style="margin:0 auto">Une équipe d'experts en cybersécurité basée à Marseille, passionnée par la protection des PME françaises.</p>
-    <div style="display:flex;justify-content:center;margin-top:48px">
-      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:32px;max-width:320px;text-align:center">
-        <img src="/fondateur.jpg" alt="Hanafi Gaci" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 16px;display:block;border:2px solid var(--border)">
-        <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px">Hanafi Gaci</div>
-        <div style="font-size:13px;color:var(--ink3);margin-bottom:16px;font-weight:500">Fondateur & Expert Cybersécurité</div>
-        <p style="font-size:13px;color:var(--ink3);line-height:1.7;font-weight:300">J'ai fondé ShieldFlow avec une mission claire : rendre la cybersécurité accessible à toutes les PME françaises. Après des années dans le domaine de la sécurité informatique, j'ai vu trop d'entreprises subir des attaques évitables faute de protection. ShieldFlow, c'est ma réponse à ce problème.</p>
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--ink4)">🇫🇷 Déplacement partout en France · Administration à distance</div>
+<section class="s s-alt" id="faq">
+  <div class="s-inner">
+    <div style="text-align:center">
+      <div class="eyebrow">Questions fréquentes</div>
+      <h2 class="s-title">Ce que vous voulez savoir</h2>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Faut-il des compétences techniques pour utiliser ShieldFlow ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Non. Hanafi Gaci se déplace dans vos locaux pour installer ShieldFlow sur toutes vos machines. Vous n avez rien à faire. Ensuite tout est automatique — vous recevez chaque matin un rapport simple par email.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Vous intervenez dans toute la France et l Europe ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Oui. Hanafi Gaci se déplace chez vous partout en France et en Europe pour l installation. La surveillance et les corrections se font ensuite entièrement à distance depuis notre dashboard centralisé.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il en cas de cyberattaque ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">ShieldFlow réagit automatiquement en quelques secondes — isolation de la machine, blocage des connexions suspectes, email d urgence. Pour les incidents graves, Hanafi Gaci vous rappelle personnellement dans l heure pour coordonner la réponse.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Est-ce que la surveillance Microsoft 365 et Google est incluse ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Oui dans le plan Business et Pro. ShieldFlow surveille vos comptes cloud en continu et détecte les connexions depuis des pays inconnus, les comptes sans double authentification et les accès non autorisés.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Le rapport RGPD est-il utilisable auprès de la CNIL ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Oui. Le rapport RGPD ShieldFlow est un document PDF officiel daté et signé, qui recense l etat de conformité de votre entreprise article par article. Il est généralement accepté comme preuve lors d un contrôle CNIL.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">L agent ralentit-il nos machines ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Non. L agent ShieldFlow consomme moins de 1% du CPU et environ 30 à 50 MB de RAM. Il est conçu pour être totalement transparent pour l utilisateur.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on résilier à tout moment ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Oui. Sans engagement, avec un mois de préavis. Si vous n etes pas satisfait, vous n etes pas bloqué.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Nos données sont-elles en sécurité ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">L agent collecte uniquement des données techniques — état du pare-feu, CPU, connexions réseau. Aucune donnée personnelle, aucun fichier, aucun email. Toutes les données sont chiffrées et hébergées en Europe.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<div class="cta-s">
-  <div class="cta-si">
-    <h2>Votre département cyber.<br>Opérationnel en 5 minutes.</h2>
-    <p>Surveillance 24h/24, correction automatique, conformité RGPD — sans recruter personne. Contactez-nous, notre équipe vous rappelle sous 24h.</p>
-    <a href="#contact" class="btn-white">Nous contacter gratuitement →</a>
-    <div class="cta-note">Sans engagement · Sans carte bancaire · Réponse sous 24h</div>
+<!-- FONDATEUR -->
+<section class="s" id="equipe">
+  <div class="s-inner">
+    <div class="eyebrow">L equipe</div>
+    <h2 class="s-title" style="margin-bottom:32px">Qui est derrière ShieldFlow ?</h2>
+    <div class="founder">
+      <img src="/fondateur.jpg" alt="Hanafi Gaci" class="founder-img" onerror="this.style.display='none'">
+      <div>
+        <div class="founder-name">Hanafi Gaci</div>
+        <div class="founder-role">Fondateur et Expert Cybersécurité</div>
+        <p class="founder-bio">J ai fondé ShieldFlow avec une mission simple : apporter aux PME françaises et européennes la même protection que les grandes entreprises — sans les prix prohibitifs. Je me déplace personnellement chez chaque client pour installer ShieldFlow et je reste leur interlocuteur direct. Pas un numéro de ticket. Pas un call center. Un expert qui vous connait.</p>
+        <div class="founder-tags">
+          <span class="founder-tag">🇫🇷 Basé à Marseille</span>
+          <span class="founder-tag">🌍 Déplacements partout en Europe</span>
+          <span class="founder-tag">📞 Joignable directement</span>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
+
+<!-- CTA STRIP -->
+<div class="cta-strip">
+  <h2>Votre expert cyber. Opérationnel en une journée.</h2>
+  <p>Surveillance 24h/24, correction automatique, conformité RGPD — sans recruter personne.</p>
+  <a href="#contact" class="btn-primary" style="display:inline-flex">Demander un audit gratuit →</a>
+  <div class="cta-note">Sans engagement · Installation sur site · Réponse sous 24h</div>
 </div>
 
 <!-- CONTACT -->
 <section class="s" id="contact">
-  <div class="s-i">
+  <div class="s-inner">
+    <div class="eyebrow">Contact</div>
+    <h2 class="s-title" style="margin-bottom:40px">Parlons de votre sécurité</h2>
     <div class="contact-grid">
-      <div>
-        <div class="eyebrow">Contact</div>
-        <h2 class="c-h">Parlons de votre sécurité</h2>
-        <p class="c-sub">Notre équipe analyse votre situation et vous propose une solution adaptée. Réponse garantie sous 24h ouvrées.</p>
-        <div class="c-det"><div class="c-ic">✉</div><div><div class="c-lbl">Email</div><div class="c-val">shieldflowcontact@gmail.com</div></div></div>
-        <div class="c-det"><div class="c-ic">◎</div><div><div class="c-lbl">Siège</div><div class="c-val">5 bd Alphonse Moutte, Marseille — opérationnel partout en France</div></div></div>
-        <div class="c-det"><div class="c-ic">◷</div><div><div class="c-lbl">Réponse</div><div class="c-val">Sous 24h ouvrées</div></div></div>
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-item-icon">✉</div>
+          <div><div class="contact-item-label">Email</div><div class="contact-item-value"><a href="mailto:shieldflowcontact@gmail.com">shieldflowcontact@gmail.com</a></div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon">📍</div>
+          <div><div class="contact-item-label">Siège</div><div class="contact-item-value">5 bd Alphonse Moutte, Marseille<br>Déplacements partout en Europe</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon">⏱</div>
+          <div><div class="contact-item-label">Réponse</div><div class="contact-item-value">Sous 24h ouvrées</div></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon">🛡</div>
+          <div><div class="contact-item-label">Ce qu on fait</div><div class="contact-item-value">On analyse votre situation gratuitement et on vous propose une solution adaptée à votre secteur et vos obligations légales.</div></div>
+        </div>
       </div>
-      <div class="form-box">
-        <div style="font-size:15px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px">Demander un audit gratuit</div>
-        <div style="font-size:13px;color:var(--ink3);margin-bottom:18px;font-weight:300">Notre équipe vous rappelle sous 24h pour analyser votre situation.</div>
-        <div id="f-ok">✓ Demande envoyée ! Notre équipe vous contacte sous 24h.</div>
-        <div id="f-plan-display"></div>
-        <div class="f-r"><label class="f-l">Nom complet *</label><input class="f-c" type="text" id="fn" placeholder="Jean Dupont"></div>
-        <div class="f-r"><label class="f-l">Email professionnel *</label><input class="f-c" type="email" id="fe" placeholder="jean@entreprise.fr"></div>
-        <div class="f-r"><label class="f-l">Téléphone *</label><input class="f-c" type="tel" id="fphone" placeholder="06 12 34 56 78"></div>
-        <div class="f-r"><label class="f-l">Entreprise</label><input class="f-c" type="text" id="fc" placeholder="Nom de votre entreprise"></div>
-        <div class="f-r">
-          <label class="f-l">Nombre de machines</label>
-          <select class="f-c" id="fm">
+      <div class="contact-form">
+        <div class="form-title">Demander un audit gratuit</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nom complet *</label>
+            <input class="form-input" type="text" id="f-name" placeholder="Jean Dupont">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Téléphone *</label>
+            <input class="form-input" type="tel" id="f-phone" placeholder="+33 6 00 00 00 00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email professionnel *</label>
+          <input class="form-input" type="email" id="f-email" placeholder="jean@cabinet-dupont.fr">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Entreprise</label>
+            <input class="form-input" type="text" id="f-company" placeholder="Cabinet Dupont">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Secteur</label>
+            <select class="form-select" id="f-sector">
+              <option value="">Choisir...</option>
+              <option>Cabinet comptable</option>
+              <option>Cabinet médical</option>
+              <option>Cabinet notaire / avocat</option>
+              <option>Agence immobilière</option>
+              <option>PME industrielle</option>
+              <option>Commerce / Distribution</option>
+              <option>Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre de machines</label>
+          <select class="form-select" id="f-machines">
+            <option value="">Choisir...</option>
             <option>1 à 5 machines</option>
             <option>6 à 20 machines</option>
             <option>21 à 50 machines</option>
             <option>Plus de 50 machines</option>
           </select>
         </div>
-        <input type="hidden" id="f-plan" value="">
-        <button class="f-sub" id="f-btn" onclick="sendForm()">Obtenir mon audit de sécurité gratuit →</button>
-        <div style="font-size:11px;color:var(--ink4);text-align:center;margin-top:10px">Sans engagement · Données hébergées en Europe · Conforme RGPD</div>
+        <button class="btn-primary" style="width:100%;justify-content:center" onclick="submitForm()">Obtenir mon audit gratuit →</button>
+        <div class="form-note">Sans engagement · Données hébergées en Europe · Conformes RGPD</div>
       </div>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-i">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="logo-m" style="width:24px;height:24px;font-size:10px">SF</div>
-      <span style="font-size:14px;font-weight:700;letter-spacing:-0.02em">ShieldFlow</span>
-      <span class="f-copy" style="margin-left:12px">© 2026 ShieldFlow. Tous droits réservés.</span>
-    </div>
-    <div class="f-links">
-      <a href="#services">Services</a>
-      <a href="#tarifs">Tarifs</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contact">Contact</a>
-      <a href="#">Mentions légales</a>
-      <a href="#">Politique de confidentialité</a>
-      <a href="#">CGV</a>
-    </div>
+  <div class="footer-logo">🛡 ShieldFlow</div>
+  <div class="footer-links">
+    <a href="#services">Services</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+    <a href="#">Mentions légales</a>
+    <a href="#">Politique de confidentialité</a>
   </div>
+  <div class="footer-copy">© 2026 ShieldFlow · Marseille · Tous droits réservés</div>
 </footer>
 
 <script>
-function selectPlan(plan){
-  document.getElementById('f-plan').value=plan;
-  const d=document.getElementById('f-plan-display');
-  d.style.display='block';
-  d.textContent='✓ Plan sélectionné : '+plan;
-}
+const S='https://shieldflow-rfzv.onrender.com';
 
-async function sendForm(){
-  const n=document.getElementById('fn').value.trim();
-  const e=document.getElementById('fe').value.trim();
-  const phone=document.getElementById('fphone').value.trim();
-  const c=document.getElementById('fc').value.trim();
-  const m=document.getElementById('fm').value;
-  const plan=document.getElementById('f-plan').value;
-  if(!n||!e){alert('Veuillez renseigner votre nom et votre email.');return;}
-  const btn=document.getElementById('f-btn');
-  btn.textContent='Envoi en cours...';btn.disabled=true;
+async function submitForm(){
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const company=document.getElementById('f-company').value.trim();
+  const sector=document.getElementById('f-sector').value;
+  const machines=document.getElementById('f-machines').value;
+  if(!name||!email||!phone){alert('Merci de renseigner votre nom, email et téléphone.');return;}
   try{
-    const r=await fetch('https://shieldflow-rfzv.onrender.com/api/signup',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name:n,email:e,phone:phone,company:c,machines:m,plan:plan||'Non sélectionné'})
-    });
+    const r=await fetch(S+'/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,company,plan:sector,machines})});
     const d=await r.json();
     if(d.success){
-      document.getElementById('f-ok').style.display='block';
-      btn.style.display='none';
-      document.getElementById('f-plan-display').style.display='none';
-    } else {
-      alert('Erreur: '+(d.error||'Réessayez.'));
-      btn.textContent='Demander mon audit gratuit →';btn.disabled=false;
+      document.getElementById('f-name').value='';
+      document.getElementById('f-email').value='';
+      document.getElementById('f-phone').value='';
+      document.getElementById('f-company').value='';
+      alert('Merci '+name+' ! Hanafi Gaci vous contactera sous 24h pour analyser votre situation.');
     }
-  }catch(err){
-    alert('Erreur de connexion. Réessayez.');
-    btn.textContent='Demander mon audit gratuit →';btn.disabled=false;
-  }
+  }catch(e){alert('Merci ! Nous vous contactons sous 24h.');}
 }
-
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    const t=document.querySelector(a.getAttribute('href'));
-    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});}
-  });
-});
 </script>
 </body>
 </html>
