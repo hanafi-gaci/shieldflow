@@ -1184,6 +1184,114 @@ Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après.`;
   }
 }
 
+// ── RÉVOCATION SESSION M365 AUTOMATIQUE ─────────────────────────────────────
+app.post('/api/mssp/tenants/:id/cloud/m365/revoke-sessions', async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant?.cloud?.m365?.credentials) return res.status(404).json({ error: 'M365 non connecte' });
+    
+    const creds = decryptCredentials(tenant.cloud.m365.credentials);
+    
+    // Obtenir token
+    const tokenRes = await fetch(`https://login.microsoftonline.com/${creds.tenant_id}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=client_credentials&client_id=${creds.client_id}&client_secret=${encodeURIComponent(creds.client_secret||'')}&scope=https://graph.microsoft.com/.default`
+    });
+    const tokenData = await tokenRes.json();
+    if (tokenData.error) return res.status(401).json({ error: 'Auth M365 echouee' });
+    
+    const token = tokenData.access_token;
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    
+    // Obtenir tous les utilisateurs actifs
+    const usersRes = await fetch('https://graph.microsoft.com/v1.0/users?$select=id,displayName,userPrincipalName&$filter=accountEnabled eq true&$top=100', { headers });
+    const usersData = await usersRes.json();
+    const users = usersData.value || [];
+    
+    // Révoquer toutes les sessions
+    let revoked = 0;
+    for (const user of users) {
+      try {
+        await fetch(`https://graph.microsoft.com/v1.0/users/${user.id}/revokeSignInSessions`, {
+          method: 'POST', headers
+        });
+        revoked++;
+      } catch(e) {}
+    }
+    
+    // Créer alerte de confirmation
+    await Alert.create({
+      tenant_id: req.params.id,
+      device_id: 'cloud_m365',
+      device_name: 'Microsoft 365',
+      type: 'M365_SESSIONS_REVOKED',
+      severity: 'low',
+      title: `Sessions M365 révoquées — ${revoked} comptes sécurisés`,
+      description: `ShieldFlow a révoqué toutes les sessions Microsoft 365 actives suite à une détection d intrusion. ${revoked} comptes ont été déconnectés.`,
+      recommendation: 'Les utilisateurs devront se reconnecter. Changez les mots de passe compromis.',
+      resolved: true
+    });
+    
+    res.json({ success: true, revoked, message: `${revoked} sessions M365 révoquées` });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Révocation automatique M365 quand connexion suspecte détectée
+async function autoRevokeM365Session(tenantId, reason) {
+  try {
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant?.cloud?.m365?.credentials) return;
+    
+    const creds = decryptCredentials(tenant.cloud.m365.credentials);
+    const tokenRes = await fetch(`https://login.microsoftonline.com/${creds.tenant_id}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=client_credentials&client_id=${creds.client_id}&client_secret=${encodeURIComponent(creds.client_secret||'')}&scope=https://graph.microsoft.com/.default`
+    });
+    const tokenData = await tokenRes.json();
+    if (tokenData.error) return;
+    
+    const token = tokenData.access_token;
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    
+    const usersRes = await fetch('https://graph.microsoft.com/v1.0/users?$select=id&$filter=accountEnabled eq true&$top=100', { headers });
+    const usersData = await usersRes.json();
+    
+    for (const user of (usersData.value||[])) {
+      await fetch(`https://graph.microsoft.com/v1.0/users/${user.id}/revokeSignInSessions`, {
+        method: 'POST', headers
+      }).catch(()=>{});
+    }
+    
+    console.log(`[M365 Auto-Revoke] Sessions révoquées pour ${tenant.name} — Raison: ${reason}`);
+    
+    // Email urgence
+    if (RESEND_API_KEY && ALERT_EMAIL) {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'ShieldFlow <contact@conformite-rgpd.org>',
+          to: ALERT_EMAIL,
+          subject: `🚨 [M365] Sessions révoquées automatiquement — ${tenant.name}`,
+          html: `<div style="font-family:Arial;padding:20px;background:#1a1d23;color:white;border-radius:8px">
+            <h2 style="color:#e8334a">🚨 Intrusion M365 bloquée automatiquement</h2>
+            <p><strong>Client:</strong> ${tenant.name}</p>
+            <p><strong>Raison:</strong> ${reason}</p>
+            <p><strong>Action:</strong> Toutes les sessions Microsoft 365 ont été révoquées automatiquement par ShieldFlow.</p>
+            <p style="color:#aaa">Les utilisateurs devront se reconnecter. Appelez le client pour changer les mots de passe.</p>
+          </div>`
+        })
+      });
+    }
+  } catch(e) {
+    console.error('[M365 Auto-Revoke]', e.message);
+  }
+}
+
 // Route SOC manuel
 app.get('/api/mssp/tenants/:id/soc-report', async (req, res) => {
   try {
@@ -1789,7 +1897,7 @@ const { execFile } = require('child_process');
 const path2 = require('path');
 
 async function runCloudScan(tenantId, cloudType, credentials) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const alerts = [];
     
     if (cloudType === 'aws') {
@@ -1810,87 +1918,164 @@ async function runCloudScan(tenantId, cloudType, credentials) {
       resolve(checks);
       
     } else if (cloudType === 'm365') {
-      // Vérification M365 via Microsoft Graph
-      const https = require('https');
-      
-      // Obtenir un token
-      const tokenData = `grant_type=client_credentials&client_id=${credentials.client_id}&client_secret=${encodeURIComponent(credentials.client_secret || '')}&scope=https://graph.microsoft.com/.default`;
-      
-      const options = {
-        hostname: 'login.microsoftonline.com',
-        path: `/${credentials.tenant_id}/oauth2/v2.0/token`,
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      };
-      
-      const req = https.request(options, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', async () => {
-          try {
-            const tokenData = JSON.parse(data);
-            if (tokenData.error) {
-              alerts.push({
-                type: 'M365_AUTH_ERROR',
-                severity: 'high',
-                title: 'Authentification Microsoft 365 échouée',
-                description: `Impossible de se connecter à M365: ${tokenData.error_description || tokenData.error}`,
-                recommendation: 'Vérifiez le Tenant ID, Client ID et Client Secret dans les paramètres cloud.'
-              });
-              return resolve(alerts);
-            }
-            
-            const accessToken = tokenData.access_token;
-            
-            // Vérifier les utilisateurs sans MFA
-            const usersReq = https.request({
-              hostname: 'graph.microsoft.com',
-              path: '/v1.0/users?$select=displayName,userPrincipalName,accountEnabled&$top=50',
-              headers: { 'Authorization': `Bearer ${accessToken}` }
-            }, (usersRes) => {
-              let userData = '';
-              usersRes.on('data', c => userData += c);
-              usersRes.on('end', () => {
-                try {
-                  const users = JSON.parse(userData);
-                  const activeUsers = (users.value || []).filter(u => u.accountEnabled);
-                  
-                  if (activeUsers.length > 0) {
-                    // Vérifier si trop d'admins
-                    alerts.push({
-                      type: 'M365_SCAN_OK',
-                      severity: 'low',
-                      title: `M365 scanné: ${activeUsers.length} utilisateurs actifs`,
-                      description: `Scan Microsoft 365 effectué. ${activeUsers.length} comptes actifs trouvés. Vérification MFA recommandée pour tous les comptes.`,
-                      recommendation: 'Activez le MFA pour tous les utilisateurs via Azure AD > Sécurité.'
-                    });
-                  }
-                } catch(e) {}
-                resolve(alerts);
-              });
-            });
-            usersReq.on('error', () => resolve(alerts));
-            usersReq.end();
-            
-          } catch(e) {
-            resolve(alerts);
-          }
+      // ── M365 SCAN COMPLET ─────────────────────────────────────────────────
+      try {
+        // 1. Obtenir le token Microsoft Graph
+        const tokenRes = await fetch(`https://login.microsoftonline.com/${credentials.tenant_id}/oauth2/v2.0/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `grant_type=client_credentials&client_id=${credentials.client_id}&client_secret=${encodeURIComponent(credentials.client_secret||'')}&scope=https://graph.microsoft.com/.default`
         });
-      });
-      req.on('error', () => resolve(alerts));
-      req.write(tokenData);
-      req.end();
-      
+        const tokenData = await tokenRes.json();
+
+        if (tokenData.error) {
+          alerts.push({ type:'M365_AUTH_ERROR', severity:'high', title:'Authentification Microsoft 365 echouee', description:`Impossible de se connecter: ${tokenData.error_description||tokenData.error}`, recommendation:'Verifiez Tenant ID, Client ID et Client Secret.' });
+          return resolve(alerts);
+        }
+
+        const token = tokenData.access_token;
+        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+        // 2. Utilisateurs actifs + MFA
+        const usersRes = await fetch('https://graph.microsoft.com/v1.0/users?$select=displayName,userPrincipalName,accountEnabled,id&$top=100', { headers });
+        const usersData = await usersRes.json();
+        const activeUsers = (usersData.value||[]).filter(u => u.accountEnabled);
+
+        // 3. Verifier MFA pour chaque utilisateur
+        let usersWithoutMFA = [];
+        for (const user of activeUsers.slice(0,20)) {
+          try {
+            const mfaRes = await fetch(`https://graph.microsoft.com/v1.0/users/${user.id}/authentication/methods`, { headers });
+            const mfaData = await mfaRes.json();
+            const methods = (mfaData.value||[]).map(m => m['@odata.type']);
+            const hasMFA = methods.some(m => m.includes('microsoftAuthenticator') || m.includes('phone') || m.includes('fido'));
+            if (!hasMFA) usersWithoutMFA.push(user.displayName || user.userPrincipalName);
+          } catch(e) {}
+        }
+        if (usersWithoutMFA.length > 0) {
+          alerts.push({ type:'M365_NO_MFA', severity:'critical', title:`${usersWithoutMFA.length} compte(s) Microsoft 365 sans MFA`, description:`Comptes sans double authentification: ${usersWithoutMFA.slice(0,5).join(', ')}. Ces comptes peuvent etre compromis par simple vol de mot de passe.`, recommendation:'Activez le MFA pour tous les utilisateurs via Azure AD > Securite > MFA.' });
+        }
+
+        // 4. Connexions suspectes (pays etrangers, heures anormales)
+        try {
+          const signInsRes = await fetch('https://graph.microsoft.com/v1.0/auditLogs/signIns?$top=50&$filter=status/errorCode eq 0', { headers });
+          const signInsData = await signInsRes.json();
+          const signIns = signInsData.value || [];
+          const countryCounts = {};
+          for (const s of signIns) {
+            const country = s.location?.countryOrRegion || 'Inconnu';
+            if (!countryCounts[country]) countryCounts[country] = 0;
+            countryCounts[country]++;
+          }
+          const foreignCountries = Object.entries(countryCounts).filter(([c]) => c !== 'France' && c !== 'FR' && c !== 'Inconnu' && c !== '');
+          if (foreignCountries.length > 0) {
+            const countries = foreignCountries.map(([c,n]) => `${c}(${n})`).join(', ');
+            alerts.push({ type:'M365_FOREIGN_LOGIN', severity:'critical', title:`Connexions Microsoft 365 depuis pays etrangers`, description:`Connexions detectees depuis: ${countries}. Verifiez si ces connexions sont legitimes.`, recommendation:'Si ces connexions ne sont pas autorisees, revoquez les sessions et changez les mots de passe.', auto_fixable: true, fix_command: 'REVOKE_M365_SESSIONS' });
+          }
+        } catch(e) {}
+
+        // 5. Regles de messagerie suspectes (piratage email)
+        try {
+          for (const user of activeUsers.slice(0,10)) {
+            const rulesRes = await fetch(`https://graph.microsoft.com/v1.0/users/${user.id}/mailFolders/inbox/messageRules`, { headers });
+            const rulesData = await rulesRes.json();
+            const suspectRules = (rulesData.value||[]).filter(r => r.actions?.forwardTo?.length > 0 || r.actions?.redirectTo?.length > 0 || r.actions?.delete === true);
+            if (suspectRules.length > 0) {
+              alerts.push({ type:'M365_SUSPICIOUS_RULES', severity:'critical', title:`Regles de messagerie suspectes detectees - ${user.displayName}`, description:`${suspectRules.length} regle(s) suspecte(s) trouvee(s) dans la boite de ${user.displayName||user.userPrincipalName}: redirection ou suppression automatique d emails.`, recommendation:'Supprimez ces regles immediatement - elles sont souvent creees par des pirates pour exfiltrer vos emails.', auto_fixable: true, fix_command: 'DELETE_SUSPICIOUS_RULES', fix_params: { userId: user.id, ruleIds: suspectRules.map(r=>r.id) } });
+            }
+          }
+        } catch(e) {}
+
+        // 6. Admins trop nombreux
+        try {
+          const adminsRes = await fetch(`https://graph.microsoft.com/v1.0/directoryRoles?$filter=displayName eq 'Global Administrator'`, { headers });
+          const adminsData = await adminsRes.json();
+          if (adminsData.value?.length > 0) {
+            const roleId = adminsData.value[0].id;
+            const membersRes = await fetch(`https://graph.microsoft.com/v1.0/directoryRoles/${roleId}/members`, { headers });
+            const membersData = await membersRes.json();
+            const admins = membersData.value || [];
+            if (admins.length > 3) {
+              alerts.push({ type:'M365_TOO_MANY_ADMINS', severity:'high', title:`${admins.length} administrateurs globaux Microsoft 365`, description:`Trop d administrateurs globaux augmente le risque en cas de compromission d un compte admin.`, recommendation:'Limitez les admins globaux a 2-3 personnes maximum.' });
+            }
+          }
+        } catch(e) {}
+
+        alerts.push({ type:'M365_SCAN_OK', severity:'low', title:`M365 scanne: ${activeUsers.length} utilisateurs actifs`, description:`Scan complet Microsoft 365 effectue.`, recommendation:'' });
+        resolve(alerts);
+      } catch(e) {
+        alerts.push({ type:'M365_AUTH_ERROR', severity:'high', title:'Erreur scan Microsoft 365', description:e.message, recommendation:'Verifiez la connexion et les permissions.' });
+        resolve(alerts);
+      }
+
     } else if (cloudType === 'gworkspace') {
-      // Google Workspace scan basique
-      alerts.push({
-        type: 'GWS_CREDENTIALS_CHECK',
-        severity: 'medium',
-        title: 'Google Workspace: vérification manuelle requise',
-        description: 'Les credentials Google Workspace ont été enregistrés. Un scan complet nécessite le module Python google-auth.',
-        recommendation: 'Vérifiez que le compte de service a les bonnes permissions dans Google Admin Console.'
-      });
-      resolve(alerts);
+      // ── GOOGLE WORKSPACE SCAN COMPLET ────────────────────────────────────
+      try {
+        // Google Workspace via API Directory (OAuth2 Service Account)
+        // Les credentials doivent contenir: client_email, private_key, admin_email
+        if (!credentials.client_email || !credentials.private_key) {
+          alerts.push({ type:'GWS_CONFIG_ERROR', severity:'medium', title:'Google Workspace: configuration incomplete', description:'Le compte de service Google (client_email et private_key) est requis pour le scan complet.', recommendation:'Dans Google Admin Console, creez un compte de service avec delegation de domaine et les permissions Directory API.' });
+          return resolve(alerts);
+        }
+
+        // Obtenir un token Google via JWT
+        const jwt = require('jsonwebtoken');
+        const now = Math.floor(Date.now()/1000);
+        const jwtPayload = {
+          iss: credentials.client_email,
+          sub: credentials.admin_email || credentials.client_email,
+          scope: 'https://www.googleapis.com/auth/admin.directory.user.readonly https://www.googleapis.com/auth/admin.directory.user.security',
+          aud: 'https://oauth2.googleapis.com/token',
+          iat: now,
+          exp: now + 3600
+        };
+
+        let googleToken = null;
+        try {
+          const assertion = jwt.sign(jwtPayload, credentials.private_key, { algorithm: 'RS256' });
+          const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${assertion}`
+          });
+          const tokenData = await tokenRes.json();
+          googleToken = tokenData.access_token;
+        } catch(e) {
+          alerts.push({ type:'GWS_AUTH_ERROR', severity:'high', title:'Authentification Google Workspace echouee', description:`Impossible d obtenir le token: ${e.message}`, recommendation:'Verifiez les credentials du compte de service Google.' });
+          return resolve(alerts);
+        }
+
+        const gHeaders = { 'Authorization': `Bearer ${googleToken}` };
+
+        // Liste des utilisateurs
+        const usersRes = await fetch('https://admin.googleapis.com/admin/directory/v1/users?domain=auto&maxResults=100&projection=full', { headers: gHeaders });
+        const usersData = await usersRes.json();
+        const users = usersData.users || [];
+
+        // Utilisateurs sans MFA
+        const noMFA = users.filter(u => !u.isEnrolledIn2Sv && !u.isAdmin);
+        if (noMFA.length > 0) {
+          alerts.push({ type:'GWS_NO_MFA', severity:'critical', title:`${noMFA.length} compte(s) Google Workspace sans verification en 2 etapes`, description:`Comptes sans MFA: ${noMFA.slice(0,5).map(u=>u.primaryEmail).join(', ')}`, recommendation:'Activez la validation en 2 etapes dans Google Admin > Securite.' });
+        }
+
+        // Comptes suspendus recemment reactivés
+        const suspended = users.filter(u => u.suspended);
+        if (suspended.length > 0) {
+          alerts.push({ type:'GWS_SUSPENDED_ACCOUNTS', severity:'medium', title:`${suspended.length} compte(s) Google Workspace suspendu(s)`, description:`Comptes suspendus detectes: ${suspended.slice(0,3).map(u=>u.primaryEmail).join(', ')}`, recommendation:'Verifiez pourquoi ces comptes sont suspendus.' });
+        }
+
+        // Admins
+        const admins = users.filter(u => u.isAdmin);
+        if (admins.length > 3) {
+          alerts.push({ type:'GWS_TOO_MANY_ADMINS', severity:'high', title:`${admins.length} super-administrateurs Google Workspace`, description:`Trop d administrateurs augmente le risque de compromission.`, recommendation:'Limitez les super-admins a 2-3 personnes.' });
+        }
+
+        alerts.push({ type:'GWS_SCAN_OK', severity:'low', title:`Google Workspace scanne: ${users.length} utilisateurs`, description:'Scan complet Google Workspace effectue.', recommendation:'' });
+        resolve(alerts);
+      } catch(e) {
+        alerts.push({ type:'GWS_ERROR', severity:'medium', title:'Erreur scan Google Workspace', description:e.message, recommendation:'Verifiez les credentials et les permissions.' });
+        resolve(alerts);
+      }
     } else {
       resolve([]);
     }
@@ -1939,6 +2124,37 @@ async function scanAllClouds() {
         tenant.cloud[cloudType].last_scan = new Date();
         tenant.markModified('cloud');
         await tenant.save();
+        
+        // Révocation automatique si connexion suspecte M365 détectée
+        const foreignLogin = alerts.find(a => a.type === 'M365_FOREIGN_LOGIN');
+        if (foreignLogin && cloudType === 'm365') {
+          console.log(`[M365 Auto-Revoke] Connexion suspecte détectée pour ${tenant.name} — révocation automatique`);
+          autoRevokeM365Session(tenant._id.toString(), foreignLogin.description).catch(e => console.error('[M365 Auto-Revoke]', e.message));
+        }
+        
+        // Suppression automatique règles messagerie suspectes
+        const suspiciousRules = alerts.find(a => a.type === 'M365_SUSPICIOUS_RULES');
+        if (suspiciousRules?.fix_params && cloudType === 'm365') {
+          try {
+            const creds = decryptCredentials(tenant.cloud.m365.credentials);
+            const tokenRes = await fetch(`https://login.microsoftonline.com/${creds.tenant_id}/oauth2/v2.0/token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: `grant_type=client_credentials&client_id=${creds.client_id}&client_secret=${encodeURIComponent(creds.client_secret||'')}&scope=https://graph.microsoft.com/.default`
+            });
+            const tokenData = await tokenRes.json();
+            if (!tokenData.error) {
+              const headers = { 'Authorization': `Bearer ${tokenData.access_token}` };
+              const { userId, ruleIds } = suspiciousRules.fix_params;
+              for (const ruleId of (ruleIds||[])) {
+                await fetch(`https://graph.microsoft.com/v1.0/users/${userId}/mailFolders/inbox/messageRules/${ruleId}`, {
+                  method: 'DELETE', headers
+                }).catch(()=>{});
+              }
+              console.log(`[M365] Regles suspectes supprimees pour ${tenant.name}`);
+            }
+          } catch(e) {}
+        }
         
         console.log(`[CloudScan] ${tenant.name} ${cloudType}: ${alerts.length} alertes`);
         
