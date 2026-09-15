@@ -264,12 +264,22 @@ def main():
                         payload['soc_critical_events'] = logs.get('stats', {}).get('critical_events_count', 0)
                     except: pass
 
-                # Support Windows complet
+                # Support Windows + Linux complets
                 import platform as _plat
-                if _plat.system() == 'Windows':
+                _sys = _plat.system()
+                if _sys == 'Windows':
                     try:
-                        win_data = check_windows_security()
-                        payload.update(win_data)
+                        from expert_checks import check_windows_persistence, check_windows_living_off_land
+                        persistence = check_windows_persistence()
+                        lolbins = check_windows_living_off_land()
+                        payload.update(persistence)
+                        payload.update(lolbins)
+                    except: pass
+                elif _sys == 'Linux':
+                    try:
+                        from expert_checks import check_linux_complete
+                        linux_data = check_linux_complete()
+                        payload.update(linux_data)
                     except: pass
 
                 # Zero Trust Behavioral Monitoring

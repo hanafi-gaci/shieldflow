@@ -1100,6 +1100,59 @@ app.post('/api/signup', async (req, res) => {
 
 
 
+// ─── ALERTES WINDOWS AVANCÉES ───────────────────────────────────────────────
+function analyzeWindowsAdvanced(snap, alerts, tenantId, deviceName) {
+  // Persistence Windows
+  if (snap.has_persistent_threats) {
+    (snap.persistent_threats || []).forEach(threat => {
+      alerts.push({ type:'WIN_PERSISTENCE', severity:'critical', title:'Menace persistante détectée sur Windows', description:threat, recommendation:'Supprimez immédiatement cette entrée suspecte et scannez la machine avec Windows Defender.' });
+    });
+  }
+  
+  // Tâches planifiées suspectes
+  if (snap.has_suspicious_tasks) {
+    alerts.push({ type:'WIN_SUSPICIOUS_TASK', severity:'critical', title:'Tâches planifiées suspectes Windows', description:`${(snap.suspicious_tasks||[]).length} tâche(s) planifiée(s) suspecte(s) détectée(s). Vecteur d intrusion courant.`, recommendation:'Ouvrez le Planificateur de tâches Windows et supprimez les tâches non reconnues.' });
+  }
+  
+  // Services suspects
+  if (snap.has_suspicious_services) {
+    alerts.push({ type:'WIN_SUSPICIOUS_SERVICE', severity:'high', title:'Services Windows suspects', description:`Services suspects: ${(snap.suspicious_services||[]).join(', ')}`, recommendation:'Vérifiez et désactivez les services non reconnus via services.msc.' });
+  }
+  
+  // PowerShell unrestricted
+  if (snap.powershell_unrestricted) {
+    alerts.push({ type:'WIN_PS_UNRESTRICTED', severity:'high', title:'PowerShell sans restrictions — risque élevé', description:`La politique d exécution PowerShell est ${snap.powershell_policy}. Les scripts malveillants peuvent s exécuter librement.`, recommendation:'Changez la politique: Set-ExecutionPolicy RemoteSigned -Scope LocalMachine' });
+  }
+  
+  // WMI subscriptions
+  if (snap.wmi_subscriptions) {
+    alerts.push({ type:'WIN_WMI_SUBSCRIPTION', severity:'critical', title:'Abonnements WMI détectés — technique d attaque avancée', description:'Des abonnements WMI ont été détectés. Les pirates utilisent WMI pour maintenir un accès persistant invisible.', recommendation:'Vérifiez les abonnements WMI avec: Get-WMIObject -Namespace root\subscription -Class __EventFilter' });
+  }
+  
+  // LOLBins
+  if (snap.has_lolbin_activity) {
+    alerts.push({ type:'WIN_LOLBIN', severity:'high', title:'Outils système utilisés de façon suspecte', description:`Activité LOLBin détectée: ${(snap.lolbin_alerts||[]).join(', ')}`, recommendation:'Vérifiez si ces processus sont légitimes. Les pirates utilisent certutil, mshta, rundll32 pour contourner les antivirus.' });
+  }
+  
+  // Canary ransomware
+  if (snap.canary_triggered) {
+    alerts.push({ type:'RANSOMWARE_CANARY', severity:'critical', title:'🚨 ALERTE RANSOMWARE — Fichier leurre modifié', description:'Un fichier leurre ShieldFlow a été modifié — signe précoce d un ransomware en cours d exécution.', recommendation:'ISOLEZ LA MACHINE IMMÉDIATEMENT via le dashboard ShieldFlow.' });
+  }
+  
+  // Connexions suspectes Linux
+  if (snap.has_suspicious_crons) {
+    alerts.push({ type:'LINUX_SUSPICIOUS_CRON', severity:'critical', title:'Crontab Linux suspect', description:`Tâches cron suspectes: ${(snap.suspicious_crons||[]).join(' | ')}`, recommendation:'Vérifiez votre crontab: crontab -l et supprimez les entrées non reconnues.' });
+  }
+  
+  if (snap.has_suspicious_suid) {
+    alerts.push({ type:'LINUX_SUSPICIOUS_SUID', severity:'high', title:'Fichiers SUID suspects sur Linux', description:`Fichiers SUID non standards: ${(snap.suspicious_suid||[]).join(', ')}`, recommendation:'Vérifiez ces fichiers et retirez le bit SUID si non nécessaire: chmod u-s fichier' });
+  }
+  
+  if (snap.ssh_root_login) {
+    alerts.push({ type:'LINUX_SSH_ROOT', severity:'critical', title:'Connexion SSH root autorisée', description:'La connexion SSH en tant que root est autorisée. Un attaquant qui compromet SSH a accès total au serveur.', recommendation:'Modifiez /etc/ssh/sshd_config: PermitRootLogin no puis systemctl restart sshd' });
+  }
+}
+
 // ─── SOC — ANALYSTE VIRTUEL IA ───────────────────────────────────────────────
 
 async function runSOCAnalysis(tenantId) {
