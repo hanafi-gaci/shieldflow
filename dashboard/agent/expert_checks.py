@@ -1208,6 +1208,12 @@ def check_windows_security() -> dict:
         result['backup_found'] = 'LastSuccessfulBackupTime' in r.stdout and 'NULL' not in r.stdout
         result['backup_warning'] = not result['backup_found']
 
+        # Utilisateurs locaux Windows
+        r_users = subprocess.run(['net', 'user'], capture_output=True, text=True)
+        users = [u for u in r_users.stdout.split() if u and not u.startswith('-') and '\\' not in u and len(u) > 2]
+        result['local_users'] = users[:20]
+        result['local_users_count'] = len(users)
+
         # CPU et RAM Windows
         r = subprocess.run(['powershell', '-Command',
             '(Get-Counter "\\Processor(_Total)\\% Processor Time").CounterSamples.CookedValue'],
@@ -1226,6 +1232,18 @@ def check_windows_security() -> dict:
             result['ram_percent'] = 0
 
         result['platform'] = 'Windows'
+        
+        # Ajouter détections avancées Windows
+        try:
+            persistence = check_windows_persistence()
+            result.update(persistence)
+        except: pass
+        
+        try:
+            lolbins = check_windows_living_off_land()
+            result.update(lolbins)
+        except: pass
+        
         return result
 
     except Exception as e:
@@ -1245,4 +1263,241 @@ def check_disk_encryption_windows() -> dict:
         }
     except:
         return {'disk_encrypted': False, 'encryption_type': 'Unknown'}
+
+
+
+# ─── DÉTECTIONS WINDOWS AVANCÉES ─────────────────────────────────────────────
+
+def check_windows_persistence() -> dict:
+    """Détecte les footholds persistants Windows — comme Huntress."""
+    if SYSTEM != 'Windows':
+        return {}
+    try:
+        result = {'persistent_threats': [], 'suspicious_tasks': [], 'suspicious_services': []}
+
+        # 1. Clés de registre de démarrage suspectes
+        startup_keys = [
+            r'HKCU\Software\Microsoft\Windows\CurrentVersion\Run',
+            r'HKLM\Software\Microsoft\Windows\CurrentVersion\Run',
+            r'HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce',
+        ]
+        for key in startup_keys:
+            r = subprocess.run(['reg', 'query', key], capture_output=True, text=True)
+            for line in r.stdout.splitlines():
+                if any(sus in line.lower() for sus in ['temp', 'appdata\\roaming', 'public', 'programdata', '.vbs', '.ps1', '.bat', 'powershell', 'cmd /c', 'wscript', 'cscript']):
+                    result['persistent_threats'].append(f'Registre suspect: {line.strip()[:150]}')
+
+        # 2. Tâches planifiées suspectes
+        r = subprocess.run(['schtasks', '/query', '/fo', 'LIST', '/v'], capture_output=True, text=True, timeout=15)
+        current_task = ''
+        for line in r.stdout.splitlines():
+            if 'Nom de la tâche' in line or 'Task Name' in line:
+                current_task = line
+            if any(sus in line.lower() for sus in ['powershell', 'cmd', 'wscript', 'mshta', 'regsvr32', 'rundll32', 'certutil']) and current_task:
+                result['suspicious_tasks'].append(f'{current_task.strip()} — {line.strip()[:100]}')
+
+        # 3. Services Windows suspects
+        r = subprocess.run(['sc', 'query', 'type=', 'all', 'state=', 'all'], capture_output=True, text=True, timeout=15)
+        services = re.findall(r'SERVICE_NAME: (\S+)', r.stdout)
+        for svc in services[:50]:
+            r2 = subprocess.run(['sc', 'qc', svc], capture_output=True, text=True)
+            if any(sus in r2.stdout.lower() for sus in ['temp\\', 'appdata\\', '%temp%', 'powershell', 'cmd /c']):
+                result['suspicious_services'].append(f'Service suspect: {svc}')
+
+        # 4. PowerShell execution policy
+        r = subprocess.run(['powershell', '-Command', 'Get-ExecutionPolicy'], capture_output=True, text=True)
+        policy = r.stdout.strip().lower()
+        result['powershell_policy'] = policy
+        result['powershell_unrestricted'] = policy in ['unrestricted', 'bypass']
+
+        # 5. WMI subscriptions suspectes (vecteur d'attaque courant)
+        r = subprocess.run(['powershell', '-Command',
+            'Get-WMIObject -Namespace root\\subscription -Class __EventFilter | Select-Object Name,Query | ConvertTo-Json'],
+            capture_output=True, text=True, timeout=15)
+        if r.stdout.strip() and r.stdout.strip() != 'null':
+            result['wmi_subscriptions'] = True
+            result['persistent_threats'].append('Abonnements WMI détectés — vecteur d attaque courant')
+        else:
+            result['wmi_subscriptions'] = False
+
+        # 6. Ransomware canaries — fichiers leurres
+        import os
+        canary_dirs = [
+            os.path.expanduser('~/Documents'),
+            os.path.expanduser('~/Desktop'),
+            'C:\\Users\\Public\\Documents',
+        ]
+        result['canary_triggered'] = False
+        for d in canary_dirs:
+            canary_path = os.path.join(d, '.shieldflow_canary.txt')
+            try:
+                if not os.path.exists(canary_path):
+                    with open(canary_path, 'w') as f:
+                        f.write('ShieldFlow Canary File — Do not delete')
+                else:
+                    # Vérifier si le fichier a été modifié (signe de ransomware)
+                    mtime = os.path.getmtime(canary_path)
+                    if mtime > (subprocess.time.time() - 300):  # modifié dans les 5 dernières minutes
+                        result['canary_triggered'] = True
+                        result['persistent_threats'].append(f'CANARY MODIFIÉ: {canary_path} — ransomware potentiel')
+            except: pass
+
+        # 7. Connexions réseau suspectes Windows
+        r = subprocess.run(['netstat', '-ano'], capture_output=True, text=True)
+        dangerous_ports = [4444, 1337, 5555, 6666, 7777, 8888, 9999, 31337, 4445, 1234]
+        suspicious_conns = []
+        for line in r.stdout.splitlines():
+            if 'ESTABLISHED' in line:
+                for port in dangerous_ports:
+                    if f':{port} ' in line or f':{port}\t' in line:
+                        suspicious_conns.append(line.strip()[:100])
+        result['suspicious_connections'] = suspicious_conns
+        result['has_suspicious_connections'] = len(suspicious_conns) > 0
+
+        # 8. WSL détection (Linux dans Windows — surveiller)
+        r = subprocess.run(['wsl', '--list', '--quiet'], capture_output=True, text=True, timeout=10)
+        result['wsl_installed'] = r.returncode == 0 and bool(r.stdout.strip())
+        result['wsl_distributions'] = r.stdout.strip().splitlines() if result['wsl_installed'] else []
+
+        result['has_persistent_threats'] = len(result['persistent_threats']) > 0
+        result['has_suspicious_tasks'] = len(result['suspicious_tasks']) > 0
+        result['has_suspicious_services'] = len(result['suspicious_services']) > 0
+
+        return result
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def check_windows_living_off_land() -> dict:
+    """Détecte l'utilisation malveillante d'outils Windows légitimes (LOLBins)."""
+    if SYSTEM != 'Windows':
+        return {}
+    try:
+        result = {'lolbin_alerts': []}
+
+        # Processus LOLBins suspects en cours
+        r = subprocess.run(['tasklist', '/v', '/fo', 'csv'], capture_output=True, text=True)
+        lolbins = ['certutil.exe', 'mshta.exe', 'wscript.exe', 'cscript.exe',
+                   'regsvr32.exe', 'rundll32.exe', 'msiexec.exe', 'bitsadmin.exe']
+        for line in r.stdout.splitlines():
+            for lol in lolbins:
+                if lol.lower() in line.lower():
+                    result['lolbin_alerts'].append(f'LOLBin actif: {lol} — vérifiez son utilisation')
+
+        # Historique PowerShell
+        ps_history = os.path.expanduser('~\\AppData\\Roaming\\Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt')
+        if os.path.exists(ps_history):
+            try:
+                with open(ps_history, 'r', errors='ignore') as f:
+                    history = f.read()
+                suspicious_cmds = ['invoke-expression', 'iex', 'downloadstring', 'webclient',
+                                   'base64', 'bypass', 'hidden', 'encodedcommand', '-enc']
+                for cmd in suspicious_cmds:
+                    if cmd.lower() in history.lower():
+                        result['lolbin_alerts'].append(f'PowerShell suspect dans historique: {cmd}')
+            except: pass
+
+        result['has_lolbin_activity'] = len(result['lolbin_alerts']) > 0
+        return result
+    except Exception as e:
+        return {'error': str(e)}
+
+
+
+# ─── DÉTECTIONS LINUX COMPLÈTES ──────────────────────────────────────────────
+
+def check_linux_complete() -> dict:
+    """Détections Linux complètes — réseau, inventaire, processus, persistence."""
+    if SYSTEM != 'Linux':
+        return {}
+    try:
+        result = {}
+
+        # 1. Connexions réseau actives
+        r = subprocess.run(['ss', '-tupn'], capture_output=True, text=True)
+        established = [l for l in r.stdout.splitlines() if 'ESTAB' in l]
+        dangerous_ports = [4444, 1337, 5555, 6666, 7777, 8888, 9999, 31337]
+        suspicious = [l for l in established if any(f':{p}' in l for p in dangerous_ports)]
+        result['established_connections'] = len(established)
+        result['suspicious_connections'] = suspicious
+        result['has_suspicious_connections'] = len(suspicious) > 0
+
+        # 2. Inventaire logiciels
+        installed = []
+        for cmd in [['dpkg', '--get-selections'], ['rpm', '-qa']]:
+            r2 = subprocess.run(cmd, capture_output=True, text=True)
+            if r2.returncode == 0:
+                pkgs = [l.split()[0] for l in r2.stdout.splitlines() if l.strip()]
+                installed = [{'name': p, 'version': ''} for p in pkgs[:100]]
+                break
+        result['installed_software'] = installed
+
+        # 3. Santé disques
+        r3 = subprocess.run(['df', '-h'], capture_output=True, text=True)
+        disks = []
+        for line in r3.stdout.splitlines()[1:]:
+            parts = line.split()
+            if len(parts) >= 5:
+                try:
+                    pct = int(parts[4].replace('%',''))
+                    disks.append({'mount': parts[5], 'percent': pct})
+                    if pct > 85:
+                        result['disk_critical'] = True
+                except: pass
+        result['disk_usage'] = disks
+
+        # 4. Processus suspects
+        r4 = subprocess.run(['ps', 'aux', '--sort=-%cpu'], capture_output=True, text=True)
+        procs = []
+        for line in r4.stdout.splitlines()[1:11]:
+            parts = line.split(None, 10)
+            if len(parts) >= 11:
+                try:
+                    cpu = float(parts[2])
+                    procs.append({'user': parts[0], 'cpu': cpu, 'cmd': parts[10][:80]})
+                except: pass
+        result['top_processes'] = procs
+        result['high_cpu'] = any(p['cpu'] > 85 for p in procs)
+
+        # 4b. Processus suspects Linux
+        r_ps = subprocess.run(['ps', 'aux', '--sort=-%cpu'], capture_output=True, text=True)
+        top_procs = []
+        for line in r_ps.stdout.splitlines()[1:11]:
+            parts = line.split(None, 10)
+            if len(parts) >= 11:
+                try:
+                    cpu = float(parts[2])
+                    top_procs.append({'user': parts[0], 'cpu': cpu, 'cmd': parts[10][:80]})
+                except: pass
+        result['top_processes'] = top_procs
+        result['high_cpu'] = any(p['cpu'] > 85 for p in top_procs)
+
+        # 5. Persistence Linux — crontabs suspects
+        suspicious_crons = []
+        r5 = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+        for line in r5.stdout.splitlines():
+            if any(s in line.lower() for s in ['curl', 'wget', 'bash', '/tmp', 'python', 'nc ']):
+                suspicious_crons.append(line.strip()[:100])
+        result['suspicious_crons'] = suspicious_crons
+        result['has_suspicious_crons'] = len(suspicious_crons) > 0
+
+        # 6. SUID suspects
+        r6 = subprocess.run(['find', '/usr/bin', '/usr/local/bin', '-perm', '-4000', '-type', 'f'],
+                           capture_output=True, text=True, timeout=10)
+        known_suid = ['sudo', 'su', 'passwd', 'ping', 'mount', 'umount', 'newgrp', 'chsh', 'chfn']
+        suspicious_suid = [f for f in r6.stdout.splitlines() 
+                          if not any(k in f for k in known_suid)]
+        result['suspicious_suid'] = suspicious_suid
+        result['has_suspicious_suid'] = len(suspicious_suid) > 0
+
+        # 7. SSH config
+        ssh_config = Path('/etc/ssh/sshd_config')
+        if ssh_config.exists():
+            cfg = ssh_config.read_text(errors='ignore')
+            result['ssh_root_login'] = 'PermitRootLogin yes' in cfg
+            result['ssh_password_auth'] = 'PasswordAuthentication yes' in cfg
+        
+        return result
+    except Exception as e:
+        return {'error': str(e)}
 

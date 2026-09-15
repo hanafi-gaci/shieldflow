@@ -1208,6 +1208,12 @@ def check_windows_security() -> dict:
         result['backup_found'] = 'LastSuccessfulBackupTime' in r.stdout and 'NULL' not in r.stdout
         result['backup_warning'] = not result['backup_found']
 
+        # Utilisateurs locaux Windows
+        r_users = subprocess.run(['net', 'user'], capture_output=True, text=True)
+        users = [u for u in r_users.stdout.split() if u and not u.startswith('-') and '\\' not in u and len(u) > 2]
+        result['local_users'] = users[:20]
+        result['local_users_count'] = len(users)
+
         # CPU et RAM Windows
         r = subprocess.run(['powershell', '-Command',
             '(Get-Counter "\\Processor(_Total)\\% Processor Time").CounterSamples.CookedValue'],
@@ -1452,6 +1458,19 @@ def check_linux_complete() -> dict:
                 except: pass
         result['top_processes'] = procs
         result['high_cpu'] = any(p['cpu'] > 85 for p in procs)
+
+        # 4b. Processus suspects Linux
+        r_ps = subprocess.run(['ps', 'aux', '--sort=-%cpu'], capture_output=True, text=True)
+        top_procs = []
+        for line in r_ps.stdout.splitlines()[1:11]:
+            parts = line.split(None, 10)
+            if len(parts) >= 11:
+                try:
+                    cpu = float(parts[2])
+                    top_procs.append({'user': parts[0], 'cpu': cpu, 'cmd': parts[10][:80]})
+                except: pass
+        result['top_processes'] = top_procs
+        result['high_cpu'] = any(p['cpu'] > 85 for p in top_procs)
 
         # 5. Persistence Linux — crontabs suspects
         suspicious_crons = []
