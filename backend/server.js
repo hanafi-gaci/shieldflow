@@ -7,12 +7,24 @@
 
 const express  = require('express');
 const cors     = require('cors');
+const helmet     = require('helmet');
+const rateLimit  = require('express-rate-limit');
 const crypto   = require('crypto');
 const path     = require('path');
 const mongoose = require('mongoose');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+
+// ── SÉCURITÉ HTTP ─────────────────────────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+
+const limiter = rateLimit({ windowMs: 15*60*1000, max: 200, message: { error: 'Trop de requetes.' } });
+app.use(limiter);
+
+const loginLimiter = rateLimit({ windowMs: 15*60*1000, max: 10, message: { error: 'Trop de tentatives.' } });
+app.use('/api/mssp/login', loginLimiter);
+app.use('/api/auth/login', loginLimiter);
 const ADMIN_PASSWORD  = process.env.ADMIN_PASSWORD  || 'shieldflow2026';
 const MSSP_PASSWORD   = process.env.MSSP_PASSWORD   || 'shieldflow-mssp-2026';
 const SECRET_KEY      = process.env.SECRET_KEY      || 'shieldflow-secret-key-change-in-prod';
@@ -87,6 +99,15 @@ const Tenant  = mongoose.model('Tenant',  TenantSchema);
 const Device  = mongoose.model('Device',  DeviceSchema);
 const Alert   = mongoose.model('Alert',   AlertSchema);
 const Session = mongoose.model('Session', SessionSchema);
+
+// ── INDEX MONGODB ─────────────────────────────────────────────────────────────
+AlertSchema.index({ tenant_id: 1, resolved: 1 });
+AlertSchema.index({ tenant_id: 1, severity: 1 });
+AlertSchema.index({ device_id: 1, type: 1, resolved: 1 });
+AlertSchema.index({ created_at: -1 });
+DeviceSchema.index({ tenant_id: 1 });
+DeviceSchema.index({ device_id: 1 });
+TenantSchema.index({ email: 1 });
 
 // ─── CONNECT MONGODB ──────────────────────────────────────────────────────────
 

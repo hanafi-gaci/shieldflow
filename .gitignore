@@ -1,13 +1,30 @@
-backend/node_modules/
-backend/db.json
+# Logs
 *.log
-cve_cache.json
-darkweb_cache.json
-threat_cache.json
+agent.log
+logs/
+
+# Base de données locale
+backend/db.json
+*.json.backup
+
+# Fichiers temporaires
+*.backup
+*.old
+*.tmp
+fix.py
 __pycache__/
 *.pyc
+*.pyo
+.env
+.env.local
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
 cve_cache.json
-darkweb_cache.json
-threat_cache.json
-__pycache__/
-*.pyc
