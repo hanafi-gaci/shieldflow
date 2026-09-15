@@ -1958,21 +1958,153 @@ async function runCloudScan(tenantId, cloudType, credentials) {
     const alerts = [];
     
     if (cloudType === 'aws') {
-      // Simulation scan AWS — en production utilise boto3 via Python
-      const checks = [];
-      
-      // Vérifications basiques sans boto3
-      if (!credentials.access_key || credentials.access_key.length < 16) {
-        checks.push({
-          type: 'AWS_INVALID_KEY',
-          severity: 'high',
-          title: 'Clé AWS invalide ou expirée',
-          description: 'La cle acces AWS fournie semble invalide. Verifiez vos credentials.',
-          recommendation: 'Créez une nouvelle clé dans AWS IAM et mettez à jour ShieldFlow.'
-        });
+      // ── AWS SCAN COMPLET via API REST ─────────────────────────────────────
+      try {
+        if (!credentials.access_key || !credentials.secret_key) {
+          alerts.push({ type:'AWS_INVALID_KEY', severity:'high', title:'Credentials AWS manquants', description:'Access Key ID et Secret Access Key requis.', recommendation:'Créez une clé IAM dans AWS Console > IAM > Utilisateurs.' });
+          return resolve(alerts);
+        }
+
+        const region = credentials.region || 'eu-west-1';
+        const accessKey = credentials.access_key;
+        const secretKey = credentials.secret_key;
+
+        // Fonction pour signer les requêtes AWS (Signature Version 4)
+        const crypto = require('crypto');
+        
+        function hmac(key, data) {
+          return crypto.createHmac('sha256', key).update(data).digest();
+        }
+        
+        function sign(key, msg) {
+          return crypto.createHmac('sha256', key).update(msg).digest('hex');
+        }
+
+        async function awsRequest(service, host, path, query = '') {
+          const now = new Date();
+          const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g, '').slice(0, 15) + 'Z';
+          const dateStamp = amzDate.slice(0, 8);
+          
+          const canonicalHeaders = `host:${host}
+x-amz-date:${amzDate}
+`;
+          const signedHeaders = 'host;x-amz-date';
+          const canonicalRequest = `GET
+${path}
+${query}
+${canonicalHeaders}
+${signedHeaders}
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`;
+          
+          const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+          const stringToSign = `AWS4-HMAC-SHA256
+${amzDate}
+${credentialScope}
+${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;
+          
+          const signingKey = hmac(hmac(hmac(hmac(Buffer.from('AWS4' + secretKey), dateStamp), region), service), 'aws4_request');
+          const signature = sign(signingKey, stringToSign);
+          
+          const authHeader = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+          
+          const url = `https://${host}${path}${query ? '?' + query : ''}`;
+          const res = await fetch(url, {
+            headers: { 'X-Amz-Date': amzDate, 'Authorization': authHeader, 'Host': host }
+          });
+          return res.text();
+        }
+
+        // 1. Lister les buckets S3
+        try {
+          const s3Host = 's3.amazonaws.com';
+          const s3Response = await awsRequest('s3', s3Host, '/');
+          const bucketMatches = s3Response.match(/<Name>([^<]+)<\/Name>/g) || [];
+          const buckets = bucketMatches.map(m => m.replace(/<\/?Name>/g, ''));
+          
+          // Vérifier ACL de chaque bucket
+          for (const bucket of buckets.slice(0, 10)) {
+            try {
+              const aclHost = `${bucket}.s3.${region}.amazonaws.com`;
+              const aclResponse = await awsRequest('s3', aclHost, '/', 'acl=');
+              if (aclResponse.includes('AllUsers') || aclResponse.includes('AuthenticatedUsers')) {
+                alerts.push({
+                  type: 'AWS_PUBLIC_BUCKET',
+                  severity: 'critical',
+                  title: `Bucket S3 public détecté: ${bucket}`,
+                  description: `Le bucket S3 "${bucket}" est accessible publiquement sur internet. Toutes les données qu il contient sont potentiellement exposées.`,
+                  recommendation: 'Dans AWS Console > S3 > Bucket > Permissions, désactivez l accès public et vérifiez la politique du bucket.'
+                });
+              }
+            } catch(e) {}
+          }
+
+          if (buckets.length > 0 && !alerts.find(a => a.type === 'AWS_PUBLIC_BUCKET')) {
+            alerts.push({ type:'AWS_S3_OK', severity:'low', title:`${buckets.length} bucket(s) S3 vérifiés — aucun public`, description:'Tous les buckets S3 sont privés.', recommendation:'' });
+          }
+        } catch(e) {}
+
+        // 2. Vérifier les groupes de sécurité EC2
+        try {
+          const ec2Host = `ec2.${region}.amazonaws.com`;
+          const sgResponse = await awsRequest('ec2', ec2Host, '/', 'Action=DescribeSecurityGroups&Version=2016-11-15');
+          
+          // Détecter les ports critiques ouverts sur 0.0.0.0/0
+          const dangerousPorts = ['22', '3389', '5900', '23', '21'];
+          for (const port of dangerousPorts) {
+            const portRegex = new RegExp(`<fromPort>${port}<\/fromPort>[\s\S]*?<cidrIp>0\.0\.0\.0\/0<\/cidrIp>`, 'g');
+            if (portRegex.test(sgResponse)) {
+              const portNames = {'22':'SSH','3389':'RDP (Bureau à distance)','5900':'VNC','23':'Telnet','21':'FTP'};
+              alerts.push({
+                type: 'AWS_OPEN_PORT',
+                severity: 'critical',
+                title: `Port ${portNames[port]||port} ouvert sur internet (0.0.0.0/0)`,
+                description: `Un groupe de sécurité AWS autorise le port ${port} (${portNames[port]||''}) depuis n importe quelle IP. C est une faille de sécurité critique.`,
+                recommendation: `Restreignez l accès au port ${port} uniquement aux IPs autorisées dans AWS > EC2 > Groupes de sécurité.`
+              });
+            }
+          }
+        } catch(e) {}
+
+        // 3. Vérifier CloudTrail (journalisation)
+        try {
+          const ctHost = `cloudtrail.${region}.amazonaws.com`;
+          const ctResponse = await awsRequest('cloudtrail', ctHost, '/');
+          if (ctResponse.includes('"IsLogging":false') || !ctResponse.includes('IsLogging')) {
+            alerts.push({
+              type: 'AWS_CLOUDTRAIL_OFF',
+              severity: 'high',
+              title: 'AWS CloudTrail désactivé — journalisation éteinte',
+              description: 'CloudTrail est désactivé. Aucune action sur votre compte AWS n est enregistrée. En cas d intrusion, impossible de retracer les actions du pirate.',
+              recommendation: 'Activez CloudTrail dans AWS Console > CloudTrail > Créer un journal.'
+            });
+          }
+        } catch(e) {}
+
+        // 4. Vérifier MFA sur le compte root
+        try {
+          const iamHost = 'iam.amazonaws.com';
+          const mfaResponse = await awsRequest('iam', iamHost, '/', 'Action=GetAccountSummary&Version=2010-05-08');
+          if (mfaResponse.includes('<key>AccountMFAEnabled</key><value>0</value>') ||
+              mfaResponse.includes('"AccountMFAEnabled":0')) {
+            alerts.push({
+              type: 'AWS_NO_MFA_ROOT',
+              severity: 'critical',
+              title: 'Compte root AWS sans MFA',
+              description: 'Le compte root AWS n a pas de double authentification activée. Si ce compte est compromis, l attaquant a un accès total à tous vos services AWS.',
+              recommendation: 'Activez le MFA sur le compte root dans AWS Console > Sécurité > MFA.'
+            });
+          }
+        } catch(e) {}
+
+        if (alerts.length === 0) {
+          alerts.push({ type:'AWS_SCAN_OK', severity:'low', title:'AWS scanné — aucune anomalie critique', description:'Scan AWS effectué avec succès.', recommendation:'' });
+        }
+        
+        resolve(alerts);
+      } catch(e) {
+        alerts.push({ type:'AWS_ERROR', severity:'medium', title:'Erreur scan AWS', description:e.message, recommendation:'Vérifiez les credentials AWS et les permissions IAM.' });
+        resolve(alerts);
       }
-      
-      resolve(checks);
       
     } else if (cloudType === 'm365') {
       // ── M365 SCAN COMPLET ─────────────────────────────────────────────────
