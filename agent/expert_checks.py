@@ -33,6 +33,16 @@ SYSTEM = platform.system()  # 'Darwin' (Mac) | 'Linux' | 'Windows'
 # ─── MAIN COLLECTOR ──────────────────────────────────────────────────────────
 
 def collect_expert_data() -> dict:
+    if SYSTEM == 'Windows':
+        try:
+            win_data = check_windows_security()
+            win_data['platform'] = 'Windows'
+            return win_data
+        except Exception as e:
+            return {'error': str(e), 'platform': 'Windows'}
+    return _collect_expert_data_unix()
+
+def _collect_expert_data_unix() -> dict:
     """
     Collecte toutes les données de sécurité étendues.
     Retourne un dict prêt à être mergé dans le payload principal.

@@ -993,6 +993,7 @@ function calculateNIS2(snap) {
     'Securite reseaux':       { checks: ['firewall','no_sharing','no_remote'], article: 'Art.21.2.e', weight: 15 },
     'Hygiene informatique':   { checks: ['screensaver','updates_ok'], article: 'Art.21.2.g', weight: 15 },
     'Cryptographie':          { checks: ['encrypted'], article: 'Art.21.2.h', weight: 15 },
+    'Notification violations':  { checks: ['logs_enabled', 'firewall_enabled'], article: 'Art.33', weight: 10 },
     'Controle acces':         { checks: ['no_remote','screensaver'], article: 'Art.21.2.i', weight: 15 },
   };
 
