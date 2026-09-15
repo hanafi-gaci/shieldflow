@@ -257,16 +257,14 @@ async function renderClient(){
   if(!t)return;
   document.getElementById('content').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Chargement...</div>';
   try{
-    const [dashR,cloudR,rgpdR,alertsR]=await Promise.all([
+    const [dashR,cloudR,rgpdR]=await Promise.all([
       fetch(S+'/api/mssp/tenants/'+t.id+'/dashboard'),
       fetch(S+'/api/mssp/tenants/'+t.id+'/cloud'),
-      fetch(S+'/api/mssp/tenants/'+t.id+'/dashboard'),
       fetch(S+'/api/mssp/tenants/'+t.id+'/rgpd'),
     ]);
     const dash=await dashR.json();
     const cloud=await cloudR.json();
-    const alertsData=await alertsR.json();
-    const alerts=alertsData.alerts||[];
+
     const rgpd=await rgpdR.json();
     const alerts=dash.alerts||[];
     const devices=dash.devices||[];
