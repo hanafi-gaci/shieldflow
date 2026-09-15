@@ -150,6 +150,9 @@ async function sendAlertEmail(tenantName, alert, deviceName, toEmail) {
 
 function analyzeSnap(snap, deviceId, deviceName) {
   const candidates = [];
+  
+  // Détections Windows avancées et Linux complet
+  analyzeWindowsAdvanced(snap, candidates, null, deviceName);
 
   if (snap.cpu_percent > 90)
     candidates.push({ type:'HIGH_CPU', severity:'high', title:'CPU anormalement élevé', description:`CPU à ${snap.cpu_percent?.toFixed(1)}% sur ${deviceName}.`, recommendation:'Identifier les processus consommateurs.' });
