@@ -257,13 +257,16 @@ async function renderClient(){
   if(!t)return;
   document.getElementById('content').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Chargement...</div>';
   try{
-    const [dashR,cloudR,rgpdR]=await Promise.all([
+    const [dashR,cloudR,rgpdR,alertsR]=await Promise.all([
       fetch(S+'/api/mssp/tenants/'+t.id+'/dashboard'),
       fetch(S+'/api/mssp/tenants/'+t.id+'/cloud'),
+      fetch(S+'/api/mssp/tenants/'+t.id+'/dashboard'),
       fetch(S+'/api/mssp/tenants/'+t.id+'/rgpd'),
     ]);
     const dash=await dashR.json();
     const cloud=await cloudR.json();
+    const alertsData=await alertsR.json();
+    const alerts=alertsData.alerts||[];
     const rgpd=await rgpdR.json();
     const alerts=dash.alerts||[];
     const devices=dash.devices||[];
@@ -315,15 +318,38 @@ async function renderClient(){
             <div class="section-body">
               ${clouds.length===0?'<div class="empty-state" style="padding:16px"><div style="font-size:20px;margin-bottom:4px">☁️</div>Aucun cloud connecté</div>':
                 clouds.map(c=>{
-                  const icons={aws:'🟠 AWS',m365:'🔵 M365',gworkspace:'🟡 Google'};
+                  const icons={aws:'🟠 Amazon AWS',m365:'🔵 Microsoft 365',gworkspace:'🟡 Google Workspace'};
                   const ls=c.last_scan?new Date(c.last_scan).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'En attente';
-                  return `<div class="cloud-item">
-                    <div style="font-size:18px">${icons[c.type]||c.type}</div>
-                    <div style="flex:1"><div style="font-size:12px;font-weight:600">${c.type.toUpperCase()}</div><div style="font-size:11px;color:var(--green)">● Connecté · ${ls}</div></div>
-                    <div style="display:flex;gap:6px">
-                      <button class="action-btn action-fix" onclick="scanCloud('${t.id}','${c.type}')">🔍</button>
-                      <button class="action-btn action-info" onclick="deleteCloud('${t.id}','${c.type}')">🗑</button>
+                  const cloudAlerts=(dash.alerts||[]).filter(a=>a.device_id==='cloud_'+c.type);
+                  const hasCritical=cloudAlerts.some(a=>a.severity==='critical');
+                  const status=hasCritical?'🔴':cloudAlerts.length>0?'🟠':'🟢';
+                  return `<div class="cloud-item" style="flex-direction:column;align-items:stretch;gap:0">
+                    <div style="display:flex;align-items:center;justify-content:space-between">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <span>${status}</span>
+                        <div>
+                          <div style="font-size:12px;font-weight:700">${icons[c.type]||c.type}</div>
+                          <div style="font-size:10px;color:var(--text3)">Dernier scan: ${ls}</div>
+                        </div>
+                        ${cloudAlerts.length>0?`<span style="font-size:10px;background:rgba(232,51,74,.15);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:700">${cloudAlerts.length} alerte(s)</span>`:`<span style="font-size:10px;background:rgba(14,165,114,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:600">✓ OK</span>`}
+                      </div>
+                      <div style="display:flex;gap:6px">
+                        <button class="action-btn action-fix" onclick="scanCloud('${t.id}','${c.type}')" title="Scanner">🔍</button>
+                        <button class="action-btn action-info" onclick="deleteCloud('${t.id}','${c.type}')" title="Déconnecter">🗑</button>
+                      </div>
                     </div>
+                    ${cloudAlerts.length>0?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                      ${cloudAlerts.map(ca=>`<div style="padding:8px 10px;background:var(--surface);border-radius:6px;margin-bottom:6px;border-left:3px solid ${ca.severity==='critical'?'var(--red)':'var(--orange)'}">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                          <div>
+                            <div style="font-size:10px;font-weight:700;color:${ca.severity==='critical'?'var(--red)':'var(--orange)'};text-transform:uppercase">${ca.severity==='critical'?'CRITIQUE':'ÉLEVÉ'}</div>
+                            <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px">${ca.title}</div>
+                            <div style="font-size:11px;color:var(--text2);margin-top:3px">${ca.recommendation||''}</div>
+                          </div>
+                          ${c.type==='m365'&&ca.type==='M365_FOREIGN_LOGIN'?`<button class="action-btn" style="background:rgba(232,51,74,.15);color:var(--red);border-color:rgba(232,51,74,.3);flex-shrink:0;margin-left:8px" onclick="revokeM365('${t.id}')">🚫 Révoquer</button>`:''}
+                        </div>
+                      </div>`).join('')}
+                    </div>`:''}
                   </div>`;
                 }).join('')}
             </div>
@@ -497,6 +523,30 @@ async function showRGPD(tid){
         <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>
       </div>`;
   }catch(e){document.getElementById('modal-body').innerHTML='<div style="color:var(--red)">Erreur</div>';}
+}
+
+async function revokeM365Sessions(tid){
+  if(!confirm('Révoquer TOUTES les sessions Microsoft 365 ? Les utilisateurs devront se reconnecter.')) return;
+  showToast('Révocation en cours...');
+  try{
+    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud/m365/revoke-sessions',{method:'POST'});
+    const d=await r.json();
+    if(d.success) showToast('✅ '+d.revoked+' sessions révoquées — M365 sécurisé');
+    else showToast('Erreur: '+(d.error||'inconnue'));
+    await loadTenants(); renderClient();
+  }catch(e){showToast('Erreur réseau');}
+}
+
+async function revokeM365(tid){
+  if(!confirm('Révoquer toutes les sessions Microsoft 365 ? Les utilisateurs devront se reconnecter.')) return;
+  showToast('Révocation en cours...');
+  try{
+    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud/m365/revoke-sessions',{method:'POST'});
+    const d=await r.json();
+    if(d.success) showToast('✅ '+d.revoked+' sessions M365 révoquées');
+    else showToast('Erreur: '+(d.error||'inconnue'));
+    await loadTenants(); renderClient();
+  }catch(e){showToast('Erreur réseau');}
 }
 
 async function scanCloud(tid,type){
