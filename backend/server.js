@@ -2461,6 +2461,10 @@ app.get('/pourquoi', (req, res) => {
   res.sendFile(path.join(__dirname, '../dashboard/pourquoi.html'));
 });
 
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/contact.html'));
+});
+
 // Dashboard MSSP
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../dashboard/index.html'));
