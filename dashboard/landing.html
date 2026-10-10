@@ -3,88 +3,185 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShieldFlow — Cybersecurite Managee pour PME Francaises</title>
+<title>ShieldFlow — Cybersecurite Managee pour PME Francaises | Stopper les hackers 24h/24</title>
 <meta name="description" content="ShieldFlow protege vos machines et comptes cloud 24h/24. EDR, ITDR, SIEM, RGPD. Installation sur site partout en Europe. 12 euros par machine par mois.">
 <link rel="stylesheet" href="/shared.css">
 <style>
-.hero{min-height:100vh;display:flex;align-items:center;padding:120px 6% 80px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:900px;height:900px;background:radial-gradient(circle,rgba(59,130,246,.1) 0%,transparent 65%);pointer-events:none}
-.hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:100px;padding:5px 14px;font-size:11px;font-weight:600;color:#60a5fa;margin-bottom:20px;text-transform:uppercase;letter-spacing:.08em}
-.hero-dot{width:6px;height:6px;background:#34d399;border-radius:50%;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.hero h1{font-size:56px;font-weight:800;line-height:1.05;letter-spacing:-.04em;color:#fff;margin-bottom:18px}
-.hero h1 span{background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:17px;color:#94a3b8;line-height:1.8;margin-bottom:32px;max-width:480px}
-.hero-actions{display:flex;gap:12px;margin-bottom:40px}
-.hero-trust{display:flex;flex-wrap:wrap;gap:20px}
-.trust-item{display:flex;align-items:center;gap:7px;font-size:13px;color:#64748b}
-.trust-item span{color:#34d399;font-weight:700}
-.terminal{background:#111318;border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.5)}
-.terminal-bar{background:#1a1d24;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.06)}
-.t-dot{width:11px;height:11px;border-radius:50%}
-.terminal-body{padding:20px;font-family:monospace;font-size:12px;line-height:2}
-.t-g{color:#34d399}.t-r{color:#f87171}.t-b{color:#60a5fa}.t-y{color:#fbbf24}.t-gr{color:#475569}.t-w{color:#fff;font-weight:600}
-.logos-bar{padding:32px 6%;background:#111318;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);text-align:center}
-.logos-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:20px;font-weight:600}
-.logos-list{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;opacity:.45}
-.logos-list span{font-size:15px;font-weight:700;color:#94a3b8}
-.produits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);border-radius:14px;overflow:hidden;margin-top:48px}
-.produit{background:#0a0c10;padding:32px;transition:.2s;cursor:pointer;text-decoration:none;display:block}
-.produit:hover{background:#1a1d24}
-.produit-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#60a5fa;margin-bottom:10px}
-.produit-icon{font-size:28px;margin-bottom:12px}
-.produit-titre{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px}
-.produit-desc{font-size:13px;color:#94a3b8;line-height:1.6;margin-bottom:12px}
-.produit-stat{font-size:11px;color:#34d399;font-weight:600}
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;align-items:center;padding:80px 5%;
+  position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(37,99,235,.18) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 60%,rgba(124,58,237,.08) 0%,transparent 60%),
+    var(--dark);
+}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent)}
+.hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center;position:relative;z-index:1}
+.hero-title{font-size:62px;font-weight:800;line-height:1.04;letter-spacing:-.05em;color:var(--white);margin-bottom:20px}
+.hero-title .grad{background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:32px;max-width:480px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:36px}
+.hero-proof{display:flex;flex-wrap:wrap;gap:20px}
+.proof-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text3)}
+.proof-check{color:var(--green3);font-weight:700}
+
+/* DASHBOARD MOCKUP */
+.dash-mockup{
+  background:var(--dark3);border:1px solid var(--border2);border-radius:16px;
+  overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
+  position:relative;
+}
+.dash-topbar{background:var(--dark4);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.dash-dot{width:10px;height:10px;border-radius:50%}
+.dash-title{font-size:11px;color:var(--text3);font-family:monospace;margin-left:8px}
+.dash-body{padding:16px;}
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.dash-score{display:flex;align-items:center;gap:8px}
+.dash-score-num{font-size:28px;font-weight:800;color:var(--white)}
+.dash-score-label{font-size:11px;color:var(--text3)}
+.dash-badges{display:flex;gap:6px}
+.dash-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px}
+.badge-ok{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.2)}
+.badge-warn{background:rgba(234,88,12,.15);color:#fb923c;border:1px solid rgba(234,88,12,.2)}
+.badge-crit{background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.2)}
+.dash-devices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dash-device{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.dash-device-name{font-size:11px;font-weight:600;color:var(--white);margin-bottom:4px}
+.dash-device-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3)}
+.status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dash-alerts{display:flex;flex-direction:column;gap:6px}
+.dash-alert{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid}
+.alert-crit{background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.2)}
+.alert-high{background:rgba(234,88,12,.08);border-color:rgba(234,88,12,.2)}
+.alert-ok{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.15)}
+.alert-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.alert-title{font-size:11px;font-weight:600;color:var(--white);margin-bottom:2px}
+.alert-sub{font-size:10px;color:var(--text3)}
+.alert-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-left:auto;text-transform:uppercase}
+.ab-crit{background:rgba(220,38,38,.2);color:#f87171}
+.ab-high{background:rgba(234,88,12,.2);color:#fb923c}
+.ab-ok{background:rgba(16,185,129,.2);color:#34d399}
+.dash-scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(37,99,235,.6),transparent);animation:scan-h 3s linear infinite}
+@keyframes scan-h{0%{top:0%}100%{top:100%}}
+
+/* LOGOS */
+.logos-bar{padding:28px 5%;background:var(--dark2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.logos-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);text-align:center;margin-bottom:20px;font-weight:600}
+.logos-list{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;opacity:.4}
+.logos-list span{font-size:14px;font-weight:700;color:var(--text2);letter-spacing:-.01em}
+
+/* PRODUITS */
+.produits-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:16px;overflow:hidden;margin-top:48px}
+.produit-card{background:var(--dark);padding:32px;text-decoration:none;display:block;transition:.25s;position:relative;overflow:hidden}
+.produit-card::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);transform:scaleX(0);transition:.3s}
+.produit-card:hover{background:var(--dark3)}
+.produit-card:hover::after{transform:scaleX(1)}
+.produit-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--blue3);margin-bottom:14px}
+.produit-icon{font-size:32px;margin-bottom:14px;display:block}
+.produit-name{font-size:17px;font-weight:700;color:var(--white);margin-bottom:8px}
+.produit-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:14px}
+.produit-arrow{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--blue3);transition:.2s}
+.produit-card:hover .produit-arrow{gap:10px}
+
+/* MENACES */
 .menaces-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:48px}
-.menace{background:#1a1d24;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:28px}
-.menace-num{font-size:36px;font-weight:800;color:#fff;letter-spacing:-.04em}
-.menace-unit{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
-.menace-titre{font-size:16px;font-weight:700;color:#fff;margin-bottom:8px}
-.menace-desc{font-size:13px;color:#94a3b8;line-height:1.6}
-.temoignages{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-.temoignage{background:#1a1d24;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:28px}
-.temoignage-texte{font-size:14px;color:#94a3b8;line-height:1.75;font-style:italic;margin-bottom:20px}
-.temoignage-auteur{display:flex;align-items:center;gap:12px}
-.temoignage-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-.temoignage-nom{font-size:13px;font-weight:700;color:#fff}
-.temoignage-role{font-size:11px;color:#64748b}
-.stats-banner{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#111318;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
-.stat-banner{padding:40px;text-align:center;border-right:1px solid rgba(255,255,255,.06)}
-.stat-banner:last-child{border-right:none}
-.stat-banner-num{font-size:40px;font-weight:800;color:#fff;letter-spacing:-.04em}
-.stat-banner-label{font-size:12px;color:#64748b;margin-top:4px}
+.menace-card{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;overflow:hidden;transition:.25s}
+.menace-card:hover{border-color:rgba(37,99,235,.3);transform:translateY(-2px)}
+.menace-num{font-size:48px;font-weight:800;color:var(--white);letter-spacing:-.05em;line-height:1}
+.menace-unit{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:12px;font-weight:600}
+.menace-name{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px}
+.menace-desc{font-size:13px;color:var(--text2);line-height:1.65}
+.menace-glow{position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;filter:blur(40px);opacity:.3}
+
+/* TEMOIGNAGES */
+.temoignages-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.temoignage-card{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:28px;transition:.25s}
+.temoignage-card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.temoignage-stars{display:flex;gap:3px;margin-bottom:14px}
+.temoignage-star{color:#fbbf24;font-size:13px}
+.temoignage-text{font-size:13px;color:var(--text2);line-height:1.75;font-style:italic;margin-bottom:20px}
+.temoignage-author{display:flex;align-items:center;gap:12px}
+.temoignage-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--white);flex-shrink:0}
+.temoignage-name{font-size:13px;font-weight:700;color:var(--white)}
+.temoignage-role{font-size:11px;color:var(--text3)}
+
+/* CTA FINAL */
+.cta-section{
+  padding:100px 5%;text-align:center;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(37,99,235,.12),transparent),var(--dark2);
+  border-top:1px solid var(--border)
+}
+.cta-title{font-size:46px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:16px}
+.cta-sub{font-size:17px;color:var(--text2);margin-bottom:36px}
+.cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-note{font-size:12px;color:var(--text3);margin-top:16px}
+
 @media(max-width:768px){
-  .hero-inner,.produits-grid,.menaces-grid,.temoignages,.stats-banner{grid-template-columns:1fr}
-  .hero h1{font-size:36px}
-  .stat-banner{border-right:none;border-bottom:1px solid rgba(255,255,255,.06)}
+  .hero-inner,.produits-grid,.menaces-grid,.temoignages-grid{grid-template-columns:1fr}
+  .hero-title{font-size:38px}
+  .dash-devices{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">🛡</div>ShieldFlow</a>
-  <div class="nav-links">
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark">🛡</div>
+    <span class="nav-logo-text">ShieldFlow</span>
+  </a>
+  <div class="nav-center">
     <div class="nav-item">
-      <button class="nav-link">Produits ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">
+        Produits
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+      </button>
       <div class="nav-dropdown">
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏠</div><div><div class="nav-dropdown-title">Vue d ensemble</div><div class="nav-dropdown-desc">La plateforme ShieldFlow complete</div></div></a>
-        <div class="nav-separator"></div>
-        <a href="/edr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🖥</div><div><div class="nav-dropdown-title">Managed EDR</div><div class="nav-dropdown-desc">Protection endpoints Mac · Windows · Linux</div></div></a>
-        <a href="/itdr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🔑</div><div><div class="nav-dropdown-title">Managed ITDR</div><div class="nav-dropdown-desc">Microsoft 365 · Google Workspace</div></div></a>
-        <a href="/siem" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Managed SIEM</div><div class="nav-dropdown-desc">Correlation logs et detection avancee</div></div></a>
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">📋</div><div><div class="nav-dropdown-title">Conformite RGPD</div><div class="nav-dropdown-desc">Rapport PDF officiel automatique</div></div></a>
+        <a href="/plateforme" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">🏠</div>
+          <div><div class="nav-dd-title">Vue d ensemble</div><div class="nav-dd-desc">La plateforme ShieldFlow complete</div></div>
+        </a>
+        <div class="nav-sep"></div>
+        <a href="/edr" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🖥</div>
+          <div><div class="nav-dd-title">Managed EDR</div><div class="nav-dd-desc">Protection Mac · Windows · Linux</div></div>
+        </a>
+        <a href="/itdr" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🔑</div>
+          <div><div class="nav-dd-title">Managed ITDR</div><div class="nav-dd-desc">Microsoft 365 · Google Workspace</div></div>
+        </a>
+        <a href="/siem" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">📊</div>
+          <div><div class="nav-dd-title">Managed SIEM</div><div class="nav-dd-desc">Correlation logs et detection avancee</div></div>
+        </a>
+        <a href="/plateforme" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(220,38,38,.15)">📋</div>
+          <div><div class="nav-dd-title">Conformite RGPD</div><div class="nav-dd-desc">Rapport PDF officiel automatique</div></div>
+        </a>
       </div>
     </div>
     <div class="nav-item">
-      <button class="nav-link">Solutions ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">
+        Solutions
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+      </button>
       <div class="nav-dropdown">
-        <a href="/pourquoi#sante" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏥</div><div><div class="nav-dropdown-title">Sante</div><div class="nav-dropdown-desc">Medecins · Dentistes · Pharmacies</div></div></a>
-        <a href="/pourquoi#juridique" class="nav-dropdown-item"><div class="nav-dropdown-icon">⚖️</div><div><div class="nav-dropdown-title">Juridique</div><div class="nav-dropdown-desc">Notaires · Avocats · Huissiers</div></div></a>
-        <a href="/pourquoi#finance" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Finance</div><div class="nav-dropdown-desc">Experts-comptables · Conseillers</div></div></a>
-        <a href="/pourquoi#industrie" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏭</div><div><div class="nav-dropdown-title">Industrie</div><div class="nav-dropdown-desc">PME sous-traitantes · Fabricants</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🏥</div>
+          <div><div class="nav-dd-title">Sante</div><div class="nav-dd-desc">Medecins · Dentistes · Pharmacies</div></div>
+        </a>
+        <a href="/pourquoi" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">⚖️</div>
+          <div><div class="nav-dd-title">Juridique</div><div class="nav-dd-desc">Notaires · Avocats · Huissiers</div></div>
+        </a>
+        <a href="/pourquoi" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">📈</div>
+          <div><div class="nav-dd-title">Finance</div><div class="nav-dd-desc">Experts-comptables · Conseillers</div></div>
+        </a>
+        <a href="/pourquoi" class="nav-dd-item">
+          <div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🏭</div>
+          <div><div class="nav-dd-title">Industrie</div><div class="nav-dd-desc">PME sous-traitantes · Fabricants</div></div>
+        </a>
       </div>
     </div>
     <a href="/tarifs" class="nav-link">Tarifs</a>
@@ -92,150 +189,195 @@
     <a href="/pourquoi" class="nav-link">Pourquoi ShieldFlow</a>
   </div>
   <div class="nav-right">
-    <a href="/dashboard" class="btn-nav-ghost">Connexion</a>
-    <a href="/contact" class="btn-nav-primary">Essai gratuit →</a>
+    <a href="/dashboard" class="btn-ghost-sm">Connexion</a>
+    <a href="/contact" class="btn-primary-sm">Essai gratuit →</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-grid"></div>
   <div class="hero-inner">
-    <div>
-      <div class="hero-badge"><div class="hero-dot"></div>Surveillance active 24h/24 · 7j/7</div>
-      <h1>Les hackers.<br><span>Stoppes net.</span></h1>
+    <div class="animate-fade-up">
+      <div class="badge"><div class="badge-dot"></div>Surveillance active 24h/24 · 7j/7</div>
+      <h1 class="hero-title">Les hackers.<br><span class="grad">Stoppes net.</span></h1>
       <p class="hero-sub">Une plateforme concue pour les PME francaises. Surveillance des endpoints, protection Microsoft 365 et Google Workspace, conformite RGPD. Cybersecurite enterprise pour toutes les entreprises.</p>
       <div class="hero-actions">
-        <a href="/contact" class="btn-primary">Essai gratuit →</a>
-        <a href="/plateforme" class="btn-ghost">Voir la plateforme</a>
+        <a href="/contact" class="btn-primary">Demarrer l essai gratuit →</a>
+        <a href="/plateforme" class="btn-secondary">Voir la plateforme</a>
       </div>
-      <div class="hero-trust">
-        <div class="trust-item"><span>✓</span> 12€ par machine par mois</div>
-        <div class="trust-item"><span>✓</span> Installation sur site</div>
-        <div class="trust-item"><span>✓</span> RGPD inclus</div>
-        <div class="trust-item"><span>✓</span> Sans engagement</div>
+      <div class="hero-proof">
+        <div class="proof-item"><span class="proof-check">✓</span> 12€ par machine par mois</div>
+        <div class="proof-item"><span class="proof-check">✓</span> Installation sur site incluse</div>
+        <div class="proof-item"><span class="proof-check">✓</span> RGPD inclus</div>
+        <div class="proof-item"><span class="proof-check">✓</span> Sans engagement</div>
       </div>
     </div>
-    <div class="terminal">
-      <div class="terminal-bar">
-        <div class="t-dot" style="background:#ff5f57"></div>
-        <div class="t-dot" style="background:#ffbd2e"></div>
-        <div class="t-dot" style="background:#28c840"></div>
-        <span style="font-size:11px;color:#475569;margin-left:8px">ShieldFlow — Surveillance en cours</span>
-      </div>
-      <div class="terminal-body">
-        <div><span class="t-g">✓</span> <span class="t-w">Cabinet Dupont</span> <span class="t-gr">— 12 machines · OK</span></div>
-        <div><span class="t-g">✓</span> <span class="t-w">Microsoft 365</span> <span class="t-gr">— 8 identites · OK</span></div>
-        <div><span class="t-g">✓</span> <span class="t-w">Google Workspace</span> <span class="t-gr">— 6 comptes · OK</span></div>
-        <div style="margin-top:6px"><span class="t-r">⚠</span> <span class="t-y">CRITIQUE</span> <span class="t-gr">Connexion M365 · Roumanie · 03h14</span></div>
-        <div><span class="t-b">→</span> <span class="t-gr">Sessions revoquees automatiquement</span> <span class="t-g">✓</span></div>
-        <div style="margin-top:6px"><span class="t-r">⚠</span> <span class="t-y">CRITIQUE</span> <span class="t-gr">Ransomware · PC-Compta.lan</span></div>
-        <div><span class="t-b">→</span> <span class="t-gr">Machine isolee en 4 secondes</span> <span class="t-g">✓</span></div>
-        <div><span class="t-b">→</span> <span class="t-gr">Email urgence client envoye</span> <span class="t-g">✓</span></div>
-        <div style="margin-top:6px"><span class="t-g">◉</span> <span class="t-w">Score securite : 96/100</span></div>
-        <div><span class="t-g">◉</span> <span class="t-w">Conformite RGPD : 91/100 · Conforme</span></div>
+    <div class="animate-fade-up-d2 float">
+      <div class="dash-mockup">
+        <div class="dash-scan-line"></div>
+        <div class="dash-topbar">
+          <div class="dash-dot" style="background:#ff5f57"></div>
+          <div class="dash-dot" style="background:#ffbd2e"></div>
+          <div class="dash-dot" style="background:#28c840"></div>
+          <span class="dash-title">ShieldFlow — Dashboard MSSP</span>
+        </div>
+        <div class="dash-body">
+          <div class="dash-header">
+            <div class="dash-score">
+              <div class="dash-score-num">96<span style="font-size:14px;color:var(--text3)">/100</span></div>
+              <div class="dash-score-label">Score<br>securite</div>
+            </div>
+            <div class="dash-badges">
+              <span class="dash-badge badge-ok">RGPD 91%</span>
+              <span class="dash-badge badge-ok">M365 OK</span>
+              <span class="dash-badge badge-warn">1 alerte</span>
+            </div>
+          </div>
+          <div class="dash-devices">
+            <div class="dash-device">
+              <div class="dash-device-name">MacBook-Pro.local</div>
+              <div class="dash-device-status"><div class="status-dot" style="background:#34d399"></div>En ligne · Secure</div>
+            </div>
+            <div class="dash-device">
+              <div class="dash-device-name">PC-Compta.lan</div>
+              <div class="dash-device-status"><div class="status-dot" style="background:#34d399"></div>En ligne · Secure</div>
+            </div>
+            <div class="dash-device">
+              <div class="dash-device-name">DESKTOP-RH01</div>
+              <div class="dash-device-status"><div class="status-dot" style="background:#34d399"></div>En ligne · Secure</div>
+            </div>
+            <div class="dash-device">
+              <div class="dash-device-name">Microsoft 365</div>
+              <div class="dash-device-status"><div class="status-dot" style="background:#34d399"></div>8 identites · Surveille</div>
+            </div>
+          </div>
+          <div class="dash-alerts">
+            <div class="dash-alert alert-crit">
+              <div class="alert-icon">🚨</div>
+              <div style="flex:1">
+                <div class="alert-title">Connexion M365 depuis Roumanie</div>
+                <div class="alert-sub">03h14 · Sessions revoquees auto ✓</div>
+              </div>
+              <div class="alert-badge ab-crit">CRITIQUE</div>
+            </div>
+            <div class="dash-alert alert-ok">
+              <div class="alert-icon">✅</div>
+              <div style="flex:1">
+                <div class="alert-title">Rapport RGPD genere — 91/100</div>
+                <div class="alert-sub">PDF envoye automatiquement · 08h00</div>
+              </div>
+              <div class="alert-badge ab-ok">OK</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- STATS -->
-<div class="stats-banner">
-  <div class="stat-banner"><div class="stat-banner-num">24/7</div><div class="stat-banner-label">Surveillance active</div></div>
-  <div class="stat-banner"><div class="stat-banner-num">&lt;30s</div><div class="stat-banner-label">Detection menace</div></div>
-  <div class="stat-banner"><div class="stat-banner-num">12€</div><div class="stat-banner-label">Par machine par mois</div></div>
-  <div class="stat-banner"><div class="stat-banner-num">100%</div><div class="stat-banner-label">RGPD conforme</div></div>
+<div class="stats-grid">
+  <div class="stat-item reveal"><div class="stat-num">24<span>/7</span></div><div class="stat-label">Surveillance active</div></div>
+  <div class="stat-item reveal"><div class="stat-num"><span>&lt;</span>30<span>s</span></div><div class="stat-label">Detection menace</div></div>
+  <div class="stat-item reveal"><div class="stat-num">12<span>€</span></div><div class="stat-label">Par machine par mois</div></div>
+  <div class="stat-item reveal"><div class="stat-num">100<span>%</span></div><div class="stat-label">RGPD conforme</div></div>
 </div>
 
 <!-- LOGOS -->
 <div class="logos-bar">
   <div class="logos-label">Protection des PME francaises dans tous les secteurs</div>
   <div class="logos-list">
-    <span>Cabinets medicaux</span><span>Experts-comptables</span><span>Notaires</span><span>Avocats</span><span>Agences immobilieres</span><span>PME industrielles</span>
+    <span>Cabinets medicaux</span><span>Experts-comptables</span><span>Notaires · Avocats</span><span>Agences immobilieres</span><span>PME industrielles</span><span>Prestataires IT</span>
   </div>
 </div>
 
 <!-- PRODUITS -->
-<section class="s">
-  <div class="s-inner">
-    <div class="eyebrow">La plateforme ShieldFlow</div>
-    <h2 class="s-title">Vous ne gerez rien.<br>On s occupe de tout.</h2>
-    <p class="s-sub">De la detection a la correction — ShieldFlow gere l integralite de votre cybersecurite. Vous recevez uniquement les alertes importantes.</p>
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">La plateforme ShieldFlow</div>
+    <h2 class="section-title reveal">Vous ne gerez rien.<br>On s occupe de tout.</h2>
+    <p class="section-sub reveal">De la detection a la correction — ShieldFlow gere l integralite de votre cybersecurite.</p>
     <div class="produits-grid">
-      <a href="/edr" class="produit">
-        <div class="produit-badge">Managed EDR</div>
-        <div class="produit-icon">🖥</div>
-        <div class="produit-titre">Protection des endpoints</div>
-        <p class="produit-desc">Detection et reponse sur vos machines Mac, Windows et Linux. Ransomware, persistence, LOLBins — detectes et bloques 24h/24.</p>
-        <div class="produit-stat">→ En savoir plus</div>
+      <a href="/edr" class="produit-card reveal">
+        <div class="produit-tag">Managed EDR</div>
+        <span class="produit-icon">🖥</span>
+        <div class="produit-name">Protection des endpoints</div>
+        <p class="produit-desc">Detecte et corrige les menaces sur vos machines Mac, Windows et Linux. Ransomware, persistence, LOLBins — stoppes 24h/24.</p>
+        <div class="produit-arrow">En savoir plus →</div>
       </a>
-      <a href="/itdr" class="produit">
-        <div class="produit-badge">Managed ITDR</div>
-        <div class="produit-icon">🔑</div>
-        <div class="produit-titre">Protection des identites cloud</div>
+      <a href="/itdr" class="produit-card reveal">
+        <div class="produit-tag">Managed ITDR</div>
+        <span class="produit-icon">🔑</span>
+        <div class="produit-name">Protection des identites cloud</div>
         <p class="produit-desc">Connexions suspectes Microsoft 365 et Google Workspace bloquees automatiquement. Sessions revoquees en secondes.</p>
-        <div class="produit-stat">→ En savoir plus</div>
+        <div class="produit-arrow">En savoir plus →</div>
       </a>
-      <a href="/siem" class="produit">
-        <div class="produit-badge">Managed SIEM</div>
-        <div class="produit-icon">📊</div>
-        <div class="produit-titre">Correlation des logs</div>
+      <a href="/siem" class="produit-card reveal">
+        <div class="produit-tag">Managed SIEM</div>
+        <span class="produit-icon">📊</span>
+        <div class="produit-name">Correlation des logs</div>
         <p class="produit-desc">Tous vos evenements centralises et correles. Detection des patterns d attaque invisibles quand on regarde separement.</p>
-        <div class="produit-stat">→ En savoir plus</div>
+        <div class="produit-arrow">En savoir plus →</div>
       </a>
-      <a href="/plateforme" class="produit">
-        <div class="produit-badge">Conformite RGPD</div>
-        <div class="produit-icon">📋</div>
-        <div class="produit-titre">Conformite automatique</div>
+      <a href="/plateforme" class="produit-card reveal">
+        <div class="produit-tag">Conformite RGPD</div>
+        <span class="produit-icon">📋</span>
+        <div class="produit-name">Conformite automatique</div>
         <p class="produit-desc">Score RGPD calcule article par article. Rapport PDF officiel en 1 clic — preuve de conformite pour la CNIL.</p>
-        <div class="produit-stat">→ En savoir plus</div>
+        <div class="produit-arrow">En savoir plus →</div>
       </a>
-      <a href="/plateforme" class="produit">
-        <div class="produit-badge">AWS Security</div>
-        <div class="produit-icon">☁️</div>
-        <div class="produit-titre">Surveillance cloud AWS</div>
+      <a href="/plateforme" class="produit-card reveal">
+        <div class="produit-tag">AWS Security</div>
+        <span class="produit-icon">☁️</span>
+        <div class="produit-name">Surveillance cloud AWS</div>
         <p class="produit-desc">Buckets S3 publics, ports ouverts, CloudTrail desactive, MFA root absent — detectes et alertes en continu.</p>
-        <div class="produit-stat">→ En savoir plus</div>
+        <div class="produit-arrow">En savoir plus →</div>
       </a>
-      <a href="/plateforme" class="produit">
-        <div class="produit-badge">IA Athena</div>
-        <div class="produit-icon">🤖</div>
-        <div class="produit-titre">Analyste IA integre</div>
+      <a href="/plateforme" class="produit-card reveal">
+        <div class="produit-tag">IA Athena</div>
+        <span class="produit-icon">🤖</span>
+        <div class="produit-name">Analyste IA integre</div>
         <p class="produit-desc">Notre IA analyse chaque alerte, explique le risque en francais et corrige automatiquement si la confiance est suffisante.</p>
-        <div class="produit-stat">→ En savoir plus</div>
+        <div class="produit-arrow">En savoir plus →</div>
       </a>
     </div>
   </div>
 </section>
 
 <!-- MENACES -->
-<section class="s s-alt">
-  <div class="s-inner">
-    <div class="eyebrow">Les menaces qu on stoppe</div>
-    <h2 class="s-title">Les hackers s adaptent.<br>ShieldFlow aussi.</h2>
-    <p class="s-sub">Notre expert anticipe les nouvelles techniques d attaque et les bloque avant qu elles touchent votre entreprise.</p>
+<section class="section section-alt">
+  <div class="container">
+    <div class="eyebrow reveal">Les menaces qu on stoppe</div>
+    <h2 class="section-title reveal">Les hackers s adaptent.<br>ShieldFlow aussi.</h2>
+    <p class="section-sub reveal">Notre expert anticipe les nouvelles techniques d attaque et les bloque avant qu elles touchent votre entreprise.</p>
     <div class="menaces-grid">
-      <div class="menace">
+      <div class="menace-card reveal">
+        <div class="menace-glow" style="background:#ef4444"></div>
         <div class="menace-num">17h</div>
         <div class="menace-unit">Temps moyen avant rancon</div>
-        <div class="menace-titre">Ransomware</div>
+        <div class="menace-name">Ransomware</div>
         <p class="menace-desc">Le ransomware n est pas un evenement unique — c est une serie d actions. ShieldFlow detecte les premiers signes et isole la machine en 4 secondes avant que vos donnees soient chiffrees.</p>
       </div>
-      <div class="menace">
+      <div class="menace-card reveal">
+        <div class="menace-glow" style="background:#f97316"></div>
         <div class="menace-num">80%</div>
         <div class="menace-unit">Des attaques via comptes cloud</div>
-        <div class="menace-titre">Compromission email et cloud</div>
+        <div class="menace-name">Compromission cloud</div>
         <p class="menace-desc">Les pirates volent vos identifiants Microsoft 365 et se connectent comme si c etait vous. ShieldFlow detecte la connexion suspecte et revoque la session automatiquement.</p>
       </div>
-      <div class="menace">
+      <div class="menace-card reveal">
+        <div class="menace-glow" style="background:#3b82f6"></div>
         <div class="menace-num">31%</div>
-        <div class="menace-unit">Des incidents impliquent le phishing</div>
-        <div class="menace-titre">Phishing et ingenierie sociale</div>
+        <div class="menace-unit">Des incidents via phishing</div>
+        <div class="menace-name">Phishing et BEC</div>
         <p class="menace-desc">Un email bien concu suffit pour compromettre tout un reseau. ShieldFlow surveille les comportements post-clic et detecte les acces anormaux qui suivent.</p>
       </div>
-      <div class="menace">
-        <div class="menace-num">LOLBins</div>
-        <div class="menace-unit">Outils systeme detournes</div>
-        <div class="menace-titre">Living off the Land</div>
+      <div class="menace-card reveal">
+        <div class="menace-glow" style="background:#8b5cf6"></div>
+        <div class="menace-num">LOL</div>
+        <div class="menace-unit">Living off the Land</div>
+        <div class="menace-name">Outils systeme detournes</div>
         <p class="menace-desc">Les pirates utilisent vos propres outils Windows — PowerShell, certutil, WMI — pour passer inapercus. ShieldFlow detecte ces utilisations malveillantes invisibles aux antivirus.</p>
       </div>
     </div>
@@ -243,80 +385,132 @@
 </section>
 
 <!-- TEMOIGNAGES -->
-<section class="s">
-  <div class="s-inner">
-    <div class="eyebrow">Ce qu ils disent</div>
-    <h2 class="s-title">Des PME qui dorment mieux<br>la nuit.</h2>
-    <div class="temoignages">
-      <div class="temoignage">
-        <p class="temoignage-texte">"ShieldFlow a detecte une tentative d intrusion sur notre Microsoft 365 a 3h du matin et l a bloquee automatiquement. Le lendemain j avais le rapport complet. Impressionnant."</p>
-        <div class="temoignage-auteur"><div class="temoignage-avatar">DM</div><div><div class="temoignage-nom">Dr Martin</div><div class="temoignage-role">Medecin generaliste · Marseille</div></div></div>
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">Ce qu ils disent</div>
+    <h2 class="section-title reveal">Des PME qui dorment mieux<br>la nuit.</h2>
+    <div class="temoignages-grid">
+      <div class="temoignage-card reveal">
+        <div class="temoignage-stars">⭐⭐⭐⭐⭐</div>
+        <p class="temoignage-text">"ShieldFlow a detecte une tentative d intrusion sur notre Microsoft 365 a 3h du matin et l a bloquee automatiquement. Le lendemain j avais le rapport complet. Impressionnant."</p>
+        <div class="temoignage-author">
+          <div class="temoignage-avatar" style="background:linear-gradient(135deg,#059669,#34d399)">DM</div>
+          <div><div class="temoignage-name">Dr Martin</div><div class="temoignage-role">Medecin generaliste · Marseille</div></div>
+        </div>
       </div>
-      <div class="temoignage">
-        <p class="temoignage-texte">"En tant que prestataire IT, ShieldFlow me permet de proposer une vraie securite managee a mes clients PME. Je touche une marge recurrente chaque mois sans effort supplementaire."</p>
-        <div class="temoignage-auteur"><div class="temoignage-avatar">PB</div><div><div class="temoignage-nom">Pierre Bernard</div><div class="temoignage-role">Prestataire IT · 35 clients PME</div></div></div>
+      <div class="temoignage-card reveal">
+        <div class="temoignage-stars">⭐⭐⭐⭐⭐</div>
+        <p class="temoignage-text">"En tant que prestataire IT, ShieldFlow me permet de proposer une vraie securite managee a mes clients PME. Je touche une marge recurrente chaque mois sans effort supplementaire."</p>
+        <div class="temoignage-author">
+          <div class="temoignage-avatar" style="background:linear-gradient(135deg,#2563eb,#60a5fa)">PB</div>
+          <div><div class="temoignage-name">Pierre Bernard</div><div class="temoignage-role">Prestataire IT · 35 clients PME</div></div>
+        </div>
       </div>
-      <div class="temoignage">
-        <p class="temoignage-texte">"La CNIL nous a contactes et en 10 secondes j avais mon rapport RGPD officiel. ShieldFlow m a sauve la mise. Sans ca j aurais passe des semaines a rassembler les preuves."</p>
-        <div class="temoignage-auteur"><div class="temoignage-avatar">MC</div><div><div class="temoignage-nom">Maitre Coulomb</div><div class="temoignage-role">Notaire · Aix-en-Provence</div></div></div>
+      <div class="temoignage-card reveal">
+        <div class="temoignage-stars">⭐⭐⭐⭐⭐</div>
+        <p class="temoignage-text">"La CNIL nous a contactes et en 10 secondes j avais mon rapport RGPD officiel. ShieldFlow m a sauve la mise. Sans ca j aurais passe des semaines a rassembler les preuves."</p>
+        <div class="temoignage-author">
+          <div class="temoignage-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">MC</div>
+          <div><div class="temoignage-name">Maitre Coulomb</div><div class="temoignage-role">Notaire · Aix-en-Provence</div></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<div class="cta-final">
-  <h2>La cybersecurite n est pas un luxe.<br>C est une necessite.</h2>
-  <p>Protegez vos machines, vos comptes cloud et vos donnees des aujourd hui.<br>Operationnel en 30 minutes avec installation sur site.</p>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-    <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a>
-    <a href="/tarifs" class="btn-ghost" style="font-size:15px;padding:14px 28px">Voir les tarifs</a>
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-title reveal">La cybersecurite n est pas<br>un luxe. C est une necessite.</h2>
+    <p class="cta-sub reveal">Protegez vos machines et vos comptes cloud des aujourd hui. Operationnel en 30 minutes.</p>
+    <div class="cta-actions reveal">
+      <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a>
+      <a href="/tarifs" class="btn-secondary" style="font-size:15px;padding:14px 28px">Voir les tarifs</a>
+    </div>
+    <p class="cta-note">Sans engagement · Installation sur site · Reponse sous 24h</p>
   </div>
-  <p style="font-size:12px;color:#475569;margin-top:14px">Sans engagement · Installation sur site · Reponse sous 24h</p>
-</div>
+</section>
 
 <footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div><div class="footer-logo">🛡 ShieldFlow</div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
-      <div class="footer-col">
-        <div class="footer-col-title">Produits</div>
-        <a href="/edr">Managed EDR</a>
-        <a href="/itdr">Managed ITDR</a>
-        <a href="/siem">Managed SIEM</a>
-        <a href="/plateforme">Conformite RGPD</a>
-        <a href="/plateforme">Vue d ensemble</a>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-logo">
+        <div class="nav-logo-mark">🛡</div>
+        <span class="footer-brand-text">ShieldFlow</span>
       </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Solutions</div>
-        <a href="/pourquoi">Sante</a>
-        <a href="/pourquoi">Juridique</a>
-        <a href="/pourquoi">Finance</a>
-        <a href="/pourquoi">Industrie</a>
-        <a href="/pourquoi">Prestataires IT</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Partenaires</div>
-        <a href="/partenaires">Programme MSP</a>
-        <a href="/partenaires">Tarif partenaire</a>
-        <a href="/partenaires">Devenir partenaire</a>
-        <a href="/dashboard">Portail partenaire</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Entreprise</div>
-        <a href="/pourquoi">Notre histoire</a>
-        <a href="/contact">Contact</a>
-        <a href="#">Mentions legales</a>
-        <a href="#">Politique RGPD</a>
-        <a href="#">CGV</a>
-      </div>
+      <p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">2026 ShieldFlow · Marseille · Tous droits reserves · Donnees hebergees en Europe</div>
-      <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+    <div class="footer-col">
+      <div class="footer-col-title">Produits</div>
+      <a href="/edr">Managed EDR</a>
+      <a href="/itdr">Managed ITDR</a>
+      <a href="/siem">Managed SIEM</a>
+      <a href="/plateforme">Conformite RGPD</a>
+      <a href="/plateforme">Vue d ensemble</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Solutions</div>
+      <a href="/pourquoi">Sante</a>
+      <a href="/pourquoi">Juridique</a>
+      <a href="/pourquoi">Finance</a>
+      <a href="/pourquoi">Industrie</a>
+      <a href="/pourquoi">Prestataires IT</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Partenaires</div>
+      <a href="/partenaires">Programme MSP</a>
+      <a href="/partenaires">Tarif partenaire</a>
+      <a href="/partenaires">Devenir partenaire</a>
+      <a href="/dashboard">Portail partenaire</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Entreprise</div>
+      <a href="/pourquoi">Notre histoire</a>
+      <a href="/contact">Contact</a>
+      <a href="#">Mentions legales</a>
+      <a href="#">Politique RGPD</a>
+      <a href="#">CGV</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">2026 ShieldFlow · Marseille · Tous droits reserves · Donnees hebergees en Europe</div>
+    <div class="footer-links">
+      <a href="#">Mentions legales</a>
+      <a href="#">Confidentialite</a>
+      <a href="#">CGV</a>
     </div>
   </div>
 </footer>
+<script>
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 20);
+});
 
+// Dropdown au clic sur mobile et hover sur desktop
+function toggleDropdown(btn) {
+  const item = btn.closest('.nav-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.nav-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-item')) {
+    document.querySelectorAll('.nav-item.open').forEach(el => el.classList.remove('open'));
+  }
+});
+
+// Animate on scroll
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+<style>
+.nav-item.open .nav-dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.nav-item.open .nav-link svg{transform:rotate(180deg)}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s,transform .6s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
 </body>
 </html>
