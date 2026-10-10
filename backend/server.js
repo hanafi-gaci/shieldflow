@@ -2433,6 +2433,34 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../dashboard/landing.html'));
 });
 
+app.get('/plateforme', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/plateforme.html'));
+});
+
+app.get('/edr', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/edr.html'));
+});
+
+app.get('/itdr', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/itdr.html'));
+});
+
+app.get('/siem', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/siem.html'));
+});
+
+app.get('/partenaires', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/partenaires.html'));
+});
+
+app.get('/tarifs', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/tarifs.html'));
+});
+
+app.get('/pourquoi', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dashboard/pourquoi.html'));
+});
+
 // Dashboard MSSP
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../dashboard/index.html'));
