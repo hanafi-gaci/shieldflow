@@ -503,7 +503,7 @@ async function doLogin() {
       body: JSON.stringify({ password: pass })
     });
     const d = await r.json();
-    if (d.success) {
+    if (d.token || d.success) {
       document.getElementById('loginPage').style.display = 'none';
       document.getElementById('app').style.display = 'flex';
       loadAll();
