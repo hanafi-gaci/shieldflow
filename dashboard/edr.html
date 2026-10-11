@@ -3,33 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Managed EDR — Protection des endpoints | ShieldFlow</title>
-<meta name="description" content="ShieldFlow Managed EDR protège vos machines Mac, Windows et Linux 24h/24. Détection, réponse et remédiation automatique par notre expert cybersécurité.">
+<title>Managed EDR — Protection endpoints Mac Windows Linux | ShieldFlow</title>
+<meta name="description" content="ShieldFlow Managed EDR protege vos machines 24h/24. Detection automatique, isolation ransomware en 4 secondes, remédiation a distance.">
 <link rel="stylesheet" href="/shared.css">
+<style>
+/* HERO EDR */
+.hero-edr{
+  min-height:90vh;display:flex;align-items:center;padding:100px 5% 80px;
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 50%,rgba(16,185,129,.12) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 30%,rgba(37,99,235,.08) 0%,transparent 60%),
+    var(--dark);
+}
+.hero-edr-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(16,185,129,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(16,185,129,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 60% 80% at 20% 50%,black,transparent)}
+.hero-edr-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1}
+.hero-edr-title{font-size:54px;font-weight:800;line-height:1.05;letter-spacing:-.05em;color:var(--white);margin-bottom:20px}
+.hero-edr-title .grad{background:linear-gradient(135deg,#34d399,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* SHIELD ANIMATION */
+.shield-anim{position:relative;display:flex;align-items:center;justify-content:center;height:400px}
+.shield-core{position:relative;z-index:3;font-size:80px;animation:pulse-shield 3s ease-in-out infinite}
+@keyframes pulse-shield{0%,100%{filter:drop-shadow(0 0 20px rgba(16,185,129,.5))}50%{filter:drop-shadow(0 0 60px rgba(16,185,129,.9))}}
+.shield-ring{position:absolute;border-radius:50%;border:1px solid;animation:ring-expand 3s ease-in-out infinite}
+.ring-1{width:150px;height:150px;border-color:rgba(16,185,129,.4);animation-delay:0s}
+.ring-2{width:250px;height:250px;border-color:rgba(16,185,129,.2);animation-delay:.5s}
+.ring-3{width:350px;height:350px;border-color:rgba(16,185,129,.1);animation-delay:1s}
+@keyframes ring-expand{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.05);opacity:1}}
+.shield-particle{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--green2);animation:orbit 6s linear infinite}
+.p1{animation-delay:0s}.p2{animation-delay:1s}.p3{animation-delay:2s}.p4{animation-delay:3s}.p5{animation-delay:4s}.p6{animation-delay:5s}
+@keyframes orbit{0%{transform:rotate(0deg) translateX(160px) rotate(0deg);opacity:1}100%{transform:rotate(360deg) translateX(160px) rotate(-360deg);opacity:1}}
+.shield-alert{position:absolute;background:var(--dark3);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:11px;font-weight:600;animation:float-alert 4s ease-in-out infinite}
+.sa-1{top:20px;right:20px;color:var(--red2);border-color:rgba(220,38,38,.3);background:rgba(220,38,38,.08);animation-delay:0s}
+.sa-2{bottom:60px;left:20px;color:var(--green3);border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.08);animation-delay:1s}
+.sa-3{top:50%;right:10px;color:var(--blue3);border-color:rgba(37,99,235,.3);background:rgba(37,99,235,.08);animation-delay:2s}
+@keyframes float-alert{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* FEATURES EDR */
+.features-edr{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.feature-edr{background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:28px;transition:.3s;position:relative;overflow:hidden;cursor:default}
+.feature-edr::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transition:.3s;transform-origin:left}
+.feature-edr:hover{border-color:rgba(16,185,129,.3);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.feature-edr:hover::before{transform:scaleX(1);background:linear-gradient(90deg,var(--green2),var(--blue2))}
+.feature-edr-icon{width:44px;height:44px;border-radius:10px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.feature-edr-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px}
+.feature-edr-desc{font-size:13px;color:var(--text2);line-height:1.65}
+
+/* COMPARE */
+.compare-section{background:var(--dark2);padding:80px 5%}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px;max-width:1200px;margin-left:auto;margin-right:auto}
+.compare-col{border-radius:16px;padding:32px;border:1px solid}
+.compare-winner{background:rgba(37,99,235,.05);border-color:rgba(37,99,235,.3)}
+.compare-loser{background:rgba(255,255,255,.02);border-color:var(--border)}
+.compare-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:16px;font-weight:700;color:var(--white)}
+.compare-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+.compare-row:last-child{border-bottom:none}
+.ci-yes{color:var(--green3);font-size:16px;flex-shrink:0;margin-top:1px}
+.ci-no{color:var(--text3);font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* OS SECTION */
+.os-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.os-card{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;transition:.3s;position:relative;overflow:hidden}
+.os-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.os-icon{font-size:48px;margin-bottom:16px;display:block}
+.os-name{font-size:18px;font-weight:700;color:var(--white);margin-bottom:8px}
+.os-checks{text-align:left;margin-top:16px}
+.os-check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);padding:4px 0}
+.os-check::before{content:"✓";color:var(--green3);font-weight:700;flex-shrink:0}
+.os-glow{position:absolute;bottom:-60px;left:50%;transform:translateX(-50%);width:200px;height:100px;border-radius:50%;filter:blur(40px);opacity:.2}
+
+/* CTA EDR */
+.cta-edr{padding:80px 5%;text-align:center;background:var(--dark);border-top:1px solid var(--border);position:relative;overflow:hidden}
+.cta-edr::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 100%,rgba(16,185,129,.08),transparent)}
+
+@media(max-width:768px){
+  .hero-edr-inner,.compare-grid,.features-edr,.os-grid{grid-template-columns:1fr}
+  .hero-edr-title{font-size:36px}
+  .shield-anim{height:280px}
+}
+</style>
 </head>
 <body>
 
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">🛡</div>ShieldFlow</a>
-  <div class="nav-links">
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark">🛡</div><span class="nav-logo-text">ShieldFlow</span></a>
+  <div class="nav-center">
     <div class="nav-item">
-      <button class="nav-link">Produits ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Produits <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏠</div><div><div class="nav-dropdown-title">Vue d ensemble</div><div class="nav-dropdown-desc">La plateforme ShieldFlow complète</div></div></a>
-        <div class="nav-separator"></div>
-        <a href="/edr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🖥</div><div><div class="nav-dropdown-title">Managed EDR</div><div class="nav-dropdown-desc">Protection endpoints Mac · Windows · Linux</div></div></a>
-        <a href="/itdr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🔑</div><div><div class="nav-dropdown-title">Managed ITDR</div><div class="nav-dropdown-desc">Protection Microsoft 365 et Google Workspace</div></div></a>
-        <a href="/siem" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Managed SIEM</div><div class="nav-dropdown-desc">Corrélation des logs et détection avancée</div></div></a>
-        <a href="/#produits" class="nav-dropdown-item"><div class="nav-dropdown-icon">📋</div><div><div class="nav-dropdown-title">Conformité RGPD</div><div class="nav-dropdown-desc">Rapport PDF officiel automatique</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">🏠</div><div><div class="nav-dd-title">Vue d ensemble</div><div class="nav-dd-desc">La plateforme complete</div></div></a>
+        <div class="nav-sep"></div>
+        <a href="/edr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🖥</div><div><div class="nav-dd-title">Managed EDR</div><div class="nav-dd-desc">Mac · Windows · Linux</div></div></a>
+        <a href="/itdr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🔑</div><div><div class="nav-dd-title">Managed ITDR</div><div class="nav-dd-desc">Microsoft 365 · Google Workspace</div></div></a>
+        <a href="/siem" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">📊</div><div><div class="nav-dd-title">Managed SIEM</div><div class="nav-dd-desc">Correlation logs</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(220,38,38,.15)">📋</div><div><div class="nav-dd-title">Conformite RGPD</div><div class="nav-dd-desc">Rapport PDF officiel</div></div></a>
       </div>
     </div>
     <div class="nav-item">
-      <button class="nav-link">Solutions ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Solutions <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏥</div><div><div class="nav-dropdown-title">Santé</div><div class="nav-dropdown-desc">Médecins · Dentistes · Pharmacies</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">⚖️</div><div><div class="nav-dropdown-title">Juridique</div><div class="nav-dropdown-desc">Notaires · Avocats · Huissiers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Finance</div><div class="nav-dropdown-desc">Experts-comptables · Conseillers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏭</div><div><div class="nav-dropdown-title">Industrie</div><div class="nav-dropdown-desc">PME sous-traitantes · Fabricants</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🏥</div><div><div class="nav-dd-title">Sante</div><div class="nav-dd-desc">Medecins · Dentistes</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">⚖️</div><div><div class="nav-dd-title">Juridique</div><div class="nav-dd-desc">Notaires · Avocats</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">📈</div><div><div class="nav-dd-title">Finance</div><div class="nav-dd-desc">Experts-comptables</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🏭</div><div><div class="nav-dd-title">Industrie</div><div class="nav-dd-desc">PME sous-traitantes</div></div></a>
       </div>
     </div>
     <a href="/tarifs" class="nav-link">Tarifs</a>
@@ -37,171 +117,254 @@
     <a href="/pourquoi" class="nav-link">Pourquoi ShieldFlow</a>
   </div>
   <div class="nav-right">
-    <a href="/dashboard" class="btn-nav-ghost">Connexion</a>
-    <a href="/#contact" class="btn-nav-primary">Essai gratuit →</a>
+    <a href="/dashboard" class="btn-ghost-sm">Connexion</a>
+    <a href="/contact" class="btn-primary-sm">Essai gratuit →</a>
   </div>
 </nav>
 
-<div class="breadcrumb">
-  <a href="/">Accueil</a><span class="breadcrumb-sep">›</span>
-  <a href="/plateforme">Plateforme</a><span class="breadcrumb-sep">›</span>
-  <span style="color:var(--white)">Managed EDR</span>
+<!-- BREADCRUMB -->
+<div style="padding:80px 5% 0;max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)">
+  <a href="/" style="color:var(--text3);text-decoration:none">Accueil</a>
+  <span>›</span><a href="/plateforme" style="color:var(--text3);text-decoration:none">Plateforme</a>
+  <span>›</span><span style="color:var(--white)">Managed EDR</span>
 </div>
 
-<div class="page-hero">
-  <div class="page-badge">🖥 Managed EDR</div>
-  <h1 class="page-title">Protection des endpoints<br>pour toutes les PME</h1>
-  <p class="page-sub">ShieldFlow Managed EDR ne se contente pas de surveiller vos machines — c est une solution complète. De la détection à la remédiation, on gère tout. 24h/24, par notre expert cybersécurité.</p>
-  <div class="page-actions">
-    <a href="/#contact" class="btn-primary">Essai gratuit →</a>
-    <a href="/#contact" class="btn-ghost">Demander une démo</a>
-  </div>
-  <div class="stats-row">
-    <div class="stat"><div class="stat-num">&lt;30s</div><div class="stat-label">Détection des menaces</div></div>
-    <div class="stat"><div class="stat-num">4s</div><div class="stat-label">Isolation machine ransomware</div></div>
-    <div class="stat"><div class="stat-num">3</div><div class="stat-label">OS supportés nativement</div></div>
-    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Surveillance active</div></div>
-  </div>
-</div>
-
-<section class="s s-alt">
-  <div class="s-inner">
-    <div class="eyebrow">Pourquoi ShieldFlow EDR</div>
-    <h2 class="s-title">EDR conçu pour protéger<br>toute votre flotte</h2>
-    <p class="s-sub">Un agent léger associé à notre expert 24/7. On ne signale pas juste une activité suspecte — on l investigate, on agit, et on vous dit exactement ce qui s est passé.</p>
-    <div class="compare">
-      <div class="compare-col winner">
-        <div class="compare-col-title">🛡 ShieldFlow EDR</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Agents natifs Mac · Windows · Linux — pas des add-ons</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Expert humain qui surveille 24h/24</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Chaque alerte analysée avant de vous déranger</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Menace contenue ET plan de remédiation fourni</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Expert dédié — pas de recrutement nécessaire</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Prix fixe tout inclus — aucune surprise</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Installation sur site partout en Europe</div>
-        <div class="compare-item"><span class="compare-check">✓</span> Conformité RGPD automatique incluse</div>
+<!-- HERO EDR -->
+<section class="hero-edr">
+  <div class="hero-edr-grid"></div>
+  <div class="hero-edr-inner">
+    <div>
+      <div class="badge" style="background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.25);color:#34d399">
+        <div class="badge-dot" style="background:#34d399"></div>
+        Managed EDR
       </div>
-      <div class="compare-col">
-        <div class="compare-col-title">❌ Autres solutions</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> Windows prioritaire — Mac et Linux en add-on</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> SOC automatisé sans humain derrière</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> Faux positifs qui inondent votre boite mail</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> Ils notifient — vous devez gérer la suite</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> Nécessite une équipe IT interne</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> Prix bas puis add-ons qui s accumulent</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> Installation à distance uniquement</div>
-        <div class="compare-item"><span class="compare-cross">✗</span> RGPD non inclus</div>
+      <h1 class="hero-edr-title animate-fade-up">
+        Protection des endpoints<br>
+        <span class="grad">pour toutes les PME</span>
+      </h1>
+      <p class="animate-fade-up-d1" style="font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:32px;max-width:480px">
+        ShieldFlow Managed EDR ne se contente pas de surveiller vos machines — c est une solution complete. De la detection a la remediation, on gere tout. 24h/24, par notre expert cybersecurite.
+      </p>
+      <div class="animate-fade-up-d2" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px">
+        <a href="/contact" class="btn-primary">Essai gratuit →</a>
+        <a href="/contact" class="btn-secondary">Demander une demo</a>
+      </div>
+      <div class="animate-fade-up-d3" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:400px">
+        <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:26px;font-weight:800;color:var(--white);letter-spacing:-.03em">&lt;30s</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Detection menace</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:26px;font-weight:800;color:var(--white);letter-spacing:-.03em">4s</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Isolation ransomware</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:26px;font-weight:800;color:var(--white);letter-spacing:-.03em">3</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">OS supportes</div>
+        </div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-size:26px;font-weight:800;color:var(--white);letter-spacing:-.03em">24/7</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Surveillance</div>
+        </div>
+      </div>
+    </div>
+    <div class="shield-anim animate-fade-up-d2">
+      <div class="shield-ring ring-1"></div>
+      <div class="shield-ring ring-2"></div>
+      <div class="shield-ring ring-3"></div>
+      <div class="shield-particle p1"></div>
+      <div class="shield-particle p2"></div>
+      <div class="shield-particle p3"></div>
+      <div class="shield-core">🛡</div>
+      <div class="shield-alert sa-1">🚨 Ransomware detecte · Isole en 4s</div>
+      <div class="shield-alert sa-2">✅ Pare-feu reactive automatiquement</div>
+      <div class="shield-alert sa-3">🔍 LOLBin detecte · Bloque</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES EDR -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">Fonctionnalites EDR</div>
+    <h2 class="section-title reveal">Protection enterprise.<br>Pour toutes les PME.</h2>
+    <p class="section-sub reveal">Toutes les fonctionnalites dont vous avez besoin — sans compromis.</p>
+    <div class="features-edr">
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🔍</div>
+        <div class="feature-edr-title">Persistent Footholds</div>
+        <p class="feature-edr-desc">Detecte les mecanismes que les pirates utilisent pour rester caches dans Windows — cles de registre, taches planifiees malveillantes, services inconnus, abonnements WMI.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🦠</div>
+        <div class="feature-edr-title">Ransomware Canaries</div>
+        <p class="feature-edr-desc">Des fichiers leurres sont places sur vos machines. Si un ransomware commence a chiffrer, il touche ces fichiers en premier. Isolation en 4 secondes automatiquement.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">⚡</div>
+        <div class="feature-edr-title">Isolation automatique</div>
+        <p class="feature-edr-desc">En cas de ransomware ou intrusion grave — la machine est isolee du reseau automatiquement. Les autres postes sont proteges. Sans intervention humaine.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🔧</div>
+        <div class="feature-edr-title">LOLBins Detection</div>
+        <p class="feature-edr-desc">Detecte l utilisation malveillante d outils Windows legitimes — PowerShell, certutil, mshta, rundll32. Ces techniques contournent les antivirus classiques.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🌐</div>
+        <div class="feature-edr-title">Connexions suspectes</div>
+        <p class="feature-edr-desc">Surveille les connexions reseau en temps reel. Detecte les connexions vers des IPs malveillantes connues, les ports dangereux ouverts, les mouvements lateraux.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🤖</div>
+        <div class="feature-edr-title">IA Athena integree</div>
+        <p class="feature-edr-desc">Notre IA analyse chaque alerte en contexte, explique le risque en francais simple, decide de la correction automatique. Rapport IA quotidien a 8h du matin.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🛡</div>
+        <div class="feature-edr-title">WMI Subscriptions</div>
+        <p class="feature-edr-desc">Detecte les abonnements WMI — une technique d attaque avancee invisible aux antivirus. Les pirates utilisent WMI pour maintenir un acces persistant invisible.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">💻</div>
+        <div class="feature-edr-title">Mac · Windows · Linux</div>
+        <p class="feature-edr-desc">Agents natifs pour chaque OS. Moins de 1% de CPU. Moins de 50MB de RAM. Totalement transparent. Deploye en moins de 5 minutes par machine sur site.</p>
+      </div>
+      <div class="feature-edr reveal">
+        <div class="feature-edr-icon">🔑</div>
+        <div class="feature-edr-title">Remediation a distance</div>
+        <p class="feature-edr-desc">45+ actions de remediation depuis le dashboard — activer le pare-feu, bloquer une IP, tuer un processus, desactiver un compte, supprimer un fichier malveillant.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="s">
-  <div class="s-inner">
-    <div class="eyebrow">Fonctionnalités EDR</div>
-    <h2 class="s-title">Protection enterprise.<br>Pour toutes les PME.</h2>
-    <p class="s-sub">Toutes les fonctionnalités dont vous avez besoin pour protéger vos endpoints — sans compromis.</p>
-    <div class="features-grid">
-      <div class="feature">
-        <div class="feature-icon">🔍</div>
-        <div class="feature-title">Persistent Footholds</div>
-        <p class="feature-desc">Détecte les mécanismes que les pirates utilisent pour rester cachés dans Windows — clés de registre suspectes, tâches planifiées malveillantes, services inconnus, abonnements WMI.</p>
+<!-- OS SUPPORT -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="eyebrow reveal">Systemes supportes</div>
+    <h2 class="section-title reveal">Natif sur chaque OS.<br>Pas un add-on.</h2>
+    <p class="section-sub reveal">Un agent concu nativement pour chaque systeme. Pas un portage approximatif — une protection optimisee.</p>
+    <div class="os-grid">
+      <div class="os-card reveal">
+        <div class="os-glow" style="background:#999"></div>
+        <span class="os-icon">🍎</span>
+        <div class="os-name">macOS</div>
+        <div class="os-checks">
+          <div class="os-check">FileVault encryption</div>
+          <div class="os-check">Pare-feu pf natif</div>
+          <div class="os-check">Processus suspects</div>
+          <div class="os-check">Connexions reseau</div>
+          <div class="os-check">Gatekeeper monitoring</div>
+          <div class="os-check">Time Machine backup</div>
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">🦠</div>
-        <div class="feature-title">Ransomware Canaries</div>
-        <p class="feature-desc">Des fichiers leurres sont placés sur vos machines. Si un ransomware commence à chiffrer, il touche ces fichiers en premier. ShieldFlow détecte et isole la machine en 4 secondes.</p>
+      <div class="os-card reveal" style="border-color:rgba(37,99,235,.3);background:rgba(37,99,235,.04)">
+        <div class="os-glow" style="background:#3b82f6"></div>
+        <span class="os-icon">🪟</span>
+        <div class="os-name">Windows</div>
+        <div class="os-checks">
+          <div class="os-check">BitLocker encryption</div>
+          <div class="os-check">Windows Defender</div>
+          <div class="os-check">Registre persistence</div>
+          <div class="os-check">Taches planifiees</div>
+          <div class="os-check">WMI subscriptions</div>
+          <div class="os-check">LOLBins detection</div>
+          <div class="os-check">Ransomware canaries</div>
+          <div class="os-check">Event Log analyse</div>
+        </div>
       </div>
-      <div class="feature">
-        <div class="feature-icon">⚡</div>
-        <div class="feature-title">Isolation automatique</div>
-        <p class="feature-desc">En cas de ransomware ou intrusion grave — la machine est isolée du réseau automatiquement. Les autres postes sont protégés. Sans intervention humaine.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🔧</div>
-        <div class="feature-title">LOLBins Detection</div>
-        <p class="feature-desc">Détecte l utilisation malveillante d outils Windows légitimes — PowerShell, certutil, mshta, rundll32. Ces techniques contournent les antivirus classiques. ShieldFlow les voit.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🌐</div>
-        <div class="feature-title">Connexions suspectes</div>
-        <p class="feature-desc">Surveille les connexions réseau en temps réel. Détecte les connexions vers des IPs malveillantes connues, les ports dangereux ouverts, les mouvements latéraux entre machines.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🤖</div>
-        <div class="feature-title">IA Athena intégrée</div>
-        <p class="feature-desc">Notre IA analyse chaque alerte en contexte, explique le risque en français simple, décide de la correction automatique si la confiance est suffisante. Rapport IA quotidien à 8h.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🛡</div>
-        <div class="feature-title">WMI Subscriptions</div>
-        <p class="feature-desc">Détecte les abonnements WMI — une technique d attaque avancée invisible aux antivirus. Les pirates utilisent WMI pour maintenir un accès persistant après une intrusion.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">💻</div>
-        <div class="feature-title">Mac · Windows · Linux</div>
-        <p class="feature-desc">Agents natifs pour chaque système d exploitation — pas des add-ons bolted-on. Moins de 1% de CPU. Moins de 50MB de RAM. Totalement transparent pour vos utilisateurs.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🔑</div>
-        <div class="feature-title">Remédiation à distance</div>
-        <p class="feature-desc">45+ actions de remédiation disponibles depuis le dashboard — activer le pare-feu, bloquer une IP, tuer un processus, désactiver un compte, supprimer un fichier malveillant.</p>
+      <div class="os-card reveal">
+        <div class="os-glow" style="background:#f97316"></div>
+        <span class="os-icon">🐧</span>
+        <div class="os-name">Linux</div>
+        <div class="os-checks">
+          <div class="os-check">LUKS encryption</div>
+          <div class="os-check">iptables firewall</div>
+          <div class="os-check">Crontabs suspects</div>
+          <div class="os-check">SUID suspects</div>
+          <div class="os-check">SSH root login</div>
+          <div class="os-check">Auth.log brute force</div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="cta-final">
-  <h2>Protégez vos endpoints.<br>Dès aujourd hui.</h2>
-  <p>Installation sur site incluse partout en Europe. Opérationnel en 30 minutes.</p>
-  <a href="/#contact" class="btn-primary" style="display:inline-flex;font-size:15px;padding:14px 28px">Démarrer l essai gratuit →</a>
+<!-- COMPARE -->
+<div class="compare-section">
+  <div class="container">
+    <div class="eyebrow reveal">ShieldFlow vs Autres solutions</div>
+    <h2 class="section-title reveal">Protection enterprise.<br>Prix PME.</h2>
+    <div class="compare-grid">
+      <div class="compare-col compare-winner reveal">
+        <div class="compare-header">🛡 ShieldFlow EDR</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Agents natifs Mac · Windows · Linux</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Expert humain qui surveille 24h/24</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Chaque alerte analysee avant de vous deranger</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Menace contenue ET plan de remediation</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Installation sur site partout en Europe</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Conformite RGPD automatique incluse</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>12 euros par machine — tout inclus</div>
+        <div class="compare-row"><span class="ci-yes">✓</span>Contact direct avec le fondateur</div>
+      </div>
+      <div class="compare-col compare-loser reveal">
+        <div class="compare-header">❌ Autres solutions</div>
+        <div class="compare-row"><span class="ci-no">✗</span>Windows prioritaire — Mac et Linux en add-on</div>
+        <div class="compare-row"><span class="ci-no">✗</span>SOC automatise sans humain derriere</div>
+        <div class="compare-row"><span class="ci-no">✗</span>Faux positifs qui inondent votre boite mail</div>
+        <div class="compare-row"><span class="ci-no">✗</span>Ils notifient — vous devez gerer la suite</div>
+        <div class="compare-row"><span class="ci-no">✗</span>Installation a distance uniquement</div>
+        <div class="compare-row"><span class="ci-no">✗</span>RGPD non inclus — module payant</div>
+        <div class="compare-row"><span class="ci-no">✗</span>Prix bas puis add-ons qui s accumulent</div>
+        <div class="compare-row"><span class="ci-no">✗</span>Support via ticket — delais de reponse longs</div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- CTA -->
+<section class="cta-edr">
+  <div class="container">
+    <h2 style="font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:14px;position:relative;z-index:1" class="reveal">
+      Protegez vos endpoints.<br>Des aujourd hui.
+    </h2>
+    <p style="font-size:16px;color:var(--text2);margin-bottom:32px;position:relative;z-index:1" class="reveal">
+      Installation sur site incluse. Operationnel en 30 minutes.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1" class="reveal">
+      <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a>
+      <a href="/tarifs" class="btn-secondary" style="font-size:15px;padding:14px 28px">Voir les tarifs</a>
+    </div>
+  </div>
+</section>
 
 <footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div>
-        <div class="footer-logo">🛡 ShieldFlow</div>
-        <p class="footer-tagline">Cybersécurité managée pour toutes les PME françaises.</p>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Produits</div>
-        <a href="/edr">Managed EDR</a>
-        <a href="/itdr">Managed ITDR</a>
-        <a href="/siem">Managed SIEM</a>
-        <a href="/#produits">Conformité RGPD</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Solutions</div>
-        <a href="/#secteurs">Santé</a>
-        <a href="/#secteurs">Juridique</a>
-        <a href="/#secteurs">Finance</a>
-        <a href="/#secteurs">Industrie</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Partenaires</div>
-        <a href="/partenaires">Programme MSP</a>
-        <a href="/partenaires">Tarif partenaire</a>
-        <a href="/tarifs">Tarifs</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Entreprise</div>
-        <a href="/pourquoi">Notre histoire</a>
-        <a href="/#contact">Contact</a>
-        <a href="#">Mentions légales</a>
-        <a href="#">CGV</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">© 2026 ShieldFlow · Marseille · Données hébergées en Europe</div>
-      <div class="footer-links">
-        <a href="#">Mentions légales</a>
-        <a href="#">Confidentialité</a>
-        <a href="#">CGV</a>
-      </div>
-    </div>
+  <div class="footer-grid">
+    <div><div class="footer-brand-logo"><div class="nav-logo-mark">🛡</div><span class="footer-brand-text">ShieldFlow</span></div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises.</p></div>
+    <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/plateforme">Conformite RGPD</a></div>
+    <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/pourquoi">Sante</a><a href="/pourquoi">Juridique</a><a href="/pourquoi">Finance</a><a href="/pourquoi">Industrie</a></div>
+    <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/partenaires">Tarif partenaire</a><a href="/tarifs">Tarifs</a></div>
+    <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">Notre histoire</a><a href="/contact">Contact</a><a href="#">Mentions legales</a></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
+    <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
   </div>
 </footer>
 
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>20)});
+function toggleDropdown(btn){const item=btn.closest('.nav-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'));if(!isOpen)item.classList.add('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'))});
+const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+<style>
+.nav-item.open .nav-dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.nav-item.open .nav-link svg{transform:rotate(180deg)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
 </body>
 </html>

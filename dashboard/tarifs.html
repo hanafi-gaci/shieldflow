@@ -3,51 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tarifs — 12€ par machine par mois | ShieldFlow</title>
-<meta name="description" content="Tarifs ShieldFlow. 12€ par machine par mois tout inclus. Tarif partenaire 5€. Sans engagement, installation sur site incluse.">
+<title>Tarifs — 12 euros par machine par mois | ShieldFlow</title>
 <link rel="stylesheet" href="/shared.css">
 <style>
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-.plan{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:36px;position:relative}
-.plan-featured{border-color:var(--blue);background:rgba(59,130,246,.05)}
-.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--blue);color:var(--white);font-size:11px;font-weight:700;padding:4px 14px;border-radius:100px;white-space:nowrap}
-.plan-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);margin-bottom:8px}
-.plan-price{font-size:44px;font-weight:800;color:var(--white);letter-spacing:-.04em;line-height:1}
+.hero-tarifs{padding:120px 5% 80px;text-align:center;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(37,99,235,.12) 0%,transparent 60%),var(--dark)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px;max-width:1100px;margin-left:auto;margin-right:auto}
+.plan{background:var(--dark3);border:1px solid var(--border);border-radius:20px;padding:36px;position:relative;transition:.3s}
+.plan:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.plan-featured{border-color:var(--blue2);background:rgba(37,99,235,.06)}
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--blue),var(--purple));color:var(--white);font-size:11px;font-weight:700;padding:5px 16px;border-radius:100px;white-space:nowrap;box-shadow:0 4px 16px rgba(37,99,235,.4)}
+.plan-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--text2);margin-bottom:10px}
+.plan-price{font-size:52px;font-weight:800;color:var(--white);letter-spacing:-.05em;line-height:1;margin-bottom:4px}
 .plan-unit{font-size:14px;color:var(--text3);font-weight:400}
-.plan-desc{font-size:13px;color:var(--text3);margin:10px 0 24px;line-height:1.5}
-.plan-features{list-style:none;margin-bottom:28px}
-.plan-features li{font-size:13px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;line-height:1.4}
-.plan-features li::before{content:"✓";color:var(--green2);font-weight:700;flex-shrink:0}
-.plan-cta{display:block;text-align:center;padding:12px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;transition:.2s}
-.cta-blue{background:var(--blue);color:var(--white)}
-.cta-blue:hover{background:#2563eb}
-.cta-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
-.cta-outline:hover{background:var(--dark4);color:var(--white)}
+.plan-desc{font-size:13px;color:var(--text3);margin:12px 0 24px;line-height:1.5;min-height:40px}
+.plan-divider{height:1px;background:var(--border);margin-bottom:20px}
+.plan-feature{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2);padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.plan-feature:last-child{border-bottom:none}
+.pf-check{color:var(--green3);font-size:14px;flex-shrink:0;margin-top:1px;font-weight:700}
+.plan-cta{display:block;text-align:center;padding:13px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:.2s;margin-top:24px}
+.pc-blue{background:var(--blue);color:var(--white)}
+.pc-blue:hover{background:#1d4ed8;box-shadow:0 4px 16px rgba(37,99,235,.4)}
+.pc-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.pc-outline:hover{background:var(--dark4);color:var(--white)}
+.faq-section{max-width:800px;margin:0 auto;padding:0 5%}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{width:100%;text-align:left;background:none;border:none;padding:20px 0;font-size:15px;font-weight:600;color:var(--white);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;transition:.2s}
+.faq-q:hover{color:var(--blue3)}
+.faq-icon{font-size:20px;color:var(--text3);transition:.3s;flex-shrink:0}
+.faq-item.open .faq-icon{transform:rotate(45deg);color:var(--blue3)}
+.faq-a{font-size:14px;color:var(--text2);line-height:1.8;padding-bottom:20px;display:none}
+.faq-item.open .faq-a{display:block}
+.guarantee-bar{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:14px;padding:24px 32px;display:flex;align-items:center;gap:20px;max-width:700px;margin:48px auto 0}
 @media(max-width:768px){.pricing-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">🛡</div>ShieldFlow</a>
-  <div class="nav-links">
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark">🛡</div><span class="nav-logo-text">ShieldFlow</span></a>
+  <div class="nav-center">
     <div class="nav-item">
-      <button class="nav-link">Produits ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Produits <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏠</div><div><div class="nav-dropdown-title">Vue d ensemble</div><div class="nav-dropdown-desc">La plateforme complète</div></div></a>
-        <div class="nav-separator"></div>
-        <a href="/edr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🖥</div><div><div class="nav-dropdown-title">Managed EDR</div><div class="nav-dropdown-desc">Mac · Windows · Linux</div></div></a>
-        <a href="/itdr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🔑</div><div><div class="nav-dropdown-title">Managed ITDR</div><div class="nav-dropdown-desc">Microsoft 365 · Google Workspace</div></div></a>
-        <a href="/siem" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Managed SIEM</div><div class="nav-dropdown-desc">Corrélation logs et détection</div></div></a>
-        <a href="/#produits" class="nav-dropdown-item"><div class="nav-dropdown-icon">📋</div><div><div class="nav-dropdown-title">Conformité RGPD</div><div class="nav-dropdown-desc">Rapport PDF officiel automatique</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">🏠</div><div><div class="nav-dd-title">Vue d ensemble</div><div class="nav-dd-desc">La plateforme complete</div></div></a>
+        <div class="nav-sep"></div>
+        <a href="/edr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🖥</div><div><div class="nav-dd-title">Managed EDR</div><div class="nav-dd-desc">Mac · Windows · Linux</div></div></a>
+        <a href="/itdr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🔑</div><div><div class="nav-dd-title">Managed ITDR</div><div class="nav-dd-desc">Microsoft 365 · Google Workspace</div></div></a>
+        <a href="/siem" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">📊</div><div><div class="nav-dd-title">Managed SIEM</div><div class="nav-dd-desc">Correlation logs</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(220,38,38,.15)">📋</div><div><div class="nav-dd-title">Conformite RGPD</div><div class="nav-dd-desc">Rapport PDF officiel</div></div></a>
       </div>
     </div>
     <div class="nav-item">
-      <button class="nav-link">Solutions ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Solutions <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏥</div><div><div class="nav-dropdown-title">Sante</div><div class="nav-dropdown-desc">Medecins · Dentistes · Pharmacies</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">⚖️</div><div><div class="nav-dropdown-title">Juridique</div><div class="nav-dropdown-desc">Notaires · Avocats · Huissiers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Finance</div><div class="nav-dropdown-desc">Experts-comptables · Conseillers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏭</div><div><div class="nav-dropdown-title">Industrie</div><div class="nav-dropdown-desc">PME sous-traitantes · Fabricants</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🏥</div><div><div class="nav-dd-title">Sante</div><div class="nav-dd-desc">Medecins · Dentistes</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">⚖️</div><div><div class="nav-dd-title">Juridique</div><div class="nav-dd-desc">Notaires · Avocats</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">📈</div><div><div class="nav-dd-title">Finance</div><div class="nav-dd-desc">Experts-comptables</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🏭</div><div><div class="nav-dd-title">Industrie</div><div class="nav-dd-desc">PME sous-traitantes</div></div></a>
       </div>
     </div>
     <a href="/tarifs" class="nav-link">Tarifs</a>
@@ -55,99 +67,160 @@
     <a href="/pourquoi" class="nav-link">Pourquoi ShieldFlow</a>
   </div>
   <div class="nav-right">
-    <a href="/dashboard" class="btn-nav-ghost">Connexion</a>
-    <a href="/#contact" class="btn-nav-primary">Essai gratuit</a>
+    <a href="/dashboard" class="btn-ghost-sm">Connexion</a>
+    <a href="/contact" class="btn-primary-sm">Essai gratuit →</a>
   </div>
 </nav>
-<div class="breadcrumb"><a href="/">Accueil</a><span class="breadcrumb-sep">›</span><span style="color:var(--white)">Tarifs</span></div>
-<div class="page-hero">
-  <div class="page-badge">💰 Tarifs</div>
-  <h1 class="page-title">Simple. Transparent.<br>Sans surprise.</h1>
-  <p class="page-sub">12€ par machine par mois tout inclus. Pas de frais cachés. Pas d engagement annuel. Installation sur site incluse partout en Europe.</p>
-  <div class="stats-row">
-    <div class="stat"><div class="stat-num">12€</div><div class="stat-label">Par machine — tarif direct</div></div>
-    <div class="stat"><div class="stat-num">5€</div><div class="stat-label">Par machine — tarif partenaire</div></div>
-    <div class="stat"><div class="stat-num">0€</div><div class="stat-label">Frais d installation</div></div>
-    <div class="stat"><div class="stat-num">30j</div><div class="stat-label">Essai gratuit garanti</div></div>
+<section class="hero-tarifs">
+  <div class="badge animate-fade-up" style="display:inline-flex;margin-bottom:20px">
+    <div class="badge-dot"></div>Tarifs transparents
   </div>
-</div>
-<section class="s">
-<div class="s-inner" style="text-align:center">
-<div class="eyebrow">Nos offres</div>
-<h2 class="s-title">Choisissez votre formule</h2>
-<div class="pricing-grid">
-  <div class="plan">
-    <div class="plan-name">Direct PME</div>
-    <div class="plan-price">12€<span class="plan-unit">/machine/mois</span></div>
-    <div class="plan-desc">Pour les PME qui souhaitent travailler directement avec ShieldFlow. Minimum 3 machines.</div>
-    <ul class="plan-features">
-      <li>Agent EDR sur chaque machine</li>
-      <li>Mac · Windows · Linux</li>
-      <li>Surveillance Microsoft 365</li>
-      <li>Surveillance Google Workspace</li>
-      <li>Surveillance AWS</li>
-      <li>Conformite RGPD automatique</li>
-      <li>Rapport PDF officiel mensuel</li>
-      <li>IA analyse chaque alerte</li>
-      <li>SIEM — correlation des logs</li>
-      <li>Installation sur site incluse</li>
-      <li>Contact direct fondateur</li>
-    </ul>
-    <a href="/#contact" class="plan-cta cta-outline">Commencer →</a>
+  <h1 class="animate-fade-up-d1" style="font-size:54px;font-weight:800;color:var(--white);letter-spacing:-.05em;margin-bottom:16px">
+    Simple. Transparent.<br>Sans surprise.
+  </h1>
+  <p class="animate-fade-up-d2" style="font-size:17px;color:var(--text2);max-width:520px;margin:0 auto 48px;line-height:1.75">
+    12€ par machine par mois tout inclus. Pas de frais caches. Pas d engagement annuel. Installation sur site incluse partout en Europe.
+  </p>
+  <div class="stats-grid animate-fade-up-d3" style="max-width:700px;margin:0 auto">
+    <div class="stat-item"><div class="stat-num">12<span>€</span></div><div class="stat-label">Par machine · client direct</div></div>
+    <div class="stat-item"><div class="stat-num">5<span>€</span></div><div class="stat-label">Par machine · partenaire IT</div></div>
+    <div class="stat-item"><div class="stat-num">0<span>€</span></div><div class="stat-label">Frais d installation</div></div>
+    <div class="stat-item"><div class="stat-num">30<span>j</span></div><div class="stat-label">Essai gratuit garanti</div></div>
   </div>
-  <div class="plan plan-featured">
-    <div class="plan-badge">⭐ Le plus choisi</div>
-    <div class="plan-name">Partenaire IT</div>
-    <div class="plan-price">5€<span class="plan-unit">/machine/mois</span></div>
-    <div class="plan-desc">Pour les prestataires IT qui revendent ShieldFlow a leurs clients PME.</div>
-    <ul class="plan-features">
-      <li>Tout inclus — plan Direct PME</li>
-      <li>Dashboard multi-clients unifie</li>
-      <li>Vous revendez a votre prix</li>
-      <li>Marge 100% sur la difference</li>
-      <li>Aucun minimum de machines</li>
-      <li>Formation fondateur incluse</li>
-      <li>Support prioritaire direct</li>
-      <li>Rapports marque blanche</li>
-      <li>Commission recurrente garantie</li>
-    </ul>
-    <a href="/#contact" class="plan-cta cta-blue">Devenir partenaire →</a>
-  </div>
-  <div class="plan">
-    <div class="plan-name">Enterprise</div>
-    <div class="plan-price" style="font-size:28px;padding-top:8px">Sur devis</div>
-    <div class="plan-desc">Pour les entreprises de plus de 100 machines avec besoins specifiques.</div>
-    <ul class="plan-features">
-      <li>Tout inclus — plan Direct PME</li>
-      <li>SLA contractuel 99.9%</li>
-      <li>Intégrations personnalisees</li>
-      <li>Audit securite annuel</li>
-      <li>RSSI virtuel dedie</li>
-      <li>Rapports executifs mensuels</li>
-      <li>Formation equipes incluse</li>
-      <li>Intervention sur site prioritaire</li>
-    </ul>
-    <a href="/#contact" class="plan-cta cta-outline">Nous contacter →</a>
-  </div>
-</div>
-<p style="margin-top:24px;font-size:13px;color:var(--text3)">Sans engagement annuel · Resiliable avec 1 mois de preavis · 30 jours satisfait ou rembourse · Installation sur site incluse</p>
-</div>
 </section>
-<div class="cta-final"><h2>Pret a demarrer ?</h2><p>Essai gratuit 30 jours. Installation sur site. Hanafi Gaci vous contacte sous 24h.</p><a href="/#contact" class="btn-primary" style="display:inline-flex;font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a></div>
+<section class="section">
+  <div class="container">
+    <div class="pricing-grid">
+      <div class="plan reveal">
+        <div class="plan-name">Direct PME</div>
+        <div class="plan-price">12€<span class="plan-unit">/machine/mois</span></div>
+        <div class="plan-desc">Pour les PME qui souhaitent travailler directement avec ShieldFlow. Minimum 3 machines.</div>
+        <div class="plan-divider"></div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Agent EDR sur chaque machine</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Mac · Windows · Linux</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Surveillance Microsoft 365</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Surveillance Google Workspace</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Surveillance AWS</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>SIEM — correlation des logs</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Conformite RGPD automatique</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Rapport PDF officiel mensuel</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>IA analyse chaque alerte</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Installation sur site incluse</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Contact direct fondateur</div>
+        <a href="/contact" class="plan-cta pc-outline">Commencer →</a>
+      </div>
+      <div class="plan plan-featured reveal">
+        <div class="plan-badge">⭐ Le plus choisi</div>
+        <div class="plan-name">Partenaire IT</div>
+        <div class="plan-price">5€<span class="plan-unit">/machine/mois</span></div>
+        <div class="plan-desc">Pour les prestataires IT qui revendent ShieldFlow a leurs clients PME.</div>
+        <div class="plan-divider"></div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Tout inclus — plan Direct PME</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Dashboard multi-clients unifie</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Vous revendez a votre prix</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Marge 100% sur la difference</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Aucun minimum de machines</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Formation fondateur 1h incluse</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Support prioritaire direct</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Rapports marque blanche option</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Commission recurrente garantie</div>
+        <a href="/contact" class="plan-cta pc-blue">Devenir partenaire →</a>
+      </div>
+      <div class="plan reveal">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:32px;padding-top:6px">Sur devis</div>
+        <div class="plan-desc">Pour les entreprises de plus de 100 machines avec besoins specifiques.</div>
+        <div class="plan-divider"></div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Tout inclus — plan Direct PME</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>SLA contractuel 99.9%</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Intégrations personnalisees</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Audit securite annuel</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>RSSI virtuel dedie</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Rapports executifs mensuels</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Formation equipes incluse</div>
+        <div class="plan-feature"><span class="pf-check">✓</span>Intervention sur site prioritaire</div>
+        <a href="/contact" class="plan-cta pc-outline">Nous contacter →</a>
+      </div>
+    </div>
+    <div class="guarantee-bar reveal">
+      <span style="font-size:32px">🛡</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px">Satisfait ou rembourse — 30 jours</div>
+        <div style="font-size:13px;color:var(--text2)">Si ShieldFlow ne vous convainc pas dans les 30 premiers jours, vous etes integralement rembourse. Sans questions.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section section-alt">
+  <div class="container" style="text-align:center">
+    <div class="eyebrow reveal" style="justify-content:center">Questions frequentes</div>
+    <h2 class="section-title reveal">Tout ce que vous<br>voulez savoir.</h2>
+    <div class="faq-section" style="text-align:left;margin-top:40px">
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment fonctionne l installation ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Hanafi Gaci se deplace dans vos locaux partout en France et en Europe. Il installe l agent ShieldFlow sur chaque machine en 5 minutes par poste, connecte vos comptes Microsoft 365 ou Google Workspace, et vous montre votre score de securite en direct. L installation est incluse dans l abonnement.</div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Le prix est-il vraiment tout inclus ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Oui. 12€ par machine par mois inclut l agent EDR, la surveillance Microsoft 365 et Google Workspace, le SIEM, la conformite RGPD, les rapports PDF, l IA, l installation sur site et le support direct. Aucun add-on, aucune surprise.</div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Puis-je resilier a tout moment ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Oui. Sans engagement annuel. Vous resiliez avec un mois de preavis. Si vous n etes pas satisfait dans les 30 premiers jours, vous etes integralement rembourse.</div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment fonctionne le tarif partenaire ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">En tant que prestataire IT partenaire, vous achetez ShieldFlow a 5€ par machine par mois. Vous revendez a vos clients au prix que vous souhaitez — generalement 12 a 15€. La difference est votre marge, recurrente chaque mois.</div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">Y a-t-il un minimum de machines ? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Pour le plan Direct PME, le minimum est de 3 machines. Pour le plan Partenaire IT, il n y a aucun minimum — vous pouvez commencer avec 1 seule machine de test.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div style="padding:80px 5%;text-align:center;background:var(--dark);border-top:1px solid var(--border)">
+  <h2 class="reveal" style="font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:14px">Pret a demarrer ?</h2>
+  <p class="reveal" style="font-size:16px;color:var(--text2);margin-bottom:32px">Essai gratuit 30 jours. Installation sur site. Hanafi Gaci vous contacte sous 24h.</p>
+  <div class="reveal" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a>
+    <a href="/partenaires" class="btn-secondary" style="font-size:15px;padding:14px 28px">Devenir partenaire IT</a>
+  </div>
+</div>
 <footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div><div class="footer-logo">🛡 ShieldFlow</div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
-      <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/#produits">Conformite RGPD</a></div>
-      <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/#secteurs">Sante</a><a href="/#secteurs">Juridique</a><a href="/#secteurs">Finance</a><a href="/#secteurs">Industrie</a></div>
-      <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/tarifs">Tarifs</a><a href="/pourquoi">Notre histoire</a></div>
-      <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">A propos</a><a href="/#contact">Contact</a><a href="#">Mentions legales</a><a href="#">CGV</a></div>
-    </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
-      <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
-    </div>
+  <div class="footer-grid">
+    <div><div class="footer-brand-logo"><div class="nav-logo-mark">🛡</div><span class="footer-brand-text">ShieldFlow</span></div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
+    <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/plateforme">Plateforme</a></div>
+    <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/pourquoi">Sante</a><a href="/pourquoi">Juridique</a><a href="/pourquoi">Finance</a><a href="/pourquoi">Industrie</a></div>
+    <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/partenaires">Tarif partenaire</a><a href="/tarifs">Tarifs</a></div>
+    <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">Notre histoire</a><a href="/contact">Contact</a><a href="#">Mentions legales</a></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
+    <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
   </div>
 </footer>
-</body>
-</html>
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>20)});
+function toggleDropdown(btn){const item=btn.closest('.nav-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'));if(!isOpen)item.classList.add('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'))});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+<style>
+.nav-item.open .nav-dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.nav-item.open .nav-link svg{transform:rotate(180deg)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+<script>
+document.querySelectorAll('.faq-q').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const item=btn.parentElement;
+    const wasOpen=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el=>el.classList.remove('open'));
+    if(!wasOpen)item.classList.add('open');
+  });
+});
+</script>
+</body></html>

@@ -3,32 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Managed ITDR — Protection Microsoft 365 et Google Workspace | ShieldFlow</title>
-<meta name="description" content="Protegez vos identites cloud. Detection et blocage automatique des connexions suspectes.">
+<title>Managed ITDR — Protection Microsoft 365 Google Workspace | ShieldFlow</title>
 <link rel="stylesheet" href="/shared.css">
+<style>
+.hero-itdr{min-height:90vh;display:flex;align-items:center;padding:100px 5% 80px;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 70% 50% at 80% 50%,rgba(124,58,237,.15) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 30%,rgba(37,99,235,.08) 0%,transparent 60%),var(--dark)}
+.hero-itdr-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1}
+.itdr-title{font-size:54px;font-weight:800;line-height:1.05;letter-spacing:-.05em;color:var(--white);margin-bottom:20px}
+.itdr-grad{background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cloud-visual{position:relative;height:420px;display:flex;align-items:center;justify-content:center}
+.cloud-center{position:relative;z-index:3;text-align:center}
+.cloud-logo{font-size:56px;margin-bottom:8px;filter:drop-shadow(0 0 30px rgba(124,58,237,.6))}
+.cloud-orbit{position:absolute;border-radius:50%;border:1px dashed rgba(124,58,237,.3);animation:spin-slow 20s linear infinite}
+.co1{width:200px;height:200px}
+.co2{width:320px;height:320px;animation-direction:reverse}
+.co3{width:400px;height:400px;animation-duration:30s}
+@keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.cloud-node{position:absolute;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;animation:float 4s ease-in-out infinite;border:1px solid rgba(255,255,255,.1)}
+.cn1{top:10px;left:50%;transform:translateX(-50%);background:rgba(37,99,235,.2);animation-delay:0s}
+.cn2{bottom:10px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,.2);animation-delay:1s}
+.cn3{left:10px;top:50%;transform:translateY(-50%);background:rgba(234,88,12,.2);animation-delay:2s}
+.cn4{right:10px;top:50%;transform:translateY(-50%);background:rgba(220,38,38,.2);animation-delay:.5s}
+.cloud-alert{position:absolute;background:var(--dark3);border:1px solid;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;animation:float 4s ease-in-out infinite;white-space:nowrap}
+.ca1{top:20px;right:0;color:#f87171;border-color:rgba(220,38,38,.3);animation-delay:0s}
+.ca2{bottom:40px;left:0;color:#34d399;border-color:rgba(16,185,129,.3);animation-delay:1.5s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.itdr-features{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:56px}
+.itdr-feat{background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:28px;transition:.3s;position:relative;overflow:hidden}
+.itdr-feat:hover{border-color:rgba(124,58,237,.3);transform:translateY(-3px)}
+.itdr-feat-icon{width:44px;height:44px;border-radius:10px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.itdr-feat-title{font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px}
+.itdr-feat-desc{font-size:13px;color:var(--text2);line-height:1.65}
+.sources-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.source-card{background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;transition:.3s}
+.source-card:hover{border-color:rgba(124,58,237,.3);transform:translateY(-3px)}
+.source-icon{font-size:36px;margin-bottom:12px}
+.source-name{font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px}
+.source-desc{font-size:12px;color:var(--text3)}
+@media(max-width:768px){.hero-itdr-inner,.itdr-features,.sources-grid{grid-template-columns:1fr}.itdr-title{font-size:36px}.cloud-visual{height:280px}}
+</style>
 </head>
 <body>
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">🛡</div>ShieldFlow</a>
-  <div class="nav-links">
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark">🛡</div><span class="nav-logo-text">ShieldFlow</span></a>
+  <div class="nav-center">
     <div class="nav-item">
-      <button class="nav-link">Produits ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Produits <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏠</div><div><div class="nav-dropdown-title">Vue d ensemble</div><div class="nav-dropdown-desc">La plateforme complète</div></div></a>
-        <div class="nav-separator"></div>
-        <a href="/edr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🖥</div><div><div class="nav-dropdown-title">Managed EDR</div><div class="nav-dropdown-desc">Mac · Windows · Linux</div></div></a>
-        <a href="/itdr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🔑</div><div><div class="nav-dropdown-title">Managed ITDR</div><div class="nav-dropdown-desc">Microsoft 365 · Google Workspace</div></div></a>
-        <a href="/siem" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Managed SIEM</div><div class="nav-dropdown-desc">Corrélation logs et détection</div></div></a>
-        <a href="/#produits" class="nav-dropdown-item"><div class="nav-dropdown-icon">📋</div><div><div class="nav-dropdown-title">Conformité RGPD</div><div class="nav-dropdown-desc">Rapport PDF officiel automatique</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">🏠</div><div><div class="nav-dd-title">Vue d ensemble</div><div class="nav-dd-desc">La plateforme complete</div></div></a>
+        <div class="nav-sep"></div>
+        <a href="/edr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🖥</div><div><div class="nav-dd-title">Managed EDR</div><div class="nav-dd-desc">Mac · Windows · Linux</div></div></a>
+        <a href="/itdr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🔑</div><div><div class="nav-dd-title">Managed ITDR</div><div class="nav-dd-desc">Microsoft 365 · Google Workspace</div></div></a>
+        <a href="/siem" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">📊</div><div><div class="nav-dd-title">Managed SIEM</div><div class="nav-dd-desc">Correlation logs</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(220,38,38,.15)">📋</div><div><div class="nav-dd-title">Conformite RGPD</div><div class="nav-dd-desc">Rapport PDF officiel</div></div></a>
       </div>
     </div>
     <div class="nav-item">
-      <button class="nav-link">Solutions ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Solutions <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏥</div><div><div class="nav-dropdown-title">Sante</div><div class="nav-dropdown-desc">Medecins · Dentistes · Pharmacies</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">⚖️</div><div><div class="nav-dropdown-title">Juridique</div><div class="nav-dropdown-desc">Notaires · Avocats · Huissiers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Finance</div><div class="nav-dropdown-desc">Experts-comptables · Conseillers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏭</div><div><div class="nav-dropdown-title">Industrie</div><div class="nav-dropdown-desc">PME sous-traitantes · Fabricants</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🏥</div><div><div class="nav-dd-title">Sante</div><div class="nav-dd-desc">Medecins · Dentistes</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">⚖️</div><div><div class="nav-dd-title">Juridique</div><div class="nav-dd-desc">Notaires · Avocats</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">📈</div><div><div class="nav-dd-title">Finance</div><div class="nav-dd-desc">Experts-comptables</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🏭</div><div><div class="nav-dd-title">Industrie</div><div class="nav-dd-desc">PME sous-traitantes</div></div></a>
       </div>
     </div>
     <a href="/tarifs" class="nav-link">Tarifs</a>
@@ -36,35 +73,117 @@
     <a href="/pourquoi" class="nav-link">Pourquoi ShieldFlow</a>
   </div>
   <div class="nav-right">
-    <a href="/dashboard" class="btn-nav-ghost">Connexion</a>
-    <a href="/#contact" class="btn-nav-primary">Essai gratuit</a>
+    <a href="/dashboard" class="btn-ghost-sm">Connexion</a>
+    <a href="/contact" class="btn-primary-sm">Essai gratuit →</a>
   </div>
 </nav>
-<div class="breadcrumb"><a href="/">Accueil</a><span class="breadcrumb-sep">›</span><a href="/plateforme">Plateforme</a><span class="breadcrumb-sep">›</span><span style="color:var(--white)">🔑 Managed ITDR</span></div>
-<div class="page-hero">
-  <div class="page-badge">🔑 Managed ITDR</div>
-  <h1 class="page-title">Protection des identites<br>cloud et email</h1>
-  <p class="page-sub">ShieldFlow surveille vos comptes Microsoft 365, Google Workspace et AWS 24h/24. Quand une connexion suspecte est detectee — elle est bloquee automatiquement. Avant que le pirate ait le temps d agir.</p>
-  <div class="page-actions"><a href="/#contact" class="btn-primary">Essai gratuit →</a><a href="/#contact" class="btn-ghost">Demander une demo</a></div>
-  <div class="stats-row"><div class="stat"><div class="stat-num">16M+</div><div class="stat-label">Identites protegees dans le monde</div></div><div class="stat"><div class="stat-num"><2min</div><div class="stat-label">Blocage connexion suspecte</div></div><div class="stat"><div class="stat-num">100%</div><div class="stat-label">Automatique</div></div><div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Surveillance cloud</div></div></div>
+<div style="padding:80px 5% 0;max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)">
+  <a href="/" style="color:var(--text3);text-decoration:none">Accueil</a><span>›</span>
+  <a href="/plateforme" style="color:var(--text3);text-decoration:none">Plateforme</a><span>›</span>
+  <span style="color:var(--white)">Managed ITDR</span>
 </div>
-<section class="s s-alt"><div class="s-inner"><div class="eyebrow">Pourquoi surveiller les identites cloud</div><h2 class="s-title">L identite est le nouvel endpoint.<br>Les pirates le savent.</h2><p class="s-sub">80% des attaques contre les PME passent par les comptes cloud — pas par les machines. Un mot de passe vole sur Microsoft 365 suffit pour acceder a tous vos emails, tous vos fichiers, toute votre comptabilite.</p></div></section>
-<section class="s"><div class="s-inner"><div class="eyebrow">Fonctionnalites ITDR</div><h2 class="s-title">Protection complete<br>de vos identites cloud.</h2><p class="s-sub">Microsoft 365, Google Workspace et AWS surveilles en permanence.</p><div class="features-grid"><div class="feature"><div class="feature-icon">🌍</div><div class="feature-title">Connexions pays etrangers</div><p class="feature-desc">Detecte les connexions Microsoft 365 et Google Workspace depuis des pays inconnus. Sessions revoquees automatiquement en quelques secondes. Sans reveiller personne.</p></div><div class="feature"><div class="feature-icon">📧</div><div class="feature-title">Regles messagerie suspectes</div><p class="feature-desc">Les pirates creent des regles qui redirigent vos emails vers eux. ShieldFlow detecte et supprime ces regles automatiquement des leur creation.</p></div><div class="feature"><div class="feature-icon">🔐</div><div class="feature-title">Comptes sans MFA</div><p class="feature-desc">Detecte tous les comptes Microsoft 365 et Google Workspace sans double authentification. Alerte immediate avec guide d activation.</p></div><div class="feature"><div class="feature-icon">👑</div><div class="feature-title">Trop d administrateurs</div><p class="feature-desc">Un trop grand nombre d admins globaux multiplie les risques. ShieldFlow detecte et alerte quand le nombre d admins depasse le seuil securise.</p></div><div class="feature"><div class="feature-icon">🚫</div><div class="feature-title">Revocation automatique</div><p class="feature-desc">Connexion suspecte confirmee : toutes les sessions actives sont revoquees automatiquement via l API Microsoft Graph. L attaquant est coupe en secondes.</p></div><div class="feature"><div class="feature-icon">📊</div><div class="feature-title">AWS Security</div><p class="feature-desc">Surveillance des buckets S3 publics, ports ouverts sur internet, CloudTrail desactive, MFA root absent. Votre infrastructure cloud AWS surveillee en continu.</p></div></div></div></section>
-<div class="cta-final"><h2>Pret a proteger votre entreprise ?</h2><p>Installation sur site incluse partout en Europe. Operationnel en 30 minutes.</p><a href="/#contact" class="btn-primary" style="display:inline-flex;font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a></div>
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div><div class="footer-logo">🛡 ShieldFlow</div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
-      <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/#produits">Conformite RGPD</a></div>
-      <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/#secteurs">Sante</a><a href="/#secteurs">Juridique</a><a href="/#secteurs">Finance</a><a href="/#secteurs">Industrie</a></div>
-      <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/tarifs">Tarifs</a><a href="/pourquoi">Notre histoire</a></div>
-      <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">A propos</a><a href="/#contact">Contact</a><a href="#">Mentions legales</a><a href="#">CGV</a></div>
+<section class="hero-itdr">
+  <div class="hero-itdr-inner">
+    <div>
+      <div class="badge" style="background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.25);color:#a78bfa">
+        <div class="badge-dot" style="background:#a78bfa;animation:blink 2s infinite"></div>Managed ITDR
+      </div>
+      <h1 class="itdr-title animate-fade-up">Protection des<br>identites cloud<br><span class="itdr-grad">et email</span></h1>
+      <p class="animate-fade-up-d1" style="font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:32px;max-width:480px">
+        80% des attaques contre les PME passent par les comptes cloud. ShieldFlow surveille Microsoft 365, Google Workspace et AWS — et bloque automatiquement les intrusions en quelques secondes.
+      </p>
+      <div class="animate-fade-up-d2" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px">
+        <a href="/contact" class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#2563eb)">Essai gratuit →</a>
+        <a href="/contact" class="btn-secondary">Demander une demo</a>
+      </div>
+      <div class="animate-fade-up-d3" style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)"><span style="color:#a78bfa;font-weight:700">✓</span>Microsoft 365 surveille</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)"><span style="color:#a78bfa;font-weight:700">✓</span>Google Workspace surveille</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)"><span style="color:#a78bfa;font-weight:700">✓</span>AWS surveille</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3)"><span style="color:#a78bfa;font-weight:700">✓</span>Revocation auto</div>
+      </div>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
-      <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+    <div class="cloud-visual animate-fade-up-d2">
+      <div class="cloud-orbit co1"><div class="cloud-node cn1">📧</div><div class="cloud-node cn2">☁️</div></div>
+      <div class="cloud-orbit co2"><div class="cloud-node cn3">🔑</div><div class="cloud-node cn4">🌍</div></div>
+      <div class="cloud-center">
+        <div class="cloud-logo">🔐</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text3)">ITDR Shield</div>
+      </div>
+      <div class="cloud-alert ca1">🚨 Connexion Roumanie detectee → Bloquee</div>
+      <div class="cloud-alert ca2">✅ Sessions M365 revoquees automatiquement</div>
     </div>
   </div>
+</section>
+<section class="section section-alt">
+  <div class="container">
+    <div class="eyebrow reveal">Sources surveillees</div>
+    <h2 class="section-title reveal">Tous vos services cloud.<br>Surveilles en permanence.</h2>
+    <div class="sources-grid">
+      <div class="source-card reveal">
+        <div class="source-icon">📧</div>
+        <div class="source-name">Microsoft 365</div>
+        <div class="source-desc">Connexions suspectes · MFA manquant · Regles messagerie · Admins · Revocation auto</div>
+      </div>
+      <div class="source-card reveal">
+        <div class="source-icon">🟡</div>
+        <div class="source-name">Google Workspace</div>
+        <div class="source-desc">Verification 2 etapes · Comptes suspendus · Trop d admins · Acces non autorises</div>
+      </div>
+      <div class="source-card reveal">
+        <div class="source-icon">🟠</div>
+        <div class="source-name">Amazon AWS</div>
+        <div class="source-desc">Buckets S3 publics · Ports ouverts · CloudTrail desactive · MFA root absent</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">Fonctionnalites ITDR</div>
+    <h2 class="section-title reveal">Detection et reponse<br>automatique aux menaces identite.</h2>
+    <div class="itdr-features">
+      <div class="itdr-feat reveal"><div class="itdr-feat-icon">🌍</div><div class="itdr-feat-title">Connexions pays etrangers</div><p class="itdr-feat-desc">Detecte les connexions depuis des pays inconnus. Sessions revoquees automatiquement via l API Microsoft Graph en quelques secondes. Sans reveiller personne.</p></div>
+      <div class="itdr-feat reveal"><div class="itdr-feat-icon">📧</div><div class="itdr-feat-title">Regles messagerie suspectes</div><p class="itdr-feat-desc">Les pirates creent des regles qui redirigent vos emails vers eux. ShieldFlow detecte et supprime ces regles automatiquement des leur creation.</p></div>
+      <div class="itdr-feat reveal"><div class="itdr-feat-icon">🔐</div><div class="itdr-feat-title">Comptes sans MFA</div><p class="itdr-feat-desc">Detecte tous les comptes Microsoft 365 et Google Workspace sans double authentification. Alerte immediate avec guide d activation pas a pas.</p></div>
+      <div class="itdr-feat reveal"><div class="itdr-feat-icon">👑</div><div class="itdr-feat-title">Trop d administrateurs</div><p class="itdr-feat-desc">Trop d admins globaux multiplie les risques. ShieldFlow detecte et alerte quand le nombre d admins depasse le seuil securise recommande.</p></div>
+      <div class="itdr-feat reveal"><div class="itdr-feat-icon">🚫</div><div class="itdr-feat-title">Revocation automatique</div><p class="itdr-feat-desc">Connexion suspecte confirmee : toutes les sessions actives sont revoquees automatiquement. L attaquant est coupe en quelques secondes. Vous recevez un rapport complet.</p></div>
+      <div class="itdr-feat reveal"><div class="itdr-feat-icon">📋</div><div class="itdr-feat-title">Rapport RGPD inclus</div><p class="itdr-feat-desc">Chaque incident cloud est documente automatiquement dans votre rapport RGPD. Preuve de conformite disponible en 1 clic pour la CNIL.</p></div>
+    </div>
+  </div>
+</section>
+<div style="padding:80px 5%;text-align:center;background:radial-gradient(ellipse 60% 80% at 50% 100%,rgba(124,58,237,.1),transparent),var(--dark2);border-top:1px solid var(--border)">
+  <h2 class="reveal" style="font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:14px">Protegez vos identites cloud.<br>Des aujourd hui.</h2>
+  <p class="reveal" style="font-size:16px;color:var(--text2);margin-bottom:32px">Microsoft 365, Google Workspace et AWS surveilles 24h/24.</p>
+  <div class="reveal" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px;background:linear-gradient(135deg,#7c3aed,#2563eb)">Demarrer l essai gratuit →</a>
+    <a href="/tarifs" class="btn-secondary" style="font-size:15px;padding:14px 28px">Voir les tarifs</a>
+  </div>
+</div>
+<footer>
+  <div class="footer-grid">
+    <div><div class="footer-brand-logo"><div class="nav-logo-mark">🛡</div><span class="footer-brand-text">ShieldFlow</span></div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
+    <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/plateforme">Plateforme</a></div>
+    <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/pourquoi">Sante</a><a href="/pourquoi">Juridique</a><a href="/pourquoi">Finance</a><a href="/pourquoi">Industrie</a></div>
+    <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/partenaires">Tarif partenaire</a><a href="/tarifs">Tarifs</a></div>
+    <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">Notre histoire</a><a href="/contact">Contact</a><a href="#">Mentions legales</a></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
+    <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+  </div>
 </footer>
-</body>
-</html>
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>20)});
+function toggleDropdown(btn){const item=btn.closest('.nav-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'));if(!isOpen)item.classList.add('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'))});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+<style>
+.nav-item.open .nav-dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.nav-item.open .nav-link svg{transform:rotate(180deg)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</body></html>

@@ -3,32 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pourquoi ShieldFlow — Notre mission | ShieldFlow</title>
-<meta name="description" content="ShieldFlow est ne d une conviction simple — la cybersecurite enterprise doit etre accessible a toutes les PME francaises. Fondé par Hanafi Gaci, expert cybersecurite base a Marseille.">
+<title>Pourquoi ShieldFlow — Notre mission et notre histoire | ShieldFlow</title>
 <link rel="stylesheet" href="/shared.css">
+<style>
+.hero-why{padding:120px 5% 80px;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(37,99,235,.1) 0%,transparent 60%),var(--dark)}
+.why-inner{max-width:900px;margin:0 auto;text-align:center}
+.why-title{font-size:56px;font-weight:800;line-height:1.05;letter-spacing:-.05em;color:var(--white);margin-bottom:20px}
+.why-grad{background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.founder-section{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.founder-photo-box{position:relative}
+.founder-photo{width:100%;border-radius:20px;overflow:hidden;position:relative;background:var(--dark3);border:1px solid var(--border2)}
+.founder-photo img{width:100%;height:400px;object-fit:cover;display:block}
+.founder-photo-placeholder{width:100%;height:400px;display:flex;align-items:center;justify-content:center;font-size:80px;background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(124,58,237,.1))}
+.founder-badge{position:absolute;bottom:-16px;left:24px;right:24px;background:var(--dark3);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px}
+.founder-badge-avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+.diff-card{background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:28px;transition:.3s}
+.diff-card:hover{border-color:rgba(37,99,235,.3);transform:translateY(-3px)}
+.secteurs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:48px}
+.secteur-card{background:var(--dark3);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;transition:.3s;cursor:default}
+.secteur-card:hover{border-color:rgba(37,99,235,.25);transform:translateY(-2px)}
+@media(max-width:768px){.founder-section,.diff-grid,.secteurs-grid{grid-template-columns:1fr}.why-title{font-size:36px}}
+</style>
 </head>
 <body>
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">🛡</div>ShieldFlow</a>
-  <div class="nav-links">
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark">🛡</div><span class="nav-logo-text">ShieldFlow</span></a>
+  <div class="nav-center">
     <div class="nav-item">
-      <button class="nav-link">Produits ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Produits <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏠</div><div><div class="nav-dropdown-title">Vue d ensemble</div><div class="nav-dropdown-desc">La plateforme complète</div></div></a>
-        <div class="nav-separator"></div>
-        <a href="/edr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🖥</div><div><div class="nav-dropdown-title">Managed EDR</div><div class="nav-dropdown-desc">Mac · Windows · Linux</div></div></a>
-        <a href="/itdr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🔑</div><div><div class="nav-dropdown-title">Managed ITDR</div><div class="nav-dropdown-desc">Microsoft 365 · Google Workspace</div></div></a>
-        <a href="/siem" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Managed SIEM</div><div class="nav-dropdown-desc">Corrélation logs et détection</div></div></a>
-        <a href="/#produits" class="nav-dropdown-item"><div class="nav-dropdown-icon">📋</div><div><div class="nav-dropdown-title">Conformité RGPD</div><div class="nav-dropdown-desc">Rapport PDF officiel automatique</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">🏠</div><div><div class="nav-dd-title">Vue d ensemble</div><div class="nav-dd-desc">La plateforme complete</div></div></a>
+        <div class="nav-sep"></div>
+        <a href="/edr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🖥</div><div><div class="nav-dd-title">Managed EDR</div><div class="nav-dd-desc">Mac · Windows · Linux</div></div></a>
+        <a href="/itdr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🔑</div><div><div class="nav-dd-title">Managed ITDR</div><div class="nav-dd-desc">Microsoft 365 · Google Workspace</div></div></a>
+        <a href="/siem" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">📊</div><div><div class="nav-dd-title">Managed SIEM</div><div class="nav-dd-desc">Correlation logs</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(220,38,38,.15)">📋</div><div><div class="nav-dd-title">Conformite RGPD</div><div class="nav-dd-desc">Rapport PDF officiel</div></div></a>
       </div>
     </div>
     <div class="nav-item">
-      <button class="nav-link">Solutions ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Solutions <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏥</div><div><div class="nav-dropdown-title">Sante</div><div class="nav-dropdown-desc">Medecins · Dentistes · Pharmacies</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">⚖️</div><div><div class="nav-dropdown-title">Juridique</div><div class="nav-dropdown-desc">Notaires · Avocats · Huissiers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Finance</div><div class="nav-dropdown-desc">Experts-comptables · Conseillers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏭</div><div><div class="nav-dropdown-title">Industrie</div><div class="nav-dropdown-desc">PME sous-traitantes · Fabricants</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🏥</div><div><div class="nav-dd-title">Sante</div><div class="nav-dd-desc">Medecins · Dentistes</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">⚖️</div><div><div class="nav-dd-title">Juridique</div><div class="nav-dd-desc">Notaires · Avocats</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">📈</div><div><div class="nav-dd-title">Finance</div><div class="nav-dd-desc">Experts-comptables</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🏭</div><div><div class="nav-dd-title">Industrie</div><div class="nav-dd-desc">PME sous-traitantes</div></div></a>
       </div>
     </div>
     <a href="/tarifs" class="nav-link">Tarifs</a>
@@ -36,67 +56,149 @@
     <a href="/pourquoi" class="nav-link">Pourquoi ShieldFlow</a>
   </div>
   <div class="nav-right">
-    <a href="/dashboard" class="btn-nav-ghost">Connexion</a>
-    <a href="/#contact" class="btn-nav-primary">Essai gratuit</a>
+    <a href="/dashboard" class="btn-ghost-sm">Connexion</a>
+    <a href="/contact" class="btn-primary-sm">Essai gratuit →</a>
   </div>
 </nav>
-<div class="breadcrumb"><a href="/">Accueil</a><span class="breadcrumb-sep">›</span><span style="color:var(--white)">Pourquoi ShieldFlow</span></div>
-<div class="page-hero">
-  <div class="page-badge">🛡 Notre mission</div>
-  <h1 class="page-title">La cybersecurite enterprise.<br>Pour toutes les PME.</h1>
-  <p class="page-sub">ShieldFlow est ne d une conviction simple — les PME francaises meritent la meme protection que les grandes entreprises, sans les prix prohibitifs et sans les equipes IT de 20 personnes.</p>
-  <div class="page-actions"><a href="/#contact" class="btn-primary">Nous contacter →</a><a href="/plateforme" class="btn-ghost">Voir la plateforme</a></div>
-</div>
-<section class="s s-alt"><div class="s-inner">
-<div class="eyebrow">Notre histoire</div>
-<h2 class="s-title">Fonde par un expert.<br>Pour un besoin reel.</h2>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:32px">
-<div>
-<p style="font-size:16px;color:var(--text2);line-height:1.8;margin-bottom:20px">J ai fonde ShieldFlow avec une mission claire — rendre la cybersecurite enterprise accessible a toutes les PME francaises. J ai constate que les solutions existantes etaient soit trop cheres, soit trop complexes, soit en anglais uniquement.</p>
-<p style="font-size:16px;color:var(--text2);line-height:1.8;margin-bottom:20px">J ai concu et developpe l integralite de la plateforme — agent de surveillance, dashboard multi-clients, integration IA, protection cloud, conformite RGPD. Tout ce que les grandes entreprises ont avec CrowdStrike ou Huntress — mais pour les PME francaises a 12€ par machine.</p>
-<p style="font-size:16px;color:var(--text2);line-height:1.8">Je me deplace personnellement chez chaque client pour l installation. Partout en France et en Europe. Pas un ticket support. Un expert qui vous connait.</p>
-<div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap">
-<span style="font-size:12px;color:var(--text3);background:var(--dark4);border:1px solid var(--border);padding:5px 14px;border-radius:6px">🇫🇷 Base a Marseille</span>
-<span style="font-size:12px;color:var(--text3);background:var(--dark4);border:1px solid var(--border);padding:5px 14px;border-radius:6px">🌍 Deplacements Europe</span>
-<span style="font-size:12px;color:var(--text3);background:var(--dark4);border:1px solid var(--border);padding:5px 14px;border-radius:6px">📞 Joignable directement</span>
-</div>
-</div>
-<div style="background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:36px;text-align:center">
-<div style="font-size:64px;margin-bottom:16px">👨‍💻</div>
-<div style="font-size:22px;font-weight:800;color:var(--white);margin-bottom:4px">Hanafi Gaci</div>
-<div style="font-size:13px;color:var(--blue2);margin-bottom:16px;font-weight:600">Fondateur · Expert Cybersecurite</div>
-<p style="font-size:13px;color:var(--text2);line-height:1.7">Concepteur et developpeur de la plateforme ShieldFlow. Expert en detection des menaces, protection cloud et conformite RGPD pour les PME francaises et europeennes.</p>
-</div>
-</div>
-</div></section>
-<section class="s"><div class="s-inner">
-<div class="eyebrow">Ce qui nous differencie</div>
-<h2 class="s-title">Pas invente.<br>Adapte au marche francais.</h2>
-<p class="s-sub">ShieldFlow reproduit ce que font Huntress et CrowdStrike pour les grandes entreprises — mais pour les PME francaises, en francais, avec la conformite europeenne.</p>
-<div class="features-grid">
-<div class="feature"><div class="feature-icon">🇫🇷</div><div class="feature-title">100% en francais</div><p class="feature-desc">Interface, alertes, rapports, support — tout en francais. Vos clients PME comprennent ce qui se passe et pourquoi c est important.</p></div>
-<div class="feature"><div class="feature-icon">📋</div><div class="feature-title">RGPD et NIS2 natifs</div><p class="feature-desc">La conformite europeenne est integree par defaut. Rapport PDF officiel CNIL automatique. Les Americains comme Huntress ne font pas ca.</p></div>
-<div class="feature"><div class="feature-icon">🚀</div><div class="feature-title">Installation sur site</div><p class="feature-desc">Hanafi Gaci se deplace chez chaque client pour installer ShieldFlow. Partout en France et en Europe. Huntress et CrowdStrike ne font jamais ca.</p></div>
-<div class="feature"><div class="feature-icon">💰</div><div class="feature-title">Prix PME accessible</div><p class="feature-desc">12€ par machine par mois tout inclus. Pas 60 000€ par an comme CrowdStrike. La meme protection, au bon prix pour les PME.</p></div>
-<div class="feature"><div class="feature-icon">📞</div><div class="feature-title">Expert direct</div><p class="feature-desc">Pas un numero de ticket. Pas un call center. Hanafi Gaci repond directement. Il connait votre entreprise, votre infrastructure, votre contexte.</p></div>
-<div class="feature"><div class="feature-icon">🤖</div><div class="feature-title">IA Athena</div><p class="feature-desc">Notre IA analyse chaque alerte, explique le risque en francais simple et decide de la correction automatique. Rapport IA quotidien a 8h du matin.</p></div>
-</div>
-</div></section>
-<div class="cta-final"><h2>Rejoignez les PME<br>qui dorment mieux la nuit.</h2><p>Essai gratuit 30 jours. Installation sur site. Sans engagement.</p><a href="/#contact" class="btn-primary" style="display:inline-flex;font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a></div>
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div><div class="footer-logo">🛡 ShieldFlow</div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
-      <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/#produits">Conformite RGPD</a></div>
-      <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/#secteurs">Sante</a><a href="/#secteurs">Juridique</a><a href="/#secteurs">Finance</a><a href="/#secteurs">Industrie</a></div>
-      <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/tarifs">Tarifs</a><a href="/pourquoi">Notre histoire</a></div>
-      <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">A propos</a><a href="/#contact">Contact</a><a href="#">Mentions legales</a><a href="#">CGV</a></div>
+<section class="hero-why">
+  <div class="why-inner">
+    <div class="badge animate-fade-up" style="display:inline-flex;margin-bottom:20px">
+      <div class="badge-dot"></div>Notre mission
     </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
-      <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+    <h1 class="why-title animate-fade-up-d1">La cybersecurite enterprise.<br><span class="why-grad">Pour toutes les PME.</span></h1>
+    <p class="animate-fade-up-d2" style="font-size:18px;color:var(--text2);line-height:1.8;max-width:600px;margin:0 auto 40px">
+      ShieldFlow est ne d une conviction simple — les PME francaises meritent la meme protection que les grandes entreprises, sans les prix prohibitifs et sans les equipes IT de 20 personnes.
+    </p>
+    <div class="animate-fade-up-d3" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px">Essai gratuit →</a>
+      <a href="/plateforme" class="btn-secondary" style="font-size:15px;padding:14px 28px">Voir la plateforme</a>
     </div>
   </div>
+</section>
+<section class="section section-alt">
+  <div class="container">
+    <div class="founder-section">
+      <div class="founder-photo-box reveal">
+        <div class="founder-photo">
+          <img src="/fondateur.jpg" alt="Hanafi Gaci — Fondateur ShieldFlow" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="founder-photo-placeholder" style="display:none">👨‍💻</div>
+        </div>
+        <div class="founder-badge">
+          <div class="founder-badge-avatar">🛡</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--white)">Hanafi Gaci</div>
+            <div style="font-size:11px;color:var(--blue3)">Fondateur · Expert Cybersecurite</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal" style="padding-bottom:40px">
+        <div class="eyebrow">Notre histoire</div>
+        <h2 class="section-title">Fonde par un expert.<br>Pour un besoin reel.</h2>
+        <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:16px">
+          J ai fonde ShieldFlow avec une mission claire — rendre la cybersecurite enterprise accessible a toutes les PME francaises. J ai constate que les solutions existantes etaient soit trop cheres, soit trop complexes, soit en anglais uniquement.
+        </p>
+        <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:16px">
+          J ai concu et developpe l integralite de la plateforme — agent de surveillance, dashboard multi-clients, integration IA Claude, protection cloud Microsoft 365 et AWS, conformite RGPD automatique. Tout ce que les grandes entreprises ont avec CrowdStrike ou Huntress — mais pour les PME francaises a 12€ par machine.
+        </p>
+        <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:28px">
+          Je me deplace personnellement chez chaque client pour l installation. Partout en France et en Europe. Pas un ticket support — un expert qui vous connait.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text3);background:var(--dark4);border:1px solid var(--border);padding:5px 14px;border-radius:6px">🇫🇷 Base a Marseille</span>
+          <span style="font-size:12px;color:var(--text3);background:var(--dark4);border:1px solid var(--border);padding:5px 14px;border-radius:6px">🌍 Deplacements Europe</span>
+          <span style="font-size:12px;color:var(--text3);background:var(--dark4);border:1px solid var(--border);padding:5px 14px;border-radius:6px">📞 Joignable directement</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">Ce qui nous differencie</div>
+    <h2 class="section-title reveal">Pas invente. Adapte<br>au marche francais.</h2>
+    <p class="section-sub reveal">ShieldFlow reproduit ce que font Huntress et CrowdStrike — mais pour les PME francaises, en francais, avec la conformite europeenne.</p>
+    <div class="diff-grid">
+      <div class="diff-card reveal">
+        <div style="font-size:32px;margin-bottom:14px">🇫🇷</div>
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">100% en francais</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.65">Interface, alertes, rapports, support — tout en francais. Vos clients PME comprennent ce qui se passe et pourquoi c est important.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div style="font-size:32px;margin-bottom:14px">📋</div>
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">RGPD et NIS2 natifs</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.65">La conformite europeenne est integree par defaut. Rapport PDF officiel CNIL automatique. Huntress et CrowdStrike ne font pas ca.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div style="font-size:32px;margin-bottom:14px">🚀</div>
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Installation sur site</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.65">Hanafi Gaci se deplace chez chaque client pour installer ShieldFlow. Partout en France et en Europe. Huntress et CrowdStrike ne font jamais ca.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div style="font-size:32px;margin-bottom:14px">💰</div>
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Prix PME accessible</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.65">12€ par machine par mois tout inclus. Pas 60 000€ par an comme CrowdStrike. La meme protection, au bon prix pour les PME.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div style="font-size:32px;margin-bottom:14px">📞</div>
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Expert direct</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.65">Pas un numero de ticket. Hanafi Gaci repond directement. Il connait votre entreprise, votre infrastructure, votre contexte.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div style="font-size:32px;margin-bottom:14px">🤖</div>
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">IA Athena integree</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.65">Notre IA analyse chaque alerte, explique le risque en francais simple et corrige automatiquement. Rapport quotidien a 8h du matin.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section section-alt">
+  <div class="container">
+    <div class="eyebrow reveal">Secteurs proteges</div>
+    <h2 class="section-title reveal">Concu pour votre secteur.</h2>
+    <div class="secteurs-grid">
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">🏥</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Sante</div><div style="font-size:11px;color:var(--text3)">Medecins · Dentistes · Kinés · Pharmacies</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">⚖️</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Juridique</div><div style="font-size:11px;color:var(--text3)">Notaires · Avocats · Huissiers</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">📊</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Finance</div><div style="font-size:11px;color:var(--text3)">Experts-comptables · Conseillers</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">🏠</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Immobilier</div><div style="font-size:11px;color:var(--text3)">Agences · Promoteurs · Syndics</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">🏭</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Industrie</div><div style="font-size:11px;color:var(--text3)">PME sous-traitantes · Fabricants</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">🎓</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Education</div><div style="font-size:11px;color:var(--text3)">Ecoles privees · Formations</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">🏛️</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Collectivites</div><div style="font-size:11px;color:var(--text3)">Mairies · Associations</div></div>
+      <div class="secteur-card reveal"><div style="font-size:32px;margin-bottom:10px">💼</div><div style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:4px">Services</div><div style="font-size:11px;color:var(--text3)">Agences · Prestataires IT</div></div>
+    </div>
+  </div>
+</section>
+<div style="padding:80px 5%;text-align:center;background:radial-gradient(ellipse 60% 80% at 50% 100%,rgba(37,99,235,.08),transparent),var(--dark);border-top:1px solid var(--border)">
+  <h2 class="reveal" style="font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:14px">Rejoignez les PME qui<br>dorment mieux la nuit.</h2>
+  <p class="reveal" style="font-size:16px;color:var(--text2);margin-bottom:32px">Essai gratuit 30 jours. Installation sur site. Sans engagement.</p>
+  <div class="reveal" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a>
+    <a href="/partenaires" class="btn-secondary" style="font-size:15px;padding:14px 28px">Devenir partenaire IT</a>
+  </div>
+</div>
+<footer>
+  <div class="footer-grid">
+    <div><div class="footer-brand-logo"><div class="nav-logo-mark">🛡</div><span class="footer-brand-text">ShieldFlow</span></div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
+    <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/plateforme">Plateforme</a></div>
+    <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/pourquoi">Sante</a><a href="/pourquoi">Juridique</a><a href="/pourquoi">Finance</a><a href="/pourquoi">Industrie</a></div>
+    <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/partenaires">Tarif partenaire</a><a href="/tarifs">Tarifs</a></div>
+    <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">Notre histoire</a><a href="/contact">Contact</a><a href="#">Mentions legales</a></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
+    <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+  </div>
 </footer>
-</body>
-</html>
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>20)});
+function toggleDropdown(btn){const item=btn.closest('.nav-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'));if(!isOpen)item.classList.add('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'))});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+<style>
+.nav-item.open .nav-dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.nav-item.open .nav-link svg{transform:rotate(180deg)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</body></html>

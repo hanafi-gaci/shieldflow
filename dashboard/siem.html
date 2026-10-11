@@ -4,31 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Managed SIEM — Correlation des logs et detection avancee | ShieldFlow</title>
-<meta name="description" content="SIEM manage pour PME. Correlation automatique des logs machines et cloud. Detection des attaques invisibles.">
 <link rel="stylesheet" href="/shared.css">
+<style>
+.hero-siem{min-height:90vh;display:flex;align-items:center;padding:100px 5% 80px;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(234,88,12,.1) 0%,transparent 65%),var(--dark)}
+.siem-title{font-size:54px;font-weight:800;line-height:1.05;letter-spacing:-.05em;color:var(--white);margin-bottom:20px}
+.siem-grad{background:linear-gradient(135deg,#fb923c,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.siem-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1}
+.log-stream{background:#0b0d12;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:20px;height:400px;overflow:hidden;position:relative;font-family:monospace;font-size:11px;line-height:1.8}
+.log-stream::after{content:"";position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,#0b0d12);pointer-events:none}
+.log-line{display:flex;gap:12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.03);animation:slideIn .3s ease both}
+.log-time{color:#374151;flex-shrink:0;min-width:55px}
+.log-source{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;text-transform:uppercase}
+.ls-edr{background:rgba(16,185,129,.15);color:#34d399}
+.ls-m365{background:rgba(37,99,235,.15);color:#60a5fa}
+.ls-aws{background:rgba(234,88,12,.15);color:#fb923c}
+.ls-siem{background:rgba(124,58,237,.15);color:#a78bfa}
+.log-msg{color:#94a3b8;flex:1}
+.log-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;flex-shrink:0}
+.lb-ok{background:rgba(16,185,129,.15);color:#34d399}
+.lb-warn{background:rgba(234,88,12,.15);color:#fb923c}
+.lb-crit{background:rgba(220,38,38,.15);color:#f87171}
+.correl-card{background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.2);border-radius:10px;padding:12px 16px;margin-top:8px;font-size:11px}
+.correl-title{color:#fb923c;font-weight:700;margin-bottom:4px}.correl-desc{color:#94a3b8}
+.siem-features{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:56px}
+.siem-feat{background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:28px;transition:.3s}
+.siem-feat:hover{border-color:rgba(234,88,12,.3);transform:translateY(-3px)}
+.siem-feat-icon{width:44px;height:44px;border-radius:10px;background:rgba(234,88,12,.12);border:1px solid rgba(234,88,12,.2);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+@media(max-width:768px){.siem-inner,.siem-features{grid-template-columns:1fr}.siem-title{font-size:36px}.log-stream{height:250px}}
+</style>
 </head>
 <body>
-<nav class="nav">
-  <a href="/" class="nav-logo"><div class="nav-logo-icon">🛡</div>ShieldFlow</a>
-  <div class="nav-links">
+<nav class="nav" id="nav">
+  <a href="/" class="nav-logo"><div class="nav-logo-mark">🛡</div><span class="nav-logo-text">ShieldFlow</span></a>
+  <div class="nav-center">
     <div class="nav-item">
-      <button class="nav-link">Produits ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Produits <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/plateforme" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏠</div><div><div class="nav-dropdown-title">Vue d ensemble</div><div class="nav-dropdown-desc">La plateforme complète</div></div></a>
-        <div class="nav-separator"></div>
-        <a href="/edr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🖥</div><div><div class="nav-dropdown-title">Managed EDR</div><div class="nav-dropdown-desc">Mac · Windows · Linux</div></div></a>
-        <a href="/itdr" class="nav-dropdown-item"><div class="nav-dropdown-icon">🔑</div><div><div class="nav-dropdown-title">Managed ITDR</div><div class="nav-dropdown-desc">Microsoft 365 · Google Workspace</div></div></a>
-        <a href="/siem" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Managed SIEM</div><div class="nav-dropdown-desc">Corrélation logs et détection</div></div></a>
-        <a href="/#produits" class="nav-dropdown-item"><div class="nav-dropdown-icon">📋</div><div><div class="nav-dropdown-title">Conformité RGPD</div><div class="nav-dropdown-desc">Rapport PDF officiel automatique</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">🏠</div><div><div class="nav-dd-title">Vue d ensemble</div><div class="nav-dd-desc">La plateforme complete</div></div></a>
+        <div class="nav-sep"></div>
+        <a href="/edr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🖥</div><div><div class="nav-dd-title">Managed EDR</div><div class="nav-dd-desc">Mac · Windows · Linux</div></div></a>
+        <a href="/itdr" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🔑</div><div><div class="nav-dd-title">Managed ITDR</div><div class="nav-dd-desc">Microsoft 365 · Google Workspace</div></div></a>
+        <a href="/siem" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">📊</div><div><div class="nav-dd-title">Managed SIEM</div><div class="nav-dd-desc">Correlation logs</div></div></a>
+        <a href="/plateforme" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(220,38,38,.15)">📋</div><div><div class="nav-dd-title">Conformite RGPD</div><div class="nav-dd-desc">Rapport PDF officiel</div></div></a>
       </div>
     </div>
     <div class="nav-item">
-      <button class="nav-link">Solutions ▾</button>
+      <button class="nav-link" onclick="toggleDropdown(this)">Solutions <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></button>
       <div class="nav-dropdown">
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏥</div><div><div class="nav-dropdown-title">Sante</div><div class="nav-dropdown-desc">Medecins · Dentistes · Pharmacies</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">⚖️</div><div><div class="nav-dropdown-title">Juridique</div><div class="nav-dropdown-desc">Notaires · Avocats · Huissiers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">📊</div><div><div class="nav-dropdown-title">Finance</div><div class="nav-dropdown-desc">Experts-comptables · Conseillers</div></div></a>
-        <a href="/#secteurs" class="nav-dropdown-item"><div class="nav-dropdown-icon">🏭</div><div><div class="nav-dropdown-title">Industrie</div><div class="nav-dropdown-desc">PME sous-traitantes · Fabricants</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(16,185,129,.15)">🏥</div><div><div class="nav-dd-title">Sante</div><div class="nav-dd-desc">Medecins · Dentistes</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(234,88,12,.15)">⚖️</div><div><div class="nav-dd-title">Juridique</div><div class="nav-dd-desc">Notaires · Avocats</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(37,99,235,.15)">📈</div><div><div class="nav-dd-title">Finance</div><div class="nav-dd-desc">Experts-comptables</div></div></a>
+        <a href="/pourquoi" class="nav-dd-item"><div class="nav-dd-icon" style="background:rgba(124,58,237,.15)">🏭</div><div><div class="nav-dd-title">Industrie</div><div class="nav-dd-desc">PME sous-traitantes</div></div></a>
       </div>
     </div>
     <a href="/tarifs" class="nav-link">Tarifs</a>
@@ -36,35 +63,93 @@
     <a href="/pourquoi" class="nav-link">Pourquoi ShieldFlow</a>
   </div>
   <div class="nav-right">
-    <a href="/dashboard" class="btn-nav-ghost">Connexion</a>
-    <a href="/#contact" class="btn-nav-primary">Essai gratuit</a>
+    <a href="/dashboard" class="btn-ghost-sm">Connexion</a>
+    <a href="/contact" class="btn-primary-sm">Essai gratuit →</a>
   </div>
 </nav>
-<div class="breadcrumb"><a href="/">Accueil</a><span class="breadcrumb-sep">›</span><a href="/plateforme">Plateforme</a><span class="breadcrumb-sep">›</span><span style="color:var(--white)">📊 Managed SIEM</span></div>
-<div class="page-hero">
-  <div class="page-badge">📊 Managed SIEM</div>
-  <h1 class="page-title">Correlation des logs.<br>Detection avancee.</h1>
-  <p class="page-sub">Le SIEM ShieldFlow collecte les evenements de toutes vos machines et services cloud, les correlele et detecte des patterns d attaque qu on ne voit pas en regardant chaque source separement.</p>
-  <div class="page-actions"><a href="/#contact" class="btn-primary">Essai gratuit →</a><a href="/#contact" class="btn-ghost">Demander une demo</a></div>
-  <div class="stats-row"><div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Collecte des logs</div></div><div class="stat"><div class="stat-num">5min</div><div class="stat-label">Cycle de correlation</div></div><div class="stat"><div class="stat-num">100%</div><div class="stat-label">Sources unifiees</div></div><div class="stat"><div class="stat-num">0</div><div class="stat-label">Configuration requise</div></div></div>
+<div style="padding:80px 5% 0;max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)">
+  <a href="/" style="color:var(--text3);text-decoration:none">Accueil</a><span>›</span>
+  <a href="/plateforme" style="color:var(--text3);text-decoration:none">Plateforme</a><span>›</span>
+  <span style="color:var(--white)">Managed SIEM</span>
 </div>
-<section class="s s-alt"><div class="s-inner"><div class="eyebrow">Pourquoi un SIEM</div><h2 class="s-title">Voir ce qu on ne voit pas<br>en regardant separement.</h2><p class="s-sub">Une connexion ratee seule — normal. Une connexion reussie juste apres — normal. Un fichier qui s envoie ailleurs juste apres — suspect. Le SIEM voit les trois ensemble et leve l alerte.</p></div></section>
-<section class="s"><div class="s-inner"><div class="eyebrow">Fonctionnalites SIEM</div><h2 class="s-title">Correlation complete<br>de tous vos evenements.</h2><p class="s-sub">Tous vos logs centralises, analyses et correles automatiquement.</p><div class="features-grid"><div class="feature"><div class="feature-icon">📊</div><div class="feature-title">Correlation multi-sources</div><p class="feature-desc">Analyse les evenements de toutes vos machines et services cloud ensemble. Detecte des patterns d attaque invisibles si on regarde chaque source separement.</p></div><div class="feature"><div class="feature-icon">🔍</div><div class="feature-title">Detection comportementale</div><p class="feature-desc">Brute force suivi d une connexion reussie, acces inhabituel la nuit, exfiltration de donnees apres connexion M365 suspecte — le SIEM voit le lien.</p></div><div class="feature"><div class="feature-icon">💾</div><div class="feature-title">Logs Windows Event</div><p class="feature-desc">Collecte et analyse les evenements Windows — tentatives connexion, processus lances, modifications registre, services installes.</p></div><div class="feature"><div class="feature-icon">☁️</div><div class="feature-title">Logs cloud unifies</div><p class="feature-desc">Evenements Microsoft 365, Google Workspace et AWS centralises dans une seule timeline. Correlation cross-cloud automatique.</p></div><div class="feature"><div class="feature-icon">📈</div><div class="feature-title">Timeline des incidents</div><p class="feature-desc">Vue chronologique complete de chaque incident — qui, quoi, quand, comment. Utile pour les rapports d incident et la conformite RGPD.</p></div><div class="feature"><div class="feature-icon">🚨</div><div class="feature-title">Alertes intelligentes</div><p class="feature-desc">Uniquement les alertes qui comptent. Le SIEM filtre le bruit et ne remonte que les evenements qui necessitent une action.</p></div></div></div></section>
-<div class="cta-final"><h2>Pret a proteger votre entreprise ?</h2><p>Installation sur site incluse partout en Europe. Operationnel en 30 minutes.</p><a href="/#contact" class="btn-primary" style="display:inline-flex;font-size:15px;padding:14px 28px">Demarrer l essai gratuit →</a></div>
-<footer>
-  <div class="footer-inner">
-    <div class="footer-top">
-      <div><div class="footer-logo">🛡 ShieldFlow</div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
-      <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/#produits">Conformite RGPD</a></div>
-      <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/#secteurs">Sante</a><a href="/#secteurs">Juridique</a><a href="/#secteurs">Finance</a><a href="/#secteurs">Industrie</a></div>
-      <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/tarifs">Tarifs</a><a href="/pourquoi">Notre histoire</a></div>
-      <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">A propos</a><a href="/#contact">Contact</a><a href="#">Mentions legales</a><a href="#">CGV</a></div>
+<section class="hero-siem">
+  <div class="siem-inner">
+    <div>
+      <div class="badge" style="background:rgba(234,88,12,.1);border-color:rgba(234,88,12,.25);color:#fb923c">
+        <div class="badge-dot" style="background:#fb923c;animation:blink 2s infinite"></div>Managed SIEM
+      </div>
+      <h1 class="siem-title animate-fade-up">Correlation des logs.<br><span class="siem-grad">Detection avancee.</span></h1>
+      <p class="animate-fade-up-d1" style="font-size:17px;color:var(--text2);line-height:1.8;margin-bottom:32px;max-width:480px">
+        Le SIEM ShieldFlow collecte tous vos evenements — machines, Microsoft 365, AWS — et les correlele pour detecter des patterns d attaque invisibles quand on regarde chaque source separement.
+      </p>
+      <div class="animate-fade-up-d2" style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="/contact" class="btn-primary" style="background:linear-gradient(135deg,#ea580c,#f97316)">Essai gratuit →</a>
+        <a href="/contact" class="btn-secondary">Demander une demo</a>
+      </div>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
-      <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+    <div class="animate-fade-up-d2">
+      <div class="log-stream" id="logStream">
+        <div class="log-line"><span class="log-time">08:14:01</span><span class="log-source ls-edr">EDR</span><span class="log-msg">PC-Compta — Connexion echouee (1/3)</span><span class="log-badge lb-ok">INFO</span></div>
+        <div class="log-line"><span class="log-time">08:14:03</span><span class="log-source ls-edr">EDR</span><span class="log-msg">PC-Compta — Connexion echouee (2/3)</span><span class="log-badge lb-warn">WARN</span></div>
+        <div class="log-line"><span class="log-time">08:14:05</span><span class="log-source ls-edr">EDR</span><span class="log-msg">PC-Compta — Connexion echouee (3/3)</span><span class="log-badge lb-warn">WARN</span></div>
+        <div class="log-line"><span class="log-time">08:14:07</span><span class="log-source ls-m365">M365</span><span class="log-msg">Connexion reussie depuis IP 185.220.x.x</span><span class="log-badge lb-warn">SUSP</span></div>
+        <div class="log-line"><span class="log-time">08:14:09</span><span class="log-source ls-m365">M365</span><span class="log-msg">Acces boite mail — 340 emails lus en 2s</span><span class="log-badge lb-crit">CRIT</span></div>
+        <div class="correl-card">
+          <div class="correl-title">🔗 CORRELATION DETECTEE — INTRUSION EN COURS</div>
+          <div class="correl-desc">Brute force (EDR) → Connexion reussie IP suspecte (M365) → Exfiltration emails. Sessions M365 revoquees automatiquement.</div>
+        </div>
+        <div class="log-line" style="margin-top:8px"><span class="log-time">08:14:11</span><span class="log-source ls-siem">SIEM</span><span class="log-msg">Sessions M365 revoquees — attaque stoppee</span><span class="log-badge lb-ok">RESOLU</span></div>
+        <div class="log-line"><span class="log-time">08:14:12</span><span class="log-source ls-aws">AWS</span><span class="log-msg">S3 bucket — acces public detecte</span><span class="log-badge lb-crit">CRIT</span></div>
+        <div class="log-line"><span class="log-time">08:14:13</span><span class="log-source ls-edr">EDR</span><span class="log-msg">MacBook-Pro — Pare-feu desactive detecte</span><span class="log-badge lb-warn">WARN</span></div>
+        <div class="log-line"><span class="log-time">08:14:13</span><span class="log-source ls-siem">SIEM</span><span class="log-msg">Pare-feu reactive automatiquement</span><span class="log-badge lb-ok">AUTO</span></div>
+      </div>
     </div>
   </div>
+</section>
+<section class="section section-alt">
+  <div class="container">
+    <div class="eyebrow reveal">Fonctionnalites SIEM</div>
+    <h2 class="section-title reveal">Voir ce qu on ne voit pas<br>en regardant separement.</h2>
+    <div class="siem-features">
+      <div class="siem-feat reveal"><div class="siem-feat-icon">🔗</div><div class="feature-edr-title" style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Correlation multi-sources</div><p style="font-size:13px;color:var(--text2);line-height:1.65">Analyse les evenements de toutes vos machines et services cloud ensemble. Detecte des patterns d attaque invisibles si on regarde chaque source separement.</p></div>
+      <div class="siem-feat reveal"><div class="siem-feat-icon">🧠</div><div class="feature-edr-title" style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Detection comportementale</div><p style="font-size:13px;color:var(--text2);line-height:1.65">Brute force suivi d une connexion reussie, acces inhabituel la nuit, exfiltration apres connexion M365 suspecte — le SIEM voit le lien entre tous ces evenements.</p></div>
+      <div class="siem-feat reveal"><div class="siem-feat-icon">💾</div><div class="feature-edr-title" style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Logs Windows Event</div><p style="font-size:13px;color:var(--text2);line-height:1.65">Collecte et analyse les evenements Windows en temps reel — tentatives connexion, processus lances, modifications registre, services installes.</p></div>
+      <div class="siem-feat reveal"><div class="siem-feat-icon">📈</div><div class="feature-edr-title" style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:8px">Timeline des incidents</div><p style="font-size:13px;color:var(--text2);line-height:1.65">Vue chronologique complete de chaque incident — qui, quoi, quand, comment. Parfait pour les rapports d incident RGPD et les audits de securite.</p></div>
+    </div>
+  </div>
+</section>
+<div style="padding:80px 5%;text-align:center;background:radial-gradient(ellipse 60% 80% at 50% 100%,rgba(234,88,12,.08),transparent),var(--dark);border-top:1px solid var(--border)">
+  <h2 class="reveal" style="font-size:40px;font-weight:800;color:var(--white);letter-spacing:-.04em;margin-bottom:14px">Correlele vos logs.<br>Detectez tout.</h2>
+  <p class="reveal" style="font-size:16px;color:var(--text2);margin-bottom:32px">Tous vos evenements centralises et analyses automatiquement.</p>
+  <div class="reveal" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="/contact" class="btn-primary" style="font-size:15px;padding:14px 28px;background:linear-gradient(135deg,#ea580c,#f97316)">Demarrer l essai gratuit →</a>
+    <a href="/tarifs" class="btn-secondary" style="font-size:15px;padding:14px 28px">Voir les tarifs</a>
+  </div>
+</div>
+<footer>
+  <div class="footer-grid">
+    <div><div class="footer-brand-logo"><div class="nav-logo-mark">🛡</div><span class="footer-brand-text">ShieldFlow</span></div><p class="footer-tagline">Cybersecurite managee pour toutes les PME francaises. Donnees hebergees en Europe.</p></div>
+    <div class="footer-col"><div class="footer-col-title">Produits</div><a href="/edr">Managed EDR</a><a href="/itdr">Managed ITDR</a><a href="/siem">Managed SIEM</a><a href="/plateforme">Plateforme</a></div>
+    <div class="footer-col"><div class="footer-col-title">Solutions</div><a href="/pourquoi">Sante</a><a href="/pourquoi">Juridique</a><a href="/pourquoi">Finance</a><a href="/pourquoi">Industrie</a></div>
+    <div class="footer-col"><div class="footer-col-title">Partenaires</div><a href="/partenaires">Programme MSP</a><a href="/partenaires">Tarif partenaire</a><a href="/tarifs">Tarifs</a></div>
+    <div class="footer-col"><div class="footer-col-title">Entreprise</div><a href="/pourquoi">Notre histoire</a><a href="/contact">Contact</a><a href="#">Mentions legales</a></div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">2026 ShieldFlow · Marseille · Donnees hebergees en Europe</div>
+    <div class="footer-links"><a href="#">Mentions legales</a><a href="#">Confidentialite</a><a href="#">CGV</a></div>
+  </div>
 </footer>
-</body>
-</html>
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>20)});
+function toggleDropdown(btn){const item=btn.closest('.nav-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'));if(!isOpen)item.classList.add('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-item'))document.querySelectorAll('.nav-item.open').forEach(el=>el.classList.remove('open'))});
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+<style>
+.nav-item.open .nav-dropdown{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.nav-item.open .nav-link svg{transform:rotate(180deg)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</body></html>
