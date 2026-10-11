@@ -3,642 +3,1125 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShieldFlow MSSP</title>
+<title>ShieldFlow — Dashboard MSSP</title>
 <style>
-:root{--bg:#0a0d14;--surface:#111520;--surface2:#161b28;--surface3:#1c2235;--border:#1e2640;--text:#e8edf5;--text2:#8b9ab0;--text3:#4a5568;--blue:#2563eb;--blue2:#3b82f6;--green:#10b981;--red:#ef4444;--orange:#f97316;--amber:#f59e0b}
+/* ── RESET & VARS ── */
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;display:flex;overflow:hidden}
-.sidebar{width:240px;min-width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
-.logo{padding:20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.logo-text{font-size:16px;font-weight:700}.logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
-.nav{padding:12px 8px;flex:1;overflow-y:auto}
-.nav-section{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:8px 8px 4px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;margin-bottom:2px}
-.nav-item:hover{background:var(--surface2);color:var(--text)}.nav-item.active{background:rgba(37,99,235,.15);color:var(--blue2)}
-.nav-item .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
-.client-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;margin-bottom:2px}
-.client-item:hover,.client-item.active{background:var(--surface2);color:var(--text)}
-.client-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
-.client-dot.offline{background:var(--text3)}
-.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border)}
-.avatar{width:32px;height:32px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
-.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.topbar{height:56px;min-height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
-.topbar-title{font-size:15px;font-weight:600}
-.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
-.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue2)}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
-.content{flex:1;overflow-y:auto;padding:20px}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
-.card.clickable{cursor:pointer;transition:all .15s}.card.clickable:hover{border-color:var(--blue);background:var(--surface2)}
-.card-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.card-value{font-size:28px;font-weight:800;color:var(--text)}.card-sub{font-size:11px;color:var(--text3);margin-top:4px}
-.section{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
-.section-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.section-title{font-size:13px;font-weight:600}.section-body{padding:12px}
-.alert-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border:1px solid var(--border)}
-.alert-row:last-child{margin-bottom:0}
-.sev{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0}
-.sev-critical{background:rgba(239,68,68,.15);color:var(--red)}.sev-high{background:rgba(249,115,22,.15);color:var(--orange)}
-.sev-medium{background:rgba(245,158,11,.15);color:var(--amber)}.sev-low{background:rgba(16,185,129,.15);color:var(--green)}
-.alert-info{flex:1;min-width:0}.alert-title{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.alert-device{font-size:11px;color:var(--text3);margin-top:2px}.alert-actions{display:flex;gap:6px;flex-shrink:0}
-.action-btn{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;border:none;transition:all .15s}
-.action-fix{background:var(--green);color:#fff}.action-fix:hover{opacity:.85}
-.action-info{background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.2)}.action-info:hover{background:rgba(249,115,22,.25)}
-.empty-state{text-align:center;padding:30px;color:var(--text3)}.empty-icon{font-size:32px;margin-bottom:8px}
-.cloud-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border:1px solid var(--border)}
-.device-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:var(--surface2);margin-bottom:6px;border:1px solid var(--border)}
-.install-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:11px;color:var(--green);word-break:break-all;position:relative}
-.copy-btn{position:absolute;top:8px;right:8px;background:var(--blue);border:none;color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;cursor:pointer;font-weight:600}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:90%;max-width:520px;max-height:85vh;display:flex;flex-direction:column}
-.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-size:15px;font-weight:600}.modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer}
-.modal-body{padding:20px;overflow-y:auto;flex:1}.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-.form-group{margin-bottom:14px}.form-label{font-size:11px;color:var(--text2);margin-bottom:6px;display:block}
-.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none}
-.form-input:focus{border-color:var(--blue)}
-.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;outline:none}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+:root{
+  --bg:#f0f2f7;--sidebar:#0f1117;--sidebar2:#161b28;
+  --white:#ffffff;--text:#1a1f2e;--text2:#6b7280;--text3:#9ca3af;
+  --blue:#2563eb;--blue2:#3b82f6;--blue-light:#eff6ff;
+  --green:#059669;--green2:#10b981;--green-light:#ecfdf5;
+  --red:#dc2626;--red2:#ef4444;--red-light:#fef2f2;
+  --orange:#ea580c;--orange2:#f97316;--orange-light:#fff7ed;
+  --amber:#d97706;--amber-light:#fffbeb;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --card:#ffffff;--card-shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text)}
+body{display:flex;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:256px;min-width:256px;background:var(--sidebar);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.sidebar-logo{padding:20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-name{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.logo-tag{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-group-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;padding:12px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.5);transition:.15s;margin-bottom:1px;text-decoration:none;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9)}
+.nav-item.active{background:rgba(37,99,235,.2);color:#60a5fa}
+.nav-item .nav-icon{width:20px;text-align:center;font-size:14px;flex-shrink:0}
+.nav-item .nav-label{flex:1}
+.nav-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.nav-badge-green{background:var(--green2)}
+.sidebar-clients{padding:0 8px 8px}
+.client-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.45);transition:.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left}
+.client-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+.client-item.active{background:rgba(37,99,235,.15);color:#93c5fd}
+.client-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.client-alerts{margin-left:auto;font-size:10px;font-weight:700;color:var(--red2);background:rgba(239,68,68,.15);padding:1px 5px;border-radius:4px}
+.sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.footer-avatar{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.footer-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
+.footer-role{font-size:10px;color:rgba(255,255,255,.35)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+.topbar{height:58px;min-height:58px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:16px;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--text3)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s;text-decoration:none}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid rgba(220,38,38,.2)}.btn-danger:hover{background:rgba(220,38,38,.15)}
+.btn-success{background:var(--green-light);color:var(--green);border:1px solid rgba(5,150,105,.2)}.btn-success:hover{background:rgba(5,150,105,.15)}
+.btn-sm{padding:5px 10px;font-size:11px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow)}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--card-shadow);transition:.2s}
+.metric-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-1px)}
+.metric-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+.metric-value{font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1}
+.metric-label{font-size:12px;color:var(--text2);margin-top:4px}
+.metric-trend{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px;font-weight:600}
+.trend-up{color:var(--green)}.trend-down{color:var(--red)}.trend-neutral{color:var(--text3)}
+
+/* ── TABLEAU CLIENTS ── */
+.clients-table{width:100%;border-collapse:collapse}
+.clients-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);background:var(--bg)}
+.clients-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.clients-table tr:last-child td{border-bottom:none}
+.clients-table tr:hover td{background:#f9fafb}
+.client-name-cell{display:flex;align-items:center;gap:10px}
+.client-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.client-name{font-size:13px;font-weight:600;color:var(--text)}
+.client-sector{font-size:11px;color:var(--text3)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.status-ok{background:var(--green-light);color:var(--green)}
+.status-warn{background:var(--orange-light);color:var(--orange)}
+.status-crit{background:var(--red-light);color:var(--red)}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.score-bar{display:flex;align-items:center;gap:8px}
+.score-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;max-width:80px}
+.score-bar-fill{height:100%;border-radius:3px;transition:.3s}
+
+/* ── ALERTE ROWS ── */
+.alert-list{display:flex;flex-direction:column;gap:6px}
+.alert-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;transition:.15s}
+.alert-item:hover{box-shadow:var(--card-shadow)}
+.alert-item.critical{border-left:3px solid var(--red)}
+.alert-item.high{border-left:3px solid var(--orange)}
+.alert-item.medium{border-left:3px solid var(--amber)}
+.alert-item.low{border-left:3px solid var(--green2)}
+.sev-badge{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0;text-transform:uppercase}
+.sev-critical{background:var(--red-light);color:var(--red)}
+.sev-high{background:var(--orange-light);color:var(--orange)}
+.sev-medium{background:var(--amber-light);color:var(--amber)}
+.sev-low{background:var(--green-light);color:var(--green)}
+.alert-body{flex:1;min-width:0}
+.alert-title{font-size:13px;font-weight:600;color:var(--text)}
+.alert-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.alert-actions-row{display:flex;gap:6px;flex-shrink:0}
+
+/* ── ENDPOINTS GRID ── */
+.endpoints-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.endpoint-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow);transition:.2s}
+.endpoint-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.endpoint-header{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.endpoint-os-icon{font-size:24px;flex-shrink:0}
+.endpoint-info{flex:1;min-width:0}
+.endpoint-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.endpoint-platform{font-size:11px;color:var(--text3);margin-top:1px}
+.endpoint-status{flex-shrink:0}
+.endpoint-body{padding:14px 16px}
+.endpoint-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ep-metric{text-align:center;padding:8px;background:var(--bg);border-radius:8px}
+.ep-metric-val{font-size:16px;font-weight:700;color:var(--text)}
+.ep-metric-label{font-size:10px;color:var(--text3);margin-top:2px}
+.endpoint-checks{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.check-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600}
+.check-ok{background:var(--green-light);color:var(--green)}
+.check-fail{background:var(--red-light);color:var(--red)}
+.check-warn{background:var(--orange-light);color:var(--orange)}
+.endpoint-install{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.install-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.install-cmd{font-family:monospace;font-size:11px;color:var(--text);word-break:break-all;line-height:1.5}
+.copy-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--blue);cursor:pointer;border:none;background:none;padding:3px 6px;border-radius:4px;margin-top:5px;font-weight:600;transition:.15s}
+.copy-btn:hover{background:var(--blue-light)}
+
+/* ── CLOUD SECTION ── */
+.cloud-services{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cloud-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--card-shadow)}
+.cloud-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cloud-icon{font-size:28px}
+.cloud-name{font-size:14px;font-weight:700;color:var(--text)}
+.cloud-status{font-size:11px;margin-top:1px}
+.cloud-alerts-list{display:flex;flex-direction:column;gap:6px}
+.cloud-alert{padding:8px 10px;border-radius:8px;border:1px solid;font-size:12px}
+.cloud-alert-crit{background:var(--red-light);border-color:rgba(220,38,38,.2);color:var(--red)}
+.cloud-alert-high{background:var(--orange-light);border-color:rgba(234,88,12,.2);color:var(--orange)}
+.cloud-alert-ok{background:var(--green-light);border-color:rgba(5,150,105,.2);color:var(--green)}
+
+/* ── SIEM LOGS ── */
+.siem-container{background:#0d1117;border-radius:12px;overflow:hidden;font-family:monospace}
+.siem-header{background:#161b22;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.siem-dot{width:10px;height:10px;border-radius:50%}
+.siem-body{padding:16px;font-size:12px;line-height:1.8;max-height:400px;overflow-y:auto}
+.log-entry{display:flex;gap:10px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.log-time{color:#6b7280;flex-shrink:0;min-width:60px}
+.log-src{padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;text-transform:uppercase}
+.ls-edr{background:rgba(16,185,129,.15);color:#34d399}
+.ls-m365{background:rgba(37,99,235,.15);color:#60a5fa}
+.ls-siem{background:rgba(124,58,237,.15);color:#a78bfa}
+.ls-aws{background:rgba(234,88,12,.15);color:#fb923c}
+.log-msg{color:#9ca3af;flex:1}
+.log-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;flex-shrink:0}
+.lb-ok{background:rgba(16,185,129,.2);color:#34d399}
+.lb-crit{background:rgba(220,38,38,.2);color:#f87171}
+.lb-warn{background:rgba(234,88,12,.2);color:#fb923c}
+.correl{background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:11px}
+.correl-title{color:#a78bfa;font-weight:700;margin-bottom:3px}
+.correl-desc{color:#6b7280}
+
+/* ── RGPD ── */
+.rgpd-score-circle{width:120px;height:120px;position:relative;margin:0 auto 20px}
+.rgpd-donut{transform:rotate(-90deg)}
+.rgpd-articles{display:flex;flex-direction:column;gap:8px}
+.rgpd-article{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:8px}
+.rgpd-article-name{font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;min-width:60px}
+.rgpd-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.rgpd-bar-fill{height:100%;border-radius:3px;background:var(--blue)}
+.rgpd-article-score{font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;min-width:35px;text-align:right}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:28px;width:90%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.form-input,.form-select{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:.15s}
+.form-input:focus,.form-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+/* ── LOGIN ── */
+.login-page{position:fixed;inset:0;background:linear-gradient(135deg,#0f1117,#1e2333);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:#161b28;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:40px;width:100%;max-width:400px;text-align:center}
+.login-logo{font-size:40px;margin-bottom:16px}
+.login-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:6px}
+.login-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:32px}
+.login-input{width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;font-size:14px;color:#fff;background:rgba(255,255,255,.05);outline:none;margin-bottom:12px;transition:.15s}
+.login-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.login-btn{width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;transition:.15s;margin-top:4px}
+.login-btn:hover{opacity:.9}
+.login-error{font-size:12px;color:#f87171;margin-top:8px;display:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1f2e;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:300px}
 .toast.show{opacity:1;transform:translateY(0)}
-.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
-.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px}
-.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
-.stat-value{font-size:36px;font-weight:800}.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
-.rgpd-article{padding:10px 0;border-bottom:1px solid var(--border)}.rgpd-article:last-child{border-bottom:none}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:20px;width:fit-content}
+.tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:.15s;border:none;background:none}
+.tab.active{background:var(--white);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab:hover:not(.active){color:var(--text)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:13px}
+
+/* ── SECTION WRAPPER ── */
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow);margin-bottom:20px;overflow:hidden}
+.section-card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-card-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.section-card-body{padding:16px 20px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){.metric-grid{grid-template-columns:repeat(2,1fr)}.cloud-services{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{display:none}.endpoints-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<div class="login-screen" id="login-screen">
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
   <div class="login-box">
-    <div style="text-align:center;margin-bottom:30px">
-      <div style="font-size:40px">🛡</div>
-      <h1 style="font-size:22px;font-weight:800;margin-top:8px">ShieldFlow</h1>
-      <p style="color:var(--text3);font-size:12px;margin-top:4px">Plateforme MSSP de cybersécurité</p>
-    </div>
-    <div id="login-error" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none">Mot de passe incorrect</div>
-    <div class="form-group">
-      <label class="form-label">Mot de passe MSSP</label>
-      <input class="form-input" type="password" id="login-pw" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="doLogin()">Se connecter</button>
+    <div class="login-logo">🛡</div>
+    <div class="login-title">ShieldFlow</div>
+    <div class="login-sub">Plateforme MSSP — Accès réservé</div>
+    <input class="login-input" type="password" id="loginPass" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Se connecter →</button>
+    <div class="login-error" id="loginError">Mot de passe incorrect</div>
   </div>
 </div>
 
-<div id="app" style="display:none;width:100%;height:100%;flex-direction:row">
+<!-- APP -->
+<div id="app" style="display:none;width:100%;height:100%;overflow:hidden;display:flex">
+
+<!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">🛡</div>
-    <div><div class="logo-text">ShieldFlow</div><div class="logo-sub">MSSP Platform</div></div>
+  <div class="sidebar-logo">
+    <div class="logo-mark">🛡</div>
+    <div>
+      <div class="logo-name">ShieldFlow</div>
+      <div class="logo-tag">MSSP Platform</div>
+    </div>
   </div>
-  <div class="nav">
-    <div class="nav-section">Navigation</div>
-    <div class="nav-item active" id="nav-overview" onclick="showView('overview')">
-      <span>🏠</span> Vue d'ensemble
-      <span class="badge" id="badge-total" style="display:none">0</span>
-    </div>
-    <div class="nav-section" style="margin-top:8px">Clients</div>
-    <div id="clients-nav"></div>
-    <div class="nav-item" onclick="openAddClient()" style="margin-top:8px;border:1px dashed var(--border)">
-      <span>+</span> Ajouter un client
-    </div>
+  <div class="sidebar-nav">
+    <div class="nav-group-label">Navigation</div>
+    <button class="nav-item active" onclick="showPage('overview')" id="nav-overview">
+      <span class="nav-icon">🏠</span><span class="nav-label">Vue d'ensemble</span>
+      <span class="nav-badge" id="badge-total">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('endpoints')" id="nav-endpoints">
+      <span class="nav-icon">💻</span><span class="nav-label">Endpoints</span>
+    </button>
+    <button class="nav-item" onclick="showPage('alerts')" id="nav-alerts">
+      <span class="nav-icon">🔔</span><span class="nav-label">Alertes</span>
+      <span class="nav-badge" id="badge-alerts">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('cloud')" id="nav-cloud">
+      <span class="nav-icon">☁️</span><span class="nav-label">Cloud & Identités</span>
+    </button>
+    <button class="nav-item" onclick="showPage('siem')" id="nav-siem">
+      <span class="nav-icon">📊</span><span class="nav-label">SIEM & Logs</span>
+    </button>
+    <button class="nav-item" onclick="showPage('rgpd')" id="nav-rgpd">
+      <span class="nav-icon">📋</span><span class="nav-label">Conformité RGPD</span>
+    </button>
+    <div class="nav-group-label" style="margin-top:8px">Clients</div>
+    <div id="clientsNav"></div>
+  </div>
+  <div class="sidebar-clients">
+    <button class="nav-item" onclick="openAddClient()" style="margin-top:4px">
+      <span class="nav-icon">➕</span><span class="nav-label">Ajouter un client</span>
+    </button>
   </div>
   <div class="sidebar-footer">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="avatar">M</div>
-      <div><div style="font-size:12px;font-weight:600">Administrateur</div><div style="font-size:10px;color:var(--text3)">MSSP</div></div>
+    <div class="footer-avatar">H</div>
+    <div>
+      <div class="footer-name">Hanafi Gaci</div>
+      <div class="footer-role">Administrateur MSSP</div>
     </div>
   </div>
 </div>
+
+<!-- MAIN -->
 <div class="main">
+  <!-- TOPBAR -->
   <div class="topbar">
-    <div class="topbar-title" id="topbar-title">Vue d'ensemble</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" onclick="refreshAll()" id="refresh-btn">↻ Actualiser</button>
-      <button class="btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2);display:none" id="soc-btn" onclick="showSOCReport(state.selectedTenant.id)">🔍 Rapport SOC</button>
+    <div class="topbar-left">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Vue d'ensemble</div>
+        <div class="topbar-sub" id="topbarSub">Tous les clients</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()">↻ Actualiser</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddClient()">+ Nouveau client</button>
     </div>
   </div>
-  <div class="content" id="content"></div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PAGE: VUE D'ENSEMBLE -->
+    <div id="page-overview">
+      <div class="metric-grid" id="globalMetrics">
+        <div class="metric-card">
+          <div class="metric-icon" style="background:#eff6ff">👥</div>
+          <div class="metric-value" id="m-clients">-</div>
+          <div class="metric-label">Clients actifs</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon" style="background:#ecfdf5">💻</div>
+          <div class="metric-value" id="m-endpoints">-</div>
+          <div class="metric-label">Machines surveillées</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon" style="background:#fef2f2">🚨</div>
+          <div class="metric-value" id="m-alerts">-</div>
+          <div class="metric-label">Alertes actives</div>
+          <div class="metric-trend" id="m-alerts-crit"></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon" style="background:#f5f3ff">📋</div>
+          <div class="metric-value" id="m-rgpd">-</div>
+          <div class="metric-label">Score RGPD moyen</div>
+        </div>
+      </div>
+
+      <!-- CLIENTS TABLE -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">👥 Clients</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddClient()">+ Ajouter</button>
+        </div>
+        <div class="section-card-body" style="padding:0">
+          <table class="clients-table" id="clientsTable">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Machines</th>
+                <th>Alertes</th>
+                <th>Score sécurité</th>
+                <th>RGPD</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="clientsTableBody">
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: ENDPOINTS -->
+    <div id="page-endpoints" style="display:none">
+      <div class="tabs" id="endpointClientTabs"></div>
+      <div id="endpointsContent">
+        <div class="empty"><div class="empty-icon">💻</div><div class="empty-title">Sélectionnez un client</div></div>
+      </div>
+    </div>
+
+    <!-- PAGE: ALERTES -->
+    <div id="page-alerts" style="display:none">
+      <div class="tabs" id="alertClientTabs"></div>
+      <div class="alert-list" id="alertsList">
+        <div class="empty"><div class="empty-icon">🔔</div><div class="empty-title">Chargement des alertes...</div></div>
+      </div>
+    </div>
+
+    <!-- PAGE: CLOUD -->
+    <div id="page-cloud" style="display:none">
+      <div class="tabs" id="cloudClientTabs"></div>
+      <div id="cloudContent">
+        <div class="empty"><div class="empty-icon">☁️</div><div class="empty-title">Sélectionnez un client</div></div>
+      </div>
+    </div>
+
+    <!-- PAGE: SIEM -->
+    <div id="page-siem" style="display:none">
+      <div class="tabs" id="siemClientTabs"></div>
+      <div class="siem-container" id="siemLogs">
+        <div class="siem-header">
+          <div class="siem-dot" style="background:#ff5f57"></div>
+          <div class="siem-dot" style="background:#ffbd2e"></div>
+          <div class="siem-dot" style="background:#28c840"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,.4);margin-left:8px;font-family:monospace">ShieldFlow SIEM — Live Log Stream</span>
+          <button onclick="clearLogs()" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);background:none;border:none;cursor:pointer">Effacer</button>
+        </div>
+        <div class="siem-body" id="siemBody">
+          <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-src ls-siem">SIEM</span><span class="log-msg">En attente de données...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: RGPD -->
+    <div id="page-rgpd" style="display:none">
+      <div class="tabs" id="rgpdClientTabs"></div>
+      <div id="rgpdContent">
+        <div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Sélectionnez un client</div></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 </div>
 
-<div class="modal-overlay" id="modal">
+<!-- MODAL AJOUTER CLIENT -->
+<div class="modal-overlay" id="modalAddClient">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title"></div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">➕ Ajouter un client</div>
+    <div class="form-group">
+      <label class="form-label">Nom du client *</label>
+      <input class="form-input" id="newClientName" placeholder="Ex: Cabinet Dupont">
     </div>
-    <div class="modal-body" id="modal-body"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="newClientEmail" type="email" placeholder="contact@cabinet.fr">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Secteur</label>
+        <select class="form-select" id="newClientSector">
+          <option value="">Choisir...</option>
+          <option>Cabinet médical</option>
+          <option>Cabinet notaire</option>
+          <option>Expert-comptable</option>
+          <option>Agence immobilière</option>
+          <option>PME industrielle</option>
+          <option>Prestataire IT</option>
+          <option>Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre de machines estimé</label>
+      <input class="form-input" id="newClientMachines" type="number" placeholder="5">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAddClient')">Annuler</button>
+      <button class="btn btn-primary" onclick="createClient()">Créer le client →</button>
+    </div>
   </div>
 </div>
 
+<!-- MODAL CONNECTER CLOUD -->
+<div class="modal-overlay" id="modalCloud">
+  <div class="modal">
+    <div class="modal-title">☁️ Connecter un service cloud</div>
+    <div class="form-group">
+      <label class="form-label">Service</label>
+      <select class="form-select" id="cloudType" onchange="renderCloudFields()">
+        <option value="">Choisir...</option>
+        <option value="m365">🔵 Microsoft 365</option>
+        <option value="gworkspace">🟡 Google Workspace</option>
+        <option value="aws">🟠 Amazon AWS</option>
+      </select>
+    </div>
+    <div id="cloudFields"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalCloud')">Annuler</button>
+      <button class="btn btn-primary" onclick="connectCloud()">Connecter →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-const S='https://shieldflow-rfzv.onrender.com';
-let state={tenants:[],selectedTenant:null,view:'overview'};
+const S = 'https://shieldflow-rfzv.onrender.com';
+let tenants = [];
+let currentPage = 'overview';
+let currentClientId = null;
+let siemInterval = null;
 
-function doLogin(){
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pass = document.getElementById('loginPass').value;
   try {
-    var pw=document.getElementById('login-pw').value;
-    if(pw==='Tarahanafi13.'){
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('app').style.display='flex';
-      init();
+    const r = await fetch(S + '/api/mssp/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      loadAll();
     } else {
-      document.getElementById('login-error').style.display='block';
+      document.getElementById('loginError').style.display = 'block';
+      setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
     }
   } catch(e) {
-    alert('Erreur: ' + e.message);
+    document.getElementById('loginError').style.display = 'block';
   }
 }
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 
-async function init(){
-  await loadTenants();
-  showView('overview');
-  setInterval(loadTenants,30000);
-}
-
-async function loadTenants(){
-  try{
-    const r=await fetch(S+'/api/mssp/tenants');
-    const d=await r.json();
-    state.tenants=d.tenants||[];
-    renderSidebarClients();
-    updateBadge();
-    if(state.view==='overview')renderOverview();
-    if(state.view==='client'&&state.selectedTenant){
-      const up=state.tenants.find(t=>t.id===state.selectedTenant.id);
-      if(up)state.selectedTenant=up;
-    }
-  }catch(e){console.error(e);}
-}
-
-function updateBadge(){
-  const total=state.tenants.reduce((s,t)=>s+(t.alert_count||0),0);
-  const el=document.getElementById('badge-total');
-  if(total>0){el.textContent=total;el.style.display='inline';}else el.style.display='none';
-}
-
-function renderSidebarClients(){
-  document.getElementById('clients-nav').innerHTML=state.tenants.map(t=>`
-    <div class="client-item ${state.selectedTenant?.id===t.id?'active':''}" onclick="selectClient('${t.id}')">
-      <div class="client-dot ${t.status==='online'?'':'offline'}"></div>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}</span>
-      ${t.alert_count>0?`<span style="background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px">${t.alert_count}</span>`:''}
-    </div>`).join('');
-}
-
-function selectClient(id){
-  state.selectedTenant=state.tenants.find(t=>t.id===id);
-  if(state.selectedTenant){showView('client');renderSidebarClients();}
-}
-
-function showView(view){
-  state.view=view;
-  document.getElementById('nav-overview').classList.toggle('active',view==='overview');
-  if(view==='overview'){document.getElementById('topbar-title').textContent="Vue d'ensemble";renderOverview();}
-  else if(view==='client'){
-    document.getElementById('topbar-title').textContent=state.selectedTenant?.name||'Client';
-    document.getElementById('soc-btn').style.display='inline-flex';
-    renderClient();
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showPage(page) {
+  currentPage = page;
+  ['overview','endpoints','alerts','cloud','siem','rgpd'].forEach(p => {
+    const el = document.getElementById('page-' + p);
+    const nav = document.getElementById('nav-' + p);
+    if (el) el.style.display = p === page ? '' : 'none';
+    if (nav) nav.classList.toggle('active', p === page);
+  });
+  const titles = {
+    overview: ['Vue d\'ensemble', 'Tous les clients'],
+    endpoints: ['Endpoints', 'Machines surveillées'],
+    alerts: ['Alertes', 'Incidents actifs'],
+    cloud: ['Cloud & Identités', 'Microsoft 365 · Google · AWS'],
+    siem: ['SIEM & Logs', 'Corrélation et détection'],
+    rgpd: ['Conformité RGPD', 'Scores et rapports']
+  };
+  if (titles[page]) {
+    document.getElementById('topbarTitle').textContent = titles[page][0];
+    document.getElementById('topbarSub').textContent = titles[page][1];
   }
+  if (page === 'endpoints') renderEndpointsPage();
+  if (page === 'alerts') renderAlertsPage();
+  if (page === 'cloud') renderCloudPage();
+  if (page === 'siem') renderSiemPage();
+  if (page === 'rgpd') renderRgpdPage();
 }
 
-async function refreshAll(){
-  const btn=document.getElementById('refresh-btn');
-  btn.textContent='↻ Chargement...';btn.disabled=true;
-  await loadTenants();
-  if(state.view==='client'&&state.selectedTenant)await renderClient();
-  btn.textContent='↻ Actualiser';btn.disabled=false;
-  showToast('Données actualisées');
+// ── LOAD ALL ──────────────────────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    const r = await fetch(S + '/api/mssp/tenants');
+    const d = await r.json();
+    tenants = d.tenants || [];
+    renderSidebar();
+    renderOverview();
+    renderCurrentPage();
+  } catch(e) { showToast('Erreur de connexion au serveur'); }
 }
 
-function renderOverview(){
-  const total=state.tenants.length;
-  const alerts=state.tenants.reduce((s,t)=>s+(t.alert_count||0),0);
-  const crits=state.tenants.reduce((s,t)=>s+(t.critical_count||0),0);
-  const avg=total>0?Math.round(state.tenants.reduce((s,t)=>s+(t.score||100),0)/total):100;
-  const sc=avg>=80?'var(--green)':avg>=50?'var(--orange)':'var(--red)';
-  document.getElementById('content').innerHTML=`
-    <div class="overview-grid" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-value" style="color:var(--blue2)">${total}</div><div class="stat-label">Clients actifs</div></div>
-      <div class="stat-card"><div class="stat-value" style="color:${alerts>0?'var(--orange)':'var(--green)'}">${alerts}</div><div class="stat-label">Alertes totales</div></div>
-      <div class="stat-card"><div class="stat-value" style="color:${crits>0?'var(--red)':'var(--green)'}">${crits}</div><div class="stat-label">Critiques</div></div>
-      <div class="stat-card"><div class="stat-value" style="color:${sc}">${avg}/100</div><div class="stat-label">Score moyen</div></div>
+async function refreshAll() {
+  showToast('Actualisation en cours...');
+  await loadAll();
+  showToast('✅ Données actualisées');
+}
+
+function renderCurrentPage() {
+  if (currentPage === 'endpoints') renderEndpointsPage();
+  if (currentPage === 'alerts') renderAlertsPage();
+  if (currentPage === 'cloud') renderCloudPage();
+  if (currentPage === 'rgpd') renderRgpdPage();
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const nav = document.getElementById('clientsNav');
+  if (!tenants.length) {
+    nav.innerHTML = '<div style="padding:8px 10px;font-size:12px;color:rgba(255,255,255,.25)">Aucun client</div>';
+    return;
+  }
+  nav.innerHTML = tenants.map(t => {
+    const alerts = (t.alerts || []).filter(a => !a.resolved).length;
+    const online = (t.devices || []).some(d => d.online);
+    return `<button class="client-item ${currentClientId === t._id ? 'active' : ''}" onclick="selectClient('${t._id}')">
+      <div class="client-dot" style="background:${online ? '#10b981' : '#4b5568'}"></div>
+      <span style="flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}</span>
+      ${alerts > 0 ? `<span class="client-alerts">${alerts}</span>` : ''}
+    </button>`;
+  }).join('');
+}
+
+function selectClient(id) {
+  currentClientId = id;
+  renderSidebar();
+  renderCurrentPage();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const totalClients = tenants.length;
+  const totalEndpoints = tenants.reduce((s, t) => s + (t.devices || []).length, 0);
+  const totalAlerts = tenants.reduce((s, t) => s + (t.alerts || []).filter(a => !a.resolved).length, 0);
+  const critAlerts = tenants.reduce((s, t) => s + (t.alerts || []).filter(a => !a.resolved && a.severity === 'critical').length, 0);
+  const avgRgpd = tenants.length ? Math.round(tenants.reduce((s,t) => s + (t.rgpd_score || 0), 0) / tenants.length) : 0;
+
+  document.getElementById('m-clients').textContent = totalClients;
+  document.getElementById('m-endpoints').textContent = totalEndpoints;
+  document.getElementById('m-alerts').textContent = totalAlerts;
+  document.getElementById('m-rgpd').textContent = avgRgpd + '%';
+  document.getElementById('badge-total').textContent = totalAlerts;
+  document.getElementById('badge-alerts').textContent = totalAlerts;
+
+  const critEl = document.getElementById('m-alerts-crit');
+  if (critAlerts > 0) {
+    critEl.innerHTML = `<span style="color:var(--red)">⚠ ${critAlerts} critique${critAlerts > 1 ? 's' : ''}</span>`;
+  }
+
+  // Table clients
+  const tbody = document.getElementById('clientsTableBody');
+  if (!tenants.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:32px;margin-bottom:8px">👥</div>Aucun client — ajoutez votre premier client</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tenants.map(t => {
+    const devices = t.devices || [];
+    const alerts = (t.alerts || []).filter(a => !a.resolved);
+    const crits = alerts.filter(a => a.severity === 'critical').length;
+    const score = t.security_score || Math.max(0, 100 - crits * 20 - (alerts.length - crits) * 5);
+    const rgpd = t.rgpd_score || 0;
+    const online = devices.filter(d => d.online).length;
+    const colors = ['#2563eb','#059669','#7c3aed','#ea580c','#dc2626','#0891b2'];
+    const color = colors[t.name.charCodeAt(0) % colors.length];
+    const status = crits > 0 ? 'critical' : alerts.length > 0 ? 'warn' : 'ok';
+    const statusLabels = { ok: '✓ Sécurisé', warn: '⚠ Attention', critical: '🚨 Critique' };
+    const scoreColor = score >= 80 ? '#059669' : score >= 60 ? '#d97706' : '#dc2626';
+
+    return `<tr>
+      <td>
+        <div class="client-name-cell">
+          <div class="client-avatar" style="background:${color}">${t.name[0].toUpperCase()}</div>
+          <div>
+            <div class="client-name">${t.name}</div>
+            <div class="client-sector">${t.plan || 'PME'}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span style="font-weight:700">${devices.length}</span>
+        <span style="color:var(--text3);font-size:11px"> (${online} en ligne)</span>
+      </td>
+      <td>
+        ${crits > 0 ? `<span style="color:var(--red);font-weight:700">${crits} critique${crits>1?'s':''}</span>` : ''}
+        ${alerts.length > 0 ? `<span style="color:var(--text2);font-size:11px"> ${alerts.length} total</span>` : '<span style="color:var(--green);font-size:12px">✓ Aucune</span>'}
+      </td>
+      <td>
+        <div class="score-bar">
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:${score}%;background:${scoreColor}"></div></div>
+          <span style="font-size:12px;font-weight:700;color:${scoreColor}">${score}</span>
+        </div>
+      </td>
+      <td>
+        <div class="score-bar">
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:${rgpd}%"></div></div>
+          <span style="font-size:12px;font-weight:700;color:var(--blue)">${rgpd}%</span>
+        </div>
+      </td>
+      <td><span class="status-pill status-${status}"><span class="status-dot"></span>${statusLabels[status]}</span></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="selectClientAndPage('${t._id}','endpoints')">Endpoints</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectClientAndPage('${t._id}','alerts')">Alertes</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteClient('${t._id}','${t.name}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function selectClientAndPage(id, page) {
+  currentClientId = id;
+  renderSidebar();
+  showPage(page);
+}
+
+// ── ENDPOINTS ─────────────────────────────────────────────────────────────────
+function renderEndpointsPage() {
+  const tabs = document.getElementById('endpointClientTabs');
+  tabs.innerHTML = tenants.map(t =>
+    `<button class="tab ${currentClientId === t._id ? 'active' : ''}" onclick="currentClientId='${t._id}';renderEndpointsPage()">${t.name}</button>`
+  ).join('');
+
+  const container = document.getElementById('endpointsContent');
+  const tenant = tenants.find(t => t._id === currentClientId) || tenants[0];
+  if (!tenant) { container.innerHTML = '<div class="empty"><div class="empty-icon">💻</div><div class="empty-title">Aucun client</div></div>'; return; }
+  currentClientId = tenant._id;
+
+  const devices = tenant.devices || [];
+  if (!devices.length) {
+    const cmd = `curl -sSL ${S}/install.sh | bash -s -- ${tenant._id} ${tenant.agent_key || 'VOTRE_CLE'}`;
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">💻</div>
+        <div class="empty-title">Aucune machine connectée pour ${tenant.name}</div>
+        <div class="empty-sub" style="margin-bottom:20px">Installez l'agent sur chaque machine du client</div>
+        <div style="background:#0d1117;border-radius:12px;padding:20px;text-align:left;max-width:600px;margin:0 auto">
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Commande d'installation universelle</div>
+          <div style="font-family:monospace;font-size:12px;color:#e5e7eb;line-height:1.6;word-break:break-all">${cmd}</div>
+          <button onclick="copyText('${cmd.replace(/'/g,"\\'")}','Commande copiée !')" style="margin-top:12px;font-size:11px;color:#60a5fa;background:none;border:none;cursor:pointer;font-weight:600">📋 Copier la commande</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const osIcons = { Darwin: '🍎', Windows: '🪟', Linux: '🐧' };
+  container.innerHTML = `
+    <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:13px;color:var(--text2)">${devices.length} machine${devices.length > 1 ? 's' : ''} · Tenant ID: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px">${tenant._id}</code></div>
+      <button class="btn btn-ghost btn-sm" onclick="showInstallModal('${tenant._id}','${tenant.agent_key || ''}')">📋 Commande installation</button>
     </div>
-    <div class="section">
-      <div class="section-header"><div class="section-title">📋 Tous les clients</div></div>
-      <div class="section-body">
-        ${state.tenants.length===0?'<div class="empty-state"><div class="empty-icon">🏢</div>Aucun client</div>':
-          state.tenants.map(t=>{
-            const sc=(t.score||100)>=80?'var(--green)':(t.score||100)>=50?'var(--orange)':'var(--red)';
-            return `<div class="alert-row" style="cursor:pointer" onclick="selectClient('${t.id}')">
-              <div style="font-size:20px">🏢</div>
-              <div class="alert-info"><div class="alert-title">${t.name}</div><div class="alert-device">${t.device_count||0} appareil(s) · ${t.alert_count||0} alerte(s)</div></div>
-              <div style="font-size:18px;font-weight:800;color:${sc}">${t.score||100}</div>
-              <span style="color:var(--text3);font-size:16px">›</span>
-            </div>`;
-          }).join('')}
+    <div class="endpoints-grid">
+      ${devices.map(d => {
+        const snap = d.snapshot || {};
+        const alerts = (tenant.alerts || []).filter(a => a.device_id === d.device_id && !a.resolved);
+        const crits = alerts.filter(a => a.severity === 'critical').length;
+        const score = d.score || Math.max(0, 100 - crits * 20 - (alerts.length - crits) * 5);
+        const scoreColor = score >= 80 ? '#059669' : score >= 60 ? '#d97706' : '#dc2626';
+        const checks = [
+          { label: 'Pare-feu', ok: snap.firewall_enabled },
+          { label: 'Chiffrement', ok: snap.disk_encrypted },
+          { label: 'Antivirus', ok: snap.antivirus_enabled },
+          { label: 'Màj OK', ok: !snap.updates_available },
+          { label: 'Screensaver', ok: snap.screensaver_enabled },
+          { label: 'Logs actifs', ok: snap.logs_enabled },
+        ];
+        const installCmd = `curl -sSL ${S}/install.sh | bash -s -- ${tenant._id} ${tenant.agent_key || 'KEY'}`;
+        return `<div class="endpoint-card">
+          <div class="endpoint-header">
+            <div class="endpoint-os-icon">${osIcons[d.platform] || '💻'}</div>
+            <div class="endpoint-info">
+              <div class="endpoint-name">${d.name}</div>
+              <div class="endpoint-platform">${d.platform || 'Inconnu'} · ${d.online ? '<span style="color:var(--green)">● En ligne</span>' : '<span style="color:var(--text3)">● Hors ligne</span>'}</div>
+            </div>
+            <div class="endpoint-status">
+              ${crits > 0 ? '<span class="status-pill status-crit"><span class="status-dot"></span>Critique</span>' :
+                alerts.length > 0 ? '<span class="status-pill status-warn"><span class="status-dot"></span>Attention</span>' :
+                '<span class="status-pill status-ok"><span class="status-dot"></span>OK</span>'}
+            </div>
+          </div>
+          <div class="endpoint-body">
+            <div class="endpoint-metrics">
+              <div class="ep-metric">
+                <div class="ep-metric-val" style="color:${scoreColor}">${score}</div>
+                <div class="ep-metric-label">Score</div>
+              </div>
+              <div class="ep-metric">
+                <div class="ep-metric-val">${snap.cpu_percent ? snap.cpu_percent.toFixed(0) + '%' : '--'}</div>
+                <div class="ep-metric-label">CPU</div>
+              </div>
+              <div class="ep-metric">
+                <div class="ep-metric-val">${alerts.length}</div>
+                <div class="ep-metric-label">Alertes</div>
+              </div>
+            </div>
+            <div class="endpoint-checks">
+              ${checks.map(c => `<span class="check-pill ${c.ok ? 'check-ok' : 'check-fail'}">${c.ok ? '✓' : '✗'} ${c.label}</span>`).join('')}
+            </div>
+            <div class="endpoint-install">
+              <div class="install-label">Commande d'installation pour cette machine</div>
+              <div class="install-cmd">${installCmd}</div>
+              <button class="copy-btn" onclick="copyText('${installCmd.replace(/'/g,"\\'")}','Commande copiée !')">📋 Copier</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function showInstallModal(tenantId, agentKey) {
+  const cmd = `curl -sSL ${S}/install.sh | bash -s -- ${tenantId} ${agentKey}`;
+  showToast('Commande dans le presse-papier');
+  copyText(cmd, 'Commande d\'installation copiée !');
+}
+
+// ── ALERTES ───────────────────────────────────────────────────────────────────
+function renderAlertsPage() {
+  const tabs = document.getElementById('alertClientTabs');
+  const allOption = `<button class="tab ${!currentClientId ? 'active' : ''}" onclick="currentClientId=null;renderAlertsPage()">Tous</button>`;
+  tabs.innerHTML = allOption + tenants.map(t =>
+    `<button class="tab ${currentClientId === t._id ? 'active' : ''}" onclick="currentClientId='${t._id}';renderAlertsPage()">${t.name}</button>`
+  ).join('');
+
+  let allAlerts = [];
+  const filtered = currentClientId ? tenants.filter(t => t._id === currentClientId) : tenants;
+  filtered.forEach(t => {
+    (t.alerts || []).filter(a => !a.resolved).forEach(a => {
+      allAlerts.push({ ...a, tenantName: t.name, tenantId: t._id });
+    });
+  });
+
+  allAlerts.sort((a, b) => {
+    const order = { critical: 0, high: 1, medium: 2, low: 3 };
+    return (order[a.severity] || 4) - (order[b.severity] || 4);
+  });
+
+  const list = document.getElementById('alertsList');
+  if (!allAlerts.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Aucune alerte active</div><div class="empty-sub">Tous les systèmes sont sécurisés</div></div>';
+    return;
+  }
+
+  list.innerHTML = allAlerts.map(a => `
+    <div class="alert-item ${a.severity}">
+      <span class="sev-badge sev-${a.severity}">${a.severity === 'critical' ? 'CRITIQUE' : a.severity === 'high' ? 'ÉLEVÉ' : a.severity === 'medium' ? 'MOYEN' : 'FAIBLE'}</span>
+      <div class="alert-body">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-meta">${a.tenantName} · ${a.device_name || 'Système'} · ${new Date(a.created_at || Date.now()).toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+        ${a.recommendation ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">${a.recommendation}</div>` : ''}
+      </div>
+      <div class="alert-actions-row">
+        <button class="btn btn-success btn-sm" onclick="resolveAlert('${a.tenantId}','${a._id}')">✓ Résoudre</button>
+        <button class="btn btn-ghost btn-sm" onclick="analyzeAlert('${a.tenantId}','${a._id}')">🤖 IA</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function resolveAlert(tenantId, alertId) {
+  try {
+    await fetch(S + `/api/mssp/tenants/${tenantId}/alerts/${alertId}/remediate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'resolve' }) });
+    showToast('✅ Alerte résolue');
+    await loadAll();
+  } catch(e) { showToast('Erreur résolution'); }
+}
+
+async function analyzeAlert(tenantId, alertId) {
+  showToast('🤖 Analyse IA en cours...');
+  try {
+    const r = await fetch(S + `/api/mssp/tenants/${tenantId}/alerts/${alertId}/ai-analysis`);
+    const d = await r.json();
+    if (d.analysis) alert('🤖 Analyse IA:\n\n' + d.analysis);
+    else showToast('Analyse IA indisponible');
+  } catch(e) { showToast('Erreur IA'); }
+}
+
+// ── CLOUD ─────────────────────────────────────────────────────────────────────
+function renderCloudPage() {
+  const tabs = document.getElementById('cloudClientTabs');
+  tabs.innerHTML = tenants.map(t =>
+    `<button class="tab ${currentClientId === t._id ? 'active' : ''}" onclick="currentClientId='${t._id}';renderCloudPage()">${t.name}</button>`
+  ).join('');
+
+  const tenant = tenants.find(t => t._id === currentClientId) || tenants[0];
+  const container = document.getElementById('cloudContent');
+  if (!tenant) { container.innerHTML = '<div class="empty"><div class="empty-icon">☁️</div><div class="empty-title">Aucun client</div></div>'; return; }
+  currentClientId = tenant._id;
+
+  const clouds = tenant.clouds || tenant.cloud_connections || [];
+  const cloudAlerts = (tenant.alerts || []).filter(a => !a.resolved && (a.device_id || '').startsWith('cloud_'));
+
+  container.innerHTML = `
+    <div style="margin-bottom:16px;display:flex;justify-content:flex-end">
+      <button class="btn btn-primary btn-sm" onclick="openCloudModal('${tenant._id}')">+ Connecter un service cloud</button>
+    </div>
+    ${cloudAlerts.length > 0 ? `
+    <div class="section-card" style="margin-bottom:16px">
+      <div class="section-card-header"><div class="section-card-title">🚨 Alertes cloud</div></div>
+      <div class="section-card-body">
+        <div class="alert-list">
+          ${cloudAlerts.map(a => `
+            <div class="alert-item ${a.severity}">
+              <span class="sev-badge sev-${a.severity}">${a.severity.toUpperCase()}</span>
+              <div class="alert-body">
+                <div class="alert-title">${a.title}</div>
+                <div class="alert-meta">${a.device_name || 'Cloud'} · ${a.recommendation || ''}</div>
+              </div>
+              ${a.type === 'M365_FOREIGN_LOGIN' ? `<button class="btn btn-danger btn-sm" onclick="revokeM365('${tenant._id}')">🚫 Révoquer</button>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>` : ''}
+    <div class="cloud-services">
+      ${['m365','gworkspace','aws'].map(type => {
+        const icons = { m365: '📧', gworkspace: '🟡', aws: '🟠' };
+        const names = { m365: 'Microsoft 365', gworkspace: 'Google Workspace', aws: 'Amazon AWS' };
+        const connected = clouds.find && clouds.find(c => c.type === type);
+        const typeAlerts = cloudAlerts.filter(a => (a.device_id || '').includes(type));
+        return `<div class="cloud-card">
+          <div class="cloud-header">
+            <div class="cloud-icon">${icons[type]}</div>
+            <div>
+              <div class="cloud-name">${names[type]}</div>
+              <div class="cloud-status" style="color:${connected ? 'var(--green)' : 'var(--text3)'}">${connected ? '● Connecté' : '○ Non connecté'}</div>
+            </div>
+          </div>
+          ${typeAlerts.length > 0 ? `
+            <div class="cloud-alerts-list">
+              ${typeAlerts.map(a => `<div class="cloud-alert cloud-alert-${a.severity === 'critical' ? 'crit' : 'high'}">${a.title}</div>`).join('')}
+            </div>
+          ` : connected ? `<div class="cloud-alert cloud-alert-ok">✓ Aucune anomalie détectée</div>` :
+            `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" onclick="openCloudModal('${tenant._id}','${type}')">Connecter →</button>`
+          }
+          ${connected && type === 'm365' ? `<button class="btn btn-danger btn-sm" style="margin-top:8px;width:100%;justify-content:center" onclick="revokeM365('${tenant._id}')">🚫 Révoquer toutes les sessions</button>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function revokeM365(tenantId) {
+  if (!confirm('Révoquer toutes les sessions Microsoft 365 ? Les utilisateurs devront se reconnecter.')) return;
+  showToast('Révocation en cours...');
+  try {
+    const r = await fetch(S + `/api/mssp/tenants/${tenantId}/cloud/m365/revoke-sessions`, { method: 'POST' });
+    const d = await r.json();
+    showToast(d.success ? `✅ ${d.revoked} sessions révoquées` : 'Erreur: ' + d.error);
+    await loadAll();
+  } catch(e) { showToast('Erreur réseau'); }
+}
+
+function openCloudModal(tenantId, preset) {
+  currentClientId = tenantId;
+  document.getElementById('modalCloud').classList.add('open');
+  if (preset) { document.getElementById('cloudType').value = preset; renderCloudFields(); }
+}
+
+function renderCloudFields() {
+  const type = document.getElementById('cloudType').value;
+  const el = document.getElementById('cloudFields');
+  if (type === 'm365') {
+    el.innerHTML = `
+      <div class="form-group"><label class="form-label">Tenant ID</label><input class="form-input" id="cf-tenant" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Client ID</label><input class="form-input" id="cf-client" placeholder="Application (client) ID"></div>
+        <div class="form-group"><label class="form-label">Client Secret</label><input class="form-input" id="cf-secret" type="password" placeholder="Secret value"></div>
+      </div>`;
+  } else if (type === 'aws') {
+    el.innerHTML = `
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Access Key ID</label><input class="form-input" id="cf-key" placeholder="AKIAIOSFODNN7EXAMPLE"></div>
+        <div class="form-group"><label class="form-label">Secret Access Key</label><input class="form-input" id="cf-secret" type="password" placeholder="Secret key"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Région</label><select class="form-select" id="cf-region"><option value="eu-west-1">Europe (Irlande) eu-west-1</option><option value="eu-west-3">Europe (Paris) eu-west-3</option><option value="us-east-1">US East us-east-1</option></select></div>`;
+  } else if (type === 'gworkspace') {
+    el.innerHTML = `
+      <div class="form-group"><label class="form-label">Email Admin</label><input class="form-input" id="cf-admin" type="email" placeholder="admin@votredomaine.com"></div>
+      <div class="form-group"><label class="form-label">Email Compte de Service</label><input class="form-input" id="cf-email" placeholder="service@projet.iam.gserviceaccount.com"></div>
+      <div class="form-group"><label class="form-label">Clé privée (JSON)</label><textarea class="form-input" id="cf-key" rows="3" placeholder="Collez votre clé privée RSA ici..."></textarea></div>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+async function connectCloud() {
+  const type = document.getElementById('cloudType').value;
+  if (!type || !currentClientId) { showToast('Sélectionnez un service'); return; }
+  let creds = {};
+  if (type === 'm365') {
+    creds = { tenant_id: document.getElementById('cf-tenant')?.value, client_id: document.getElementById('cf-client')?.value, client_secret: document.getElementById('cf-secret')?.value };
+  } else if (type === 'aws') {
+    creds = { access_key: document.getElementById('cf-key')?.value, secret_key: document.getElementById('cf-secret')?.value, region: document.getElementById('cf-region')?.value };
+  } else if (type === 'gworkspace') {
+    creds = { admin_email: document.getElementById('cf-admin')?.value, client_email: document.getElementById('cf-email')?.value, private_key: document.getElementById('cf-key')?.value };
+  }
+  showToast('Connexion en cours...');
+  try {
+    const r = await fetch(S + `/api/mssp/tenants/${currentClientId}/cloud`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cloud_type: type, credentials: creds })
+    });
+    const d = await r.json();
+    if (d.success) { showToast('✅ Cloud connecté — scan en cours'); closeModal('modalCloud'); await loadAll(); }
+    else showToast('Erreur: ' + (d.error || 'inconnue'));
+  } catch(e) { showToast('Erreur réseau'); }
+}
+
+// ── SIEM ──────────────────────────────────────────────────────────────────────
+function renderSiemPage() {
+  const tabs = document.getElementById('siemClientTabs');
+  tabs.innerHTML = tenants.map(t =>
+    `<button class="tab ${currentClientId === t._id ? 'active' : ''}" onclick="currentClientId='${t._id}';loadSiemLogs()">${t.name}</button>`
+  ).join('');
+  loadSiemLogs();
+}
+
+function loadSiemLogs() {
+  const tenant = tenants.find(t => t._id === currentClientId) || tenants[0];
+  if (!tenant) return;
+  const body = document.getElementById('siemBody');
+  const alerts = (tenant.alerts || []).slice(-20).reverse();
+  if (!alerts.length) {
+    body.innerHTML = '<div class="log-entry"><span class="log-time">--:--</span><span class="log-src ls-siem">SIEM</span><span class="log-msg" style="color:#6b7280">Aucun événement pour ce client</span></div>';
+    return;
+  }
+  body.innerHTML = alerts.map(a => {
+    const time = new Date(a.created_at || Date.now()).toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const src = (a.device_id || '').includes('cloud') ? 'ls-m365' : 'ls-edr';
+    const srcLabel = (a.device_id || '').includes('m365') ? 'M365' : (a.device_id || '').includes('aws') ? 'AWS' : 'EDR';
+    const badge = a.severity === 'critical' ? 'lb-crit' : a.severity === 'high' ? 'lb-warn' : 'lb-ok';
+    const badgeLabel = a.severity === 'critical' ? 'CRIT' : a.severity === 'high' ? 'WARN' : 'INFO';
+    return `<div class="log-entry">
+      <span class="log-time">${time}</span>
+      <span class="log-src ${src}">${srcLabel}</span>
+      <span class="log-msg">${a.title} — ${a.device_name || 'Système'}</span>
+      <span class="log-badge ${badge}">${badgeLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function clearLogs() {
+  document.getElementById('siemBody').innerHTML = '<div class="log-entry"><span class="log-time">--:--:--</span><span class="log-src ls-siem">SIEM</span><span class="log-msg" style="color:#6b7280">Logs effacés</span></div>';
+}
+
+// ── RGPD ──────────────────────────────────────────────────────────────────────
+function renderRgpdPage() {
+  const tabs = document.getElementById('rgpdClientTabs');
+  tabs.innerHTML = tenants.map(t =>
+    `<button class="tab ${currentClientId === t._id ? 'active' : ''}" onclick="currentClientId='${t._id}';renderRgpdPage()">${t.name}</button>`
+  ).join('');
+
+  const tenant = tenants.find(t => t._id === currentClientId) || tenants[0];
+  const container = document.getElementById('rgpdContent');
+  if (!tenant) { container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Aucun client</div></div>'; return; }
+  currentClientId = tenant._id;
+
+  const score = tenant.rgpd_score || 0;
+  const level = score >= 80 ? 'CONFORME' : score >= 60 ? 'PARTIELLEMENT CONFORME' : 'NON CONFORME';
+  const levelColor = score >= 80 ? '#059669' : score >= 60 ? '#d97706' : '#dc2626';
+  const articles = tenant.rgpd_articles || {};
+
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:20px">
+      <div class="section-card">
+        <div class="section-card-header"><div class="section-card-title">📋 Score RGPD</div></div>
+        <div class="section-card-body" style="text-align:center">
+          <svg width="120" height="120" viewBox="0 0 120 120" style="margin:0 auto 16px;display:block">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="${levelColor}" stroke-width="10"
+              stroke-dasharray="${score * 3.14} 314" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            <text x="60" y="55" text-anchor="middle" font-size="26" font-weight="800" fill="${levelColor}">${score}</text>
+            <text x="60" y="72" text-anchor="middle" font-size="9" fill="#9ca3af">/100</text>
+          </svg>
+          <div style="font-size:13px;font-weight:700;color:${levelColor};margin-bottom:16px">${level}</div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="downloadRgpd('${tenant._id}')">📄 Télécharger le rapport PDF</button>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-card-header"><div class="section-card-title">📑 Articles RGPD</div></div>
+        <div class="section-card-body">
+          <div class="rgpd-articles">
+            ${Object.entries(articles).length ? Object.entries(articles).map(([art, data]) => {
+              const s = typeof data === 'object' ? (data.score || 0) : data;
+              const color = s >= 80 ? '#059669' : s >= 60 ? '#d97706' : '#dc2626';
+              return `<div class="rgpd-article">
+                <div class="rgpd-article-name">${art}</div>
+                <div class="rgpd-bar-track"><div class="rgpd-bar-fill" style="width:${s}%;background:${color}"></div></div>
+                <div class="rgpd-article-score" style="color:${color}">${s}%</div>
+              </div>`;
+            }).join('') : '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Aucun score RGPD disponible — installez l\'agent sur les machines du client</div>'}
+          </div>
+        </div>
       </div>
     </div>`;
 }
 
-async function renderClient(){
-  const t=state.selectedTenant;
-  if(!t)return;
-  document.getElementById('content').innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)">Chargement...</div>';
-  try{
-    const [dashR,cloudR,rgpdR]=await Promise.all([
-      fetch(S+'/api/mssp/tenants/'+t.id+'/dashboard'),
-      fetch(S+'/api/mssp/tenants/'+t.id+'/cloud'),
-      fetch(S+'/api/mssp/tenants/'+t.id+'/rgpd'),
-    ]);
-    const dash=await dashR.json();
-    const cloud=await cloudR.json();
-
-    const rgpd=await rgpdR.json();
-    const alerts=dash.alerts||[];
-    const devices=dash.devices||[];
-    const clouds=cloud.clouds||[];
-    const score=dash.score||100;
-    const sc=score>=80?'var(--green)':score>=50?'var(--orange)':'var(--red)';
-    const crits=alerts.filter(a=>a.severity==='critical').length;
-    const rc=rgpd.conforme?'var(--green)':rgpd.score>=60?'var(--orange)':'var(--red)';
-
-    document.getElementById('content').innerHTML=`
-      <div class="cards-grid" style="margin-bottom:16px">
-        <div class="card"><div class="card-label">Score sécurité</div><div class="card-value" style="color:${sc}">${score}/100</div><div class="card-sub">${score>=80?'Bon niveau':'À améliorer'}</div></div>
-        <div class="card clickable" onclick="showRGPD('${t.id}')"><div class="card-label">Conformité RGPD 📋</div><div class="card-value" style="color:${rc};font-size:22px">${rgpd.score||'--'}/100</div><div class="card-sub" style="color:${rc}">${rgpd.level||'Non évalué'}</div></div>
-        <div class="card"><div class="card-label">Appareils</div><div class="card-value" style="color:var(--blue2)">${devices.length}</div><div class="card-sub">en surveillance</div></div>
-        <div class="card"><div class="card-label">Alertes</div><div class="card-value" style="color:${alerts.length>0?'var(--orange)':'var(--green)'}">${alerts.length}</div><div class="card-sub">${crits} critique(s)</div></div>
-      </div>
-
-      <div class="section" style="margin-bottom:16px">
-        <div class="section-header"><div class="section-title">🔑 Commande installation agent</div></div>
-        <div class="section-body">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Lancez sur chaque machine du client :</div>
-          <div class="install-box">curl -sSL ${S}/install.sh | bash -s -- ${t.id} ${t.agent_key||''}
-            <button class="copy-btn" onclick="copyCmd('${t.id}','${t.agent_key||''}')">📋 Copier</button>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="section">
-          <div class="section-header"><div class="section-title">🔔 Alertes (${alerts.length})</div></div>
-          <div class="section-body">
-            ${alerts.length===0?'<div class="empty-state"><div class="empty-icon">✅</div>Aucune alerte</div>':
-              alerts.map(a=>`
-                <div class="alert-row">
-                  <span class="sev sev-${a.severity}">${a.severity.toUpperCase()}</span>
-                  <div class="alert-info"><div class="alert-title">${a.title}</div><div class="alert-device">${a.device_name||''}</div></div>
-                  <div class="alert-actions">
-                    ${a.auto_fixable!==false
-                      ?`<button class="action-btn action-fix" onclick="fixAlert('${t.id}','${a._id}')">⚡ Régler</button>`
-                      :`<button class="action-btn action-info" onclick="showInstructions('${t.id}','${a._id}')">📋 Instructions</button>`}
-                    <button class="action-btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.2);margin-left:4px" onclick="showAIAnalysis('${t.id}','${a._id}')">🤖 IA</button>
-                  </div>
-                </div>`).join('')}
-          </div>
-        </div>
-        <div>
-          <div class="section" style="margin-bottom:16px">
-            <div class="section-header"><div class="section-title">☁️ Cloud (${clouds.length})</div><button class="btn btn-ghost" style="font-size:11px;padding:5px 10px" onclick="openAddCloud('${t.id}')">+ Connecter</button></div>
-            <div class="section-body">
-              ${clouds.length===0?'<div class="empty-state" style="padding:16px"><div style="font-size:20px;margin-bottom:4px">☁️</div>Aucun cloud connecté</div>':
-                clouds.map(c=>{
-                  const icons={aws:'🟠 Amazon AWS',m365:'🔵 Microsoft 365',gworkspace:'🟡 Google Workspace'};
-                  const ls=c.last_scan?new Date(c.last_scan).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'En attente';
-                  const cloudAlerts=(dash.alerts||[]).filter(a=>a.device_id==='cloud_'+c.type);
-                  const hasCritical=cloudAlerts.some(a=>a.severity==='critical');
-                  const status=hasCritical?'🔴':cloudAlerts.length>0?'🟠':'🟢';
-                  return `<div class="cloud-item" style="flex-direction:column;align-items:stretch;gap:0">
-                    <div style="display:flex;align-items:center;justify-content:space-between">
-                      <div style="display:flex;align-items:center;gap:8px">
-                        <span>${status}</span>
-                        <div>
-                          <div style="font-size:12px;font-weight:700">${icons[c.type]||c.type}</div>
-                          <div style="font-size:10px;color:var(--text3)">Dernier scan: ${ls}</div>
-                        </div>
-                        ${cloudAlerts.length>0?`<span style="font-size:10px;background:rgba(232,51,74,.15);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:700">${cloudAlerts.length} alerte(s)</span>`:`<span style="font-size:10px;background:rgba(14,165,114,.15);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:600">✓ OK</span>`}
-                      </div>
-                      <div style="display:flex;gap:6px">
-                        <button class="action-btn action-fix" onclick="scanCloud('${t.id}','${c.type}')" title="Scanner">🔍</button>
-                        <button class="action-btn action-info" onclick="deleteCloud('${t.id}','${c.type}')" title="Déconnecter">🗑</button>
-                      </div>
-                    </div>
-                    ${cloudAlerts.length>0?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-                      ${cloudAlerts.map(ca=>`<div style="padding:8px 10px;background:var(--surface);border-radius:6px;margin-bottom:6px;border-left:3px solid ${ca.severity==='critical'?'var(--red)':'var(--orange)'}">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-                          <div>
-                            <div style="font-size:10px;font-weight:700;color:${ca.severity==='critical'?'var(--red)':'var(--orange)'};text-transform:uppercase">${ca.severity==='critical'?'CRITIQUE':'ÉLEVÉ'}</div>
-                            <div style="font-size:12px;font-weight:600;color:var(--text);margin-top:2px">${ca.title}</div>
-                            <div style="font-size:11px;color:var(--text2);margin-top:3px">${ca.recommendation||''}</div>
-                          </div>
-                          ${c.type==='m365'&&ca.type==='M365_FOREIGN_LOGIN'?`<button class="action-btn" style="background:rgba(232,51,74,.15);color:var(--red);border-color:rgba(232,51,74,.3);flex-shrink:0;margin-left:8px" onclick="revokeM365('${t.id}')">🚫 Révoquer</button>`:''}
-                        </div>
-                      </div>`).join('')}
-                    </div>`:''}
-                  </div>`;
-                }).join('')}
-            </div>
-          </div>
-          <div class="section">
-            <div class="section-header"><div class="section-title">💻 Appareils (${devices.length})</div></div>
-            <div class="section-body">
-              ${devices.length===0?'<div class="empty-state" style="padding:16px"><div style="font-size:20px">💻</div>Aucun appareil</div>':
-                devices.map(d=>`
-                  <div class="device-row">
-                    <div style="font-size:20px">💻</div>
-                    <div style="flex:1"><div style="font-size:12px;font-weight:500">${d.name||d.device_id}</div><div style="font-size:11px;color:var(--text3)">${d.platform||'Unknown'}</div></div>
-                    <div class="online-dot" style="background:${d.status==='online'?'var(--green)':'var(--text3)'}"></div>
-                  </div>`).join('')}
-            </div>
-          </div>
-        </div>
-      </div>`;
-  }catch(e){document.getElementById('content').innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">Erreur: '+e.message+'</div>';}
+async function downloadRgpd(tenantId) {
+  showToast('Génération du rapport PDF...');
+  window.open(S + `/api/mssp/tenants/${tenantId}/rgpd-report`, '_blank');
 }
 
-function copyCmd(tid,key){
-  navigator.clipboard.writeText('curl -sSL '+S+'/install.sh | bash -s -- '+tid+' '+key).then(()=>showToast('Commande copiée !'));
+// ── CLIENTS CRUD ──────────────────────────────────────────────────────────────
+function openAddClient() {
+  document.getElementById('modalAddClient').classList.add('open');
 }
 
-async function showAIAnalysis(tid,aid){
-  openModal('🤖 Analyse IA — ShieldFlow Intelligence');
-  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:30px;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">🤖</div>Claude analyse cette alerte...<br><small style="color:var(--text3);margin-top:8px;display:block">Analyse du contexte complet de la machine en cours</small></div>';
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/alerts/'+aid+'/ai-analysis');
-    const d=await r.json();
-    if(!d.success||!d.analysis){
-      document.getElementById('modal-body').innerHTML='<div style="color:var(--red);padding:20px">Analyse IA non disponible</div>';
-      return;
-    }
-    const a=d.analysis;
-    const lvlColor={'CRITIQUE':'var(--red)','ÉLEVÉ':'var(--orange)','MOYEN':'var(--amber)','FAIBLE':'var(--green)'}[a.niveau_risque]||'var(--text2)';
-    document.getElementById('modal-body').innerHTML=`
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:8px;border-left:3px solid ${lvlColor}">
-        <div style="font-size:24px">🤖</div>
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Niveau de risque</div>
-          <div style="font-size:16px;font-weight:700;color:${lvlColor}">${a.niveau_risque||'—'}</div>
-        </div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Analyse</div>
-        <div style="font-size:14px;color:var(--text);line-height:1.7;background:var(--surface2);padding:12px;border-radius:8px">${a.explication||'—'}</div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Impact métier</div>
-        <div style="font-size:14px;color:var(--text2);line-height:1.7">${a.impact_metier||'—'}</div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Actions immédiates</div>
-        ${(a.actions_immediates||[]).map((action,i)=>`
-          <div style="display:flex;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;font-size:13px">
-            <span style="color:var(--blue2);font-weight:700;flex-shrink:0">${i+1}.</span>
-            <span style="color:var(--text)">${action}</span>
-          </div>`).join('')}
-      </div>
-      ${a.risque_rgpd==='Oui'?`
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:12px;margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px">⚖️ RISQUE RGPD DÉTECTÉ</div>
-        <div style="font-size:13px;color:var(--text2)">${a.detail_rgpd||''}</div>
-      </div>`:''}
-      <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:8px">Analyse générée par Claude — ShieldFlow Intelligence</div>
-      <div class="modal-footer"><button class="btn-ghost" onclick="closeModal()">Fermer</button></div>`;
-  }catch(e){
-    document.getElementById('modal-body').innerHTML='<div style="color:var(--red);padding:20px">Erreur: '+e.message+'</div>';
-  }
+async function createClient() {
+  const name = document.getElementById('newClientName').value.trim();
+  const email = document.getElementById('newClientEmail').value.trim();
+  const sector = document.getElementById('newClientSector').value;
+  if (!name || !email) { showToast('Nom et email requis'); return; }
+  try {
+    const r = await fetch(S + '/api/mssp/tenants', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, plan: sector })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast('✅ Client créé — ' + name);
+      closeModal('modalAddClient');
+      document.getElementById('newClientName').value = '';
+      document.getElementById('newClientEmail').value = '';
+      await loadAll();
+    } else showToast('Erreur: ' + (d.error || 'inconnue'));
+  } catch(e) { showToast('Erreur réseau'); }
 }
 
-async function showSOCReport(tid){
-  openModal('🔍 Rapport SOC — Analyste IA');
-  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:30px;color:var(--text2)"><div style="font-size:32px;margin-bottom:12px">🔍</div>Analyse SOC en cours...<br><small style="color:var(--text3);margin-top:8px;display:block">L analyste IA examine tous les logs et evenements</small></div>';
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/soc-report');
-    const d=await r.json();
-    if(!d.success||!d.analysis){document.getElementById('modal-body').innerHTML='<div style="color:var(--red);padding:20px">SOC non disponible</div>';return;}
-    const a=d.analysis;
-    const lvlColor={'CRITIQUE':'var(--red)','ÉLEVÉ':'var(--orange)','MOYEN':'var(--amber)','FAIBLE':'var(--green)'}[a.niveau_menace]||'var(--text2)';
-    document.getElementById('modal-body').innerHTML=`
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:8px;border-left:3px solid ${lvlColor}">
-        <div style="font-size:24px">🔍</div>
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Niveau de menace</div>
-          <div style="font-size:16px;font-weight:700;color:${lvlColor}">${a.niveau_menace} — Score SOC: ${a.score_risque_soc}/100</div>
-        </div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Résumé exécutif</div>
-        <div style="font-size:14px;color:var(--text);line-height:1.7;background:var(--surface2);padding:12px;border-radius:8px">${a.resume_executif||'—'}</div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Événements détectés</div>
-        ${(a.evenements_detectes||[]).map(e=>`<div style="padding:7px 12px;background:var(--surface2);border-left:3px solid ${lvlColor};border-radius:4px;margin-bottom:4px;font-size:12px">${e}</div>`).join('')}
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Analyse technique</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.7">${a.analyse_technique||'—'}</div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Actions immédiates</div>
-        ${(a.actions_immediates||[]).map((ac,i)=>`<div style="display:flex;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;margin-bottom:6px;font-size:12px"><span style="color:var(--blue2);font-weight:700;flex-shrink:0">${i+1}.</span><span>${ac}</span></div>`).join('')}
-      </div>
-      ${(a.indicateurs_compromission||[]).length>0?`
-      <div style="background:rgba(232,51,74,.08);border:1px solid rgba(232,51,74,.15);border-radius:8px;padding:12px;margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:6px">⚠ INDICATEURS DE COMPROMISSION (IOC)</div>
-        ${a.indicateurs_compromission.map(ioc=>`<div style="font-size:12px;color:var(--text2);padding:3px 0">${ioc}</div>`).join('')}
-      </div>`:''}
-      <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:8px">Analyse générée par ShieldFlow SOC — Analyste IA · ${new Date(d.generated_at).toLocaleString('fr-FR')}</div>
-      <div class="modal-footer"><button class="btn-ghost" onclick="closeModal()">Fermer</button></div>`;
-  }catch(e){document.getElementById('modal-body').innerHTML='<div style="color:var(--red);padding:20px">Erreur: '+e.message+'</div>';}
+async function deleteClient(id, name) {
+  if (!confirm(`Supprimer le client "${name}" ? Cette action est irréversible.`)) return;
+  try {
+    const r = await fetch(S + '/api/mssp/tenants/' + id, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) { showToast('Client supprimé'); if (currentClientId === id) currentClientId = null; await loadAll(); }
+    else showToast('Erreur suppression');
+  } catch(e) { showToast('Erreur réseau'); }
 }
 
-async function fixAlert(tid,aid){
-  if(!confirm('ShieldFlow va régler cette alerte automatiquement. Confirmer ?'))return;
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/alerts/'+aid+'/remediate',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-    const d=await r.json();
-    if(d.success){showToast('⚡ Correction en cours...');setTimeout(()=>{loadTenants();renderClient();},5000);}
-    else showToast('Erreur: '+(d.error||'Inconnue'));
-  }catch(e){showToast('Erreur de connexion');}
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-async function showInstructions(tid,aid){
-  openModal('Instructions de correction');
-  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2)">Chargement...</div>';
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/alerts/'+aid+'/instructions');
-    const d=await r.json();
-    const steps=d.instructions||['Contactez le support ShieldFlow.'];
-    document.getElementById('modal-body').innerHTML=`
-      <div style="margin-bottom:12px;font-size:13px;color:var(--text2)">${d.title||'Alerte'} — intervention requise :</div>
-      <div style="background:var(--surface2);border-radius:8px;overflow:hidden">
-        ${steps.map((s,i)=>`<div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text);line-height:1.5"><span style="color:var(--blue2);font-weight:700;margin-right:8px">${i+1}.</span>${s.replace(/^\d+\.\s*/,'')}</div>`).join('')}
-      </div>
-      <div style="margin-top:12px;padding:10px;background:rgba(16,185,129,.06);border-radius:8px;font-size:11px;color:var(--green)">✅ Une fois corrigé, l'alerte disparaîtra au prochain scan (30 sec).</div>
-      <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Fermer</button></div>`;
-  }catch(e){document.getElementById('modal-body').innerHTML='<div style="color:var(--red)">Erreur</div>';}
+async function copyText(text, msg) {
+  try { await navigator.clipboard.writeText(text); showToast(msg || '✅ Copié !'); }
+  catch(e) { showToast('Copie manuelle requise'); }
 }
 
-async function showRGPD(tid){
-  openModal('Conformité RGPD');
-  document.getElementById('modal-body').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2)">Chargement...</div>';
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/rgpd');
-    const d=await r.json();
-    const score=d.score||0;
-    const color=d.conforme?'var(--green)':score>=60?'var(--orange)':'var(--red)';
-    const badge=d.conforme?'✅ CONFORME':'❌ '+(d.level||'NON CONFORME');
-    const arts=d.articles||{};
-    document.getElementById('modal-body').innerHTML=`
-      <div style="text-align:center;padding:16px 0;margin-bottom:16px;border-bottom:1px solid var(--border)">
-        <div style="font-size:52px;font-weight:800;color:${color}">${score}/100</div>
-        <div style="font-size:14px;font-weight:700;color:${color};margin-top:4px">${badge}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Règlement Général sur la Protection des Données</div>
-      </div>
-      ${Object.entries(arts).map(([name,a])=>`
-        <div class="rgpd-article">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="font-size:16px">${a.ok?'✅':'❌'}</span>
-            <span style="font-size:12px;font-weight:600;color:${a.ok?'var(--green)':'var(--red)'}">${name}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-left:24px">${a.detail}</div>
-          ${!a.ok&&a.instruction?`<div style="font-size:11px;color:var(--blue2);margin-left:24px;margin-top:4px">→ ${a.instruction}</div>`:''}
-        </div>`).join('')}
-      <div style="margin-top:16px;display:flex;gap:8px">
-        <button class="btn btn-primary" style="flex:1" onclick="window.open('${S}/api/mssp/tenants/${tid}/rgpd-report','_blank')">📄 Rapport PDF RGPD</button>
-        <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>
-      </div>`;
-  }catch(e){document.getElementById('modal-body').innerHTML='<div style="color:var(--red)">Erreur</div>';}
-}
-
-async function revokeM365Sessions(tid){
-  if(!confirm('Révoquer TOUTES les sessions Microsoft 365 ? Les utilisateurs devront se reconnecter.')) return;
-  showToast('Révocation en cours...');
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud/m365/revoke-sessions',{method:'POST'});
-    const d=await r.json();
-    if(d.success) showToast('✅ '+d.revoked+' sessions révoquées — M365 sécurisé');
-    else showToast('Erreur: '+(d.error||'inconnue'));
-    await loadTenants(); renderClient();
-  }catch(e){showToast('Erreur réseau');}
-}
-
-async function revokeM365(tid){
-  if(!confirm('Révoquer toutes les sessions Microsoft 365 ? Les utilisateurs devront se reconnecter.')) return;
-  showToast('Révocation en cours...');
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud/m365/revoke-sessions',{method:'POST'});
-    const d=await r.json();
-    if(d.success) showToast('✅ '+d.revoked+' sessions M365 révoquées');
-    else showToast('Erreur: '+(d.error||'inconnue'));
-    await loadTenants(); renderClient();
-  }catch(e){showToast('Erreur réseau');}
-}
-
-async function scanCloud(tid,type){
-  showToast('Scan '+type+' en cours...');
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud/scan',{method:'POST'});
-    const d=await r.json();
-    showToast('Scan terminé — '+(d.results?.[type]||0)+' alerte(s)');
-    await loadTenants();renderClient();
-  }catch(e){showToast('Erreur scan');}
-}
-
-async function deleteCloud(tid,type){
-  if(!confirm('Supprimer la connexion '+type+' ?'))return;
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud/'+type,{method:'DELETE'});
-    const d=await r.json();
-    if(d.success){showToast('Cloud supprimé');await loadTenants();renderClient();}
-    else showToast('Erreur: '+(d.error||'Inconnue'));
-  }catch(e){showToast('Erreur');}
-}
-
-function openAddClient(){
-  openModal('Ajouter un client');
-  document.getElementById('modal-body').innerHTML=`
-    <div class="form-group"><label class="form-label">Nom du client</label><input class="form-input" id="nc-name" placeholder="Ex: Entreprise Martin" autofocus></div>
-    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="nc-email" placeholder="contact@entreprise.fr"></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="createClient()">Créer</button></div>`;
-}
-
-async function createClient(){
-  const name=document.getElementById('nc-name').value.trim();
-  const email=document.getElementById('nc-email').value.trim();
-  if(!name){showToast('Nom requis');return;}
-  try{
-    const r=await fetch(S+'/api/mssp/tenants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:'client123'})});
-    const d=await r.json();
-    if(d.success||d.tenant){showToast('Client créé !');closeModal();await loadTenants();if(d.tenant?.id)selectClient(d.tenant.id);}
-    else showToast('Erreur: '+(d.error||'Inconnue'));
-  }catch(e){showToast('Erreur');}
-}
-
-function openAddCloud(tid){
-  openModal('Connecter un cloud');
-  document.getElementById('modal-body').innerHTML=`
-    <div class="form-group"><label class="form-label">Type</label>
-    <select class="form-select" id="cloud-type" onchange="renderCloudFields()">
-      <option value="">Choisir...</option>
-      <option value="m365">🔵 Microsoft 365</option>
-      <option value="aws">🟠 Amazon AWS</option>
-      <option value="gworkspace">🟡 Google Workspace</option>
-    </select></div>
-    <div id="cloud-fields"></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="connectCloud('${tid}')">Connecter</button></div>`;
-}
-
-function renderCloudFields(){
-  const type=document.getElementById('cloud-type').value;
-  const el=document.getElementById('cloud-fields');
-  if(type==='m365')el.innerHTML=`
-    <div class="form-group"><label class="form-label">Tenant ID</label><input class="form-input" id="cf1" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
-    <div class="form-group"><label class="form-label">Client ID</label><input class="form-input" id="cf2" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
-    <div class="form-group"><label class="form-label">Client Secret</label><input class="form-input" id="cf3" type="password" placeholder="votre-secret"></div>`;
-  else if(type==='aws')el.innerHTML=`
-    <div class="form-group"><label class="form-label">Access Key ID</label><input class="form-input" id="cf1" placeholder="AKIAIOSFODNN7EXAMPLE"></div>
-    <div class="form-group"><label class="form-label">Secret Access Key</label><input class="form-input" id="cf2" type="password" placeholder="votre-secret"></div>
-    <div class="form-group"><label class="form-label">Région</label><input class="form-input" id="cf3" value="eu-west-3"></div>`;
-  else if(type==='gworkspace')el.innerHTML=`
-    <div class="form-group"><label class="form-label">Email admin</label><input class="form-input" id="cf1" placeholder="admin@domaine.com"></div>
-    <div class="form-group"><label class="form-label">Credentials JSON</label><textarea class="form-input" id="cf2" rows="4" placeholder='{"type":"service_account",...}'></textarea></div>`;
-  else el.innerHTML='';
-}
-
-async function connectCloud(tid){
-  const type=document.getElementById('cloud-type').value;
-  if(!type){showToast('Choisissez un type');return;}
-  let creds={};
-  if(type==='m365')creds={tenant_id:document.getElementById('cf1')?.value,client_id:document.getElementById('cf2')?.value,client_secret:document.getElementById('cf3')?.value};
-  else if(type==='aws')creds={access_key:document.getElementById('cf1')?.value,secret_key:document.getElementById('cf2')?.value,region:document.getElementById('cf3')?.value||'eu-west-3'};
-  else if(type==='gworkspace')creds={admin_email:document.getElementById('cf1')?.value,service_account_json:document.getElementById('cf2')?.value};
-  try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tid+'/cloud',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cloud_type:type,credentials:creds})});
-    const d=await r.json();
-    if(d.success){showToast('Cloud connecté !');closeModal();await loadTenants();renderClient();}
-    else showToast('Erreur: '+(d.error||'Inconnue'));
-  }catch(e){showToast('Erreur');}
-}
-
-function openModal(title){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML='';document.getElementById('modal').classList.add('open');}
-function closeModal(){document.getElementById('modal').classList.remove('open');}
-document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-
-let toastTimer;
-function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3000);}
+// ── AUTO REFRESH ──────────────────────────────────────────────────────────────
+setInterval(() => {
+  if (document.getElementById('app').style.display !== 'none') loadAll();
+}, 60000);
 </script>
 </body>
 </html>
