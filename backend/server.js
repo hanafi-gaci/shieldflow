@@ -2381,6 +2381,20 @@ async function scanAllClouds() {
 cron.schedule('0 * * * *', scanAllClouds, { timezone: 'Europe/Paris' });
 
 // Route pour déclencher un scan cloud manuellement
+// ─── DELETE TENANT ───────────────────────────────────────────────────────────
+app.delete('/api/mssp/tenants/:id', async (req, res) => {
+  try {
+    const tenant = await Tenant.findByIdAndDelete(req.params.id);
+    if (!tenant) return res.json({ success: false, error: 'Client non trouvé' });
+    await Device.deleteMany({ tenant_id: req.params.id });
+    await Alert.deleteMany({ tenant_id: req.params.id });
+    console.log(`[MSSP] Tenant supprimé: ${tenant.name}`);
+    res.json({ success: true, message: `Client ${tenant.name} supprimé` });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
+});
+
 // ─── DELETE CLOUD ─────────────────────────────────────────────────────────────
 
 app.delete('/api/mssp/tenants/:id/cloud/:type', async (req, res) => {
