@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ShieldFlow — Dashboard MSSP</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#f4f5f7;--sidebar:#0d1117;--sidebar-hover:rgba(255,255,255,.06);
-  --white:#fff;--text:#111827;--text2:#6b7280;--text3:#9ca3af;
+  --bg:#f4f6f9;--sidebar:#0d1117;--white:#fff;
+  --text:#111827;--text2:#6b7280;--text3:#9ca3af;
   --blue:#2563eb;--blue2:#3b82f6;--blue-bg:#eff6ff;
   --green:#059669;--green-bg:#ecfdf5;
   --red:#dc2626;--red-bg:#fef2f2;
@@ -20,234 +21,260 @@
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
 body{display:flex}
 
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes countUp{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideIn{from{transform:translateX(-10px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes barFill{from{width:0}to{width:var(--w)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.fade-in{animation:fadeIn .4s ease both}
+.fade-in-d1{animation:fadeIn .4s .1s ease both}
+.fade-in-d2{animation:fadeIn .4s .2s ease both}
+.fade-in-d3{animation:fadeIn .4s .3s ease both}
+
 /* SIDEBAR */
-.sidebar{width:220px;min-width:220px;background:var(--sidebar);display:flex;flex-direction:column;height:100vh}
+.sidebar{width:224px;min-width:224px;background:var(--sidebar);display:flex;flex-direction:column;height:100vh}
 .sb-logo{padding:18px 14px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,.07)}
-.sb-logo-mark{width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.sb-logo-name{font-size:15px;font-weight:800;color:#fff}
-.sb-logo-sub{font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em}
+.sb-mark{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 4px 12px rgba(37,99,235,.4)}
+.sb-name{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em}
 .sb-nav{flex:1;overflow-y:auto;padding:10px 8px}
-.sb-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.1em;padding:10px 8px 4px;margin-top:4px}
-.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.5);transition:.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left}
-.sb-item:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.85)}
-.sb-item.active{background:rgba(37,99,235,.2);color:#60a5fa}
-.sb-item .icon{width:18px;text-align:center;font-size:13px;flex-shrink:0}
-.sb-item .label{flex:1}
-.sb-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
-.sb-badge-ok{background:var(--green)}
-.sb-client{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.4);transition:.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left}
-.sb-client:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.8)}
+.sb-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.1em;padding:10px 8px 4px;margin-top:4px}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.45);transition:.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left}
+.sb-btn:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85)}
+.sb-btn.active{background:rgba(37,99,235,.2);color:#60a5fa}
+.sb-btn .ic{width:18px;text-align:center;font-size:13px;flex-shrink:0}
+.sb-btn .lbl{flex:1}
+.sb-n{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.sb-n-ok{background:var(--green)}
+.sb-client{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.38);transition:.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left}
+.sb-client:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.75)}
 .sb-client.active{background:rgba(37,99,235,.15);color:#93c5fd}
 .sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.sb-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:9px}
-.sb-avatar{width:30px;height:30px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
-.sb-user-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.75)}
-.sb-user-role{font-size:10px;color:rgba(255,255,255,.3)}
+.sb-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:9px}
+.sb-av{width:30px;height:30px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.sb-un{font-size:12px;font-weight:600;color:rgba(255,255,255,.7)}
+.sb-ur{font-size:10px;color:rgba(255,255,255,.28)}
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
-.topbar{height:52px;min-height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:12px}
-.topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
-.topbar-title{font-size:15px;font-weight:700;color:var(--text);white-space:nowrap}
-.topbar-breadcrumb{font-size:12px;color:var(--text3)}
-.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.topbar{height:52px;min-height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.tb-title{font-size:15px;font-weight:700;color:var(--text)}
+.tb-sub{font-size:12px;color:var(--text3);margin-left:8px}
+.tb-right{display:flex;align-items:center;gap:8px}
 .content{flex:1;overflow-y:auto;padding:20px}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:.15s;text-decoration:none;white-space:nowrap}
-.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1d4ed8;transform:translateY(-1px)}
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg)}
-.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,.2)}
-.btn-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,.2)}.btn-green:hover{background:rgba(5,150,105,.1)}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.15)}.btn-red:hover{background:rgba(220,38,38,.1)}
+.btn-purple{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(124,58,237,.2)}
 .btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:10px}
 
 /* METRIC CARDS */
 .metrics-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
-.metric{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.metric-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.metric-icon{font-size:18px}
-.metric-status{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em}
-.status-crit{background:var(--red-bg);color:var(--red)}
-.status-high{background:var(--orange-bg);color:var(--orange)}
-.status-ok{background:var(--green-bg);color:var(--green)}
-.status-warn{background:var(--amber-bg);color:var(--amber)}
-.metric-value{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1}
-.metric-label{font-size:11px;color:var(--text2);margin-top:3px}
-.metric-sub{font-size:10px;color:var(--text3);margin-top:4px}
-.metric-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+.mc{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:.2s;cursor:default}
+.mc:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.mc-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+.mc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mc-icon{font-size:20px}
+.mc-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase}
+.mc-val{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1;transition:all .5s}
+.mc-label{font-size:11px;color:var(--text2);margin-top:4px}
+.mc-trend{font-size:10px;margin-top:5px;display:flex;align-items:center;gap:3px}
 
 /* SECTION CARD */
-.sc{background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
-.sc-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sc{background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.sc-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .sc-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
-.sc-body{padding:0}
-.sc-body-pad{padding:14px 16px}
+.sc-body{padding:14px 16px}
+.sc-nobody{padding:0}
 
 /* TABLE */
 .tbl{width:100%;border-collapse:collapse}
 .tbl th{padding:9px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);background:var(--bg);text-align:left;white-space:nowrap}
-.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
-.tbl tbody tr:hover td{background:#fafafa;cursor:pointer}
+.tbl-row{cursor:pointer;transition:.15s}
+.tbl-row:hover td{background:#f9fafb}
 .tbl-name{display:flex;align-items:center;gap:9px}
-.tbl-avatar{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.tbl-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
 .tbl-primary{font-size:13px;font-weight:600;color:var(--text)}
 .tbl-secondary{font-size:11px;color:var(--text3);margin-top:1px}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
-.pill-green{background:var(--green-bg);color:var(--green)}
-.pill-red{background:var(--red-bg);color:var(--red)}
-.pill-orange{background:var(--orange-bg);color:var(--orange)}
-.pill-blue{background:var(--blue-bg);color:var(--blue)}
-.pill-gray{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .pill-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
-.score-row{display:flex;align-items:center;gap:7px}
-.score-bar{width:60px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0}
-.score-fill{height:100%;border-radius:3px}
-.score-val{font-size:12px;font-weight:700;min-width:28px}
+.p-green{background:var(--green-bg);color:var(--green)}
+.p-red{background:var(--red-bg);color:var(--red)}
+.p-orange{background:var(--orange-bg);color:var(--orange)}
+.p-blue{background:var(--blue-bg);color:var(--blue)}
+.p-amber{background:var(--amber-bg);color:var(--amber)}
+.p-purple{background:var(--purple-bg);color:var(--purple)}
+.p-gray{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+
+/* SCORE BAR */
+.sbar{display:flex;align-items:center;gap:7px}
+.sbar-track{width:64px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.sbar-val{font-size:12px;font-weight:700;min-width:28px}
 
 /* ALERTS */
-.alert-item{display:flex;align-items:flex-start;gap:11px;padding:11px 14px;border-bottom:1px solid var(--border);transition:.15s}
+.alert-item{display:flex;align-items:flex-start;gap:11px;padding:12px 16px;border-bottom:1px solid var(--border);transition:.15s;animation:slideIn .3s ease both}
 .alert-item:last-child{border-bottom:none}
 .alert-item:hover{background:#fafafa}
-.alert-sev{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0;text-transform:uppercase;margin-top:1px}
-.sev-critical{background:var(--red-bg);color:var(--red)}
-.sev-high{background:var(--orange-bg);color:var(--orange)}
-.sev-medium{background:var(--amber-bg);color:var(--amber)}
-.sev-low{background:var(--green-bg);color:var(--green)}
-.alert-body{flex:1;min-width:0}
-.alert-title{font-size:13px;font-weight:600;color:var(--text)}
-.alert-meta{font-size:11px;color:var(--text3);margin-top:2px}
-.alert-rec{font-size:11px;color:var(--text2);margin-top:3px;font-style:italic}
-.alert-btns{display:flex;gap:5px;flex-shrink:0;align-items:flex-start}
+.al-sev{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;text-transform:uppercase;letter-spacing:.04em}
+.s-critical{background:var(--red-bg);color:var(--red)}
+.s-high{background:var(--orange-bg);color:var(--orange)}
+.s-medium{background:var(--amber-bg);color:var(--amber)}
+.s-low{background:var(--green-bg);color:var(--green)}
+.al-body{flex:1;min-width:0}
+.al-title{font-size:13px;font-weight:600;color:var(--text)}
+.al-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.al-rec{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.5}
+.al-btns{display:flex;gap:5px;flex-shrink:0}
 
-/* ENDPOINTS */
-.ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:14px 16px}
-.ep-card{background:var(--bg);border:1px solid var(--border);border-radius:9px;overflow:hidden;transition:.2s}
-.ep-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);border-color:var(--blue2)}
-.ep-head{padding:12px 14px;display:flex;align-items:center;gap:10px;background:var(--white);border-bottom:1px solid var(--border)}
-.ep-os{font-size:22px;flex-shrink:0}
+/* ENDPOINT CARDS */
+.ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.ep-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s;animation:fadeIn .4s ease both}
+.ep-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:var(--blue2)}
+.ep-head{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#f9fafb,#fff)}
+.ep-os{font-size:26px}
 .ep-info{flex:1;min-width:0}
-.ep-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ep-platform{font-size:11px;color:var(--text3)}
-.ep-body{padding:12px 14px}
-.ep-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-.ep-stat{text-align:center;padding:7px;background:var(--white);border-radius:7px;border:1px solid var(--border)}
-.ep-stat-val{font-size:15px;font-weight:800;color:var(--text);line-height:1}
-.ep-stat-label{font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
-.ep-checks{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
-.ep-check{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px}
-.ep-check-ok{background:var(--green-bg);color:var(--green)}
-.ep-check-fail{background:var(--red-bg);color:var(--red)}
-.ep-install{background:var(--sidebar);border-radius:7px;padding:9px 11px}
-.ep-install-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.ep-install-cmd{font-family:monospace;font-size:10px;color:rgba(255,255,255,.7);word-break:break-all;line-height:1.5}
-.ep-copy{display:flex;align-items:center;gap:4px;font-size:10px;color:#60a5fa;background:none;border:none;cursor:pointer;padding:4px 0;font-weight:600;margin-top:4px}
-.ep-copy:hover{text-decoration:underline}
+.ep-name{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep-plat{font-size:11px;color:var(--text3);margin-top:1px}
+.ep-body{padding:14px 16px}
 
-/* TRIAGE FEED */
-.triage-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);transition:.15s;cursor:pointer}
+/* GAUGES */
+.gauges-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.gauge-box{text-align:center;padding:10px 6px;background:var(--bg);border-radius:9px;border:1px solid var(--border)}
+.gauge-val{font-size:18px;font-weight:800;color:var(--text);line-height:1}
+.gauge-label{font-size:9px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.gauge-chart{position:relative;width:60px;height:60px;margin:0 auto 4px}
+.gauge-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--text)}
+
+/* CHECKS */
+.checks-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.check{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px}
+.chk-ok{background:var(--green-bg);color:var(--green)}
+.chk-fail{background:var(--red-bg);color:var(--red)}
+.chk-warn{background:var(--amber-bg);color:var(--amber)}
+
+/* AI REPORT BOX */
+.ai-box{background:linear-gradient(135deg,#0d1117,#1a1f35);border-radius:9px;padding:12px 14px;border:1px solid rgba(37,99,235,.2)}
+.ai-header{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#34d399;animation:pulse 2s infinite}
+.ai-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em}
+.ai-content{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;font-family:monospace}
+.ai-loading{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.4)}
+.ai-spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,.1);border-top-color:#60a5fa;border-radius:50%;animation:spin 1s linear infinite}
+
+/* INSTALL CMD */
+.install-box{background:#0d1117;border-radius:8px;padding:11px 13px;margin-top:10px;border:1px solid rgba(255,255,255,.06)}
+.install-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.install-cmd{font-family:monospace;font-size:11px;color:rgba(255,255,255,.65);word-break:break-all;line-height:1.5}
+.install-copy{display:flex;align-items:center;gap:4px;font-size:10px;color:#60a5fa;background:none;border:none;cursor:pointer;padding:4px 0;font-weight:600;margin-top:4px;transition:.15s}
+.install-copy:hover{color:#93c5fd}
+
+/* CHART CONTAINERS */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-box{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.chart-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.chart-wrap{position:relative;height:160px}
+
+/* TRIAGE */
+.triage-grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.triage-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;animation:slideIn .3s ease both}
 .triage-item:hover{background:#fafafa}
 .triage-item:last-child{border-bottom:none}
-.triage-time{font-size:10px;color:var(--text3);flex-shrink:0;margin-top:2px;min-width:40px}
-.triage-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.triage-body{flex:1;min-width:0}
-.triage-title{font-size:13px;font-weight:600;color:var(--text)}
-.triage-meta{font-size:11px;color:var(--text3);margin-top:2px}
-.triage-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;text-transform:uppercase}
-
-/* CLOUD */
-.cloud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:14px 16px}
-.cloud-card{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px}
-.cloud-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.cloud-icon{font-size:26px}
-.cloud-title{font-size:13px;font-weight:700;color:var(--text)}
-.cloud-status-text{font-size:11px;margin-top:1px}
-.cloud-alerts{display:flex;flex-direction:column;gap:5px}
-.cloud-alert-item{padding:7px 10px;border-radius:7px;font-size:12px;border:1px solid}
-.ca-crit{background:var(--red-bg);border-color:rgba(220,38,38,.15);color:var(--red)}
-.ca-high{background:var(--orange-bg);border-color:rgba(234,88,12,.15);color:var(--orange)}
-.ca-ok{background:var(--green-bg);border-color:rgba(5,150,105,.15);color:var(--green)}
-.ca-none{background:var(--bg);border-color:var(--border);color:var(--text3);text-align:center;font-size:12px;padding:20px}
+.tr-time{font-size:10px;color:var(--text3);flex-shrink:0;margin-top:2px;min-width:38px}
+.tr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tr-body{flex:1;min-width:0}
+.tr-title{font-size:13px;font-weight:600;color:var(--text)}
+.tr-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.tr-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;text-transform:uppercase}
 
 /* SIEM */
-.siem-wrap{background:#0d1117;border-radius:0;font-family:'SF Mono',monospace}
-.siem-bar{background:#161b22;padding:10px 14px;display:flex;align-items:center;gap:7px;border-bottom:1px solid rgba(255,255,255,.06)}
-.siem-dot-red{width:10px;height:10px;border-radius:50%;background:#ff5f57}
-.siem-dot-yel{width:10px;height:10px;border-radius:50%;background:#ffbd2e}
-.siem-dot-grn{width:10px;height:10px;border-radius:50%;background:#28c840}
-.siem-title{font-size:11px;color:rgba(255,255,255,.35);margin-left:6px}
-.siem-body{padding:14px;max-height:380px;overflow-y:auto;font-size:11px;line-height:1.9}
-.siem-line{display:flex;gap:10px;border-bottom:1px solid rgba(255,255,255,.03);padding:1px 0}
-.sl-time{color:#4b5563;flex-shrink:0;min-width:55px}
-.sl-src{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;text-transform:uppercase}
+.siem-wrap{background:#0d1117;border-radius:0 0 12px 12px;overflow:hidden}
+.siem-bar{background:#161b22;padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.05)}
+.s-dot{width:10px;height:10px;border-radius:50%}
+.siem-body{padding:14px;max-height:400px;overflow-y:auto;font-size:11px;line-height:1.9;font-family:monospace}
+.sl{display:flex;gap:10px;border-bottom:1px solid rgba(255,255,255,.03);padding:1px 0;animation:slideIn .2s ease both}
+.sl-t{color:#374151;flex-shrink:0;min-width:58px}
+.sl-s{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;text-transform:uppercase}
 .src-edr{background:rgba(16,185,129,.15);color:#34d399}
 .src-m365{background:rgba(37,99,235,.15);color:#60a5fa}
 .src-siem{background:rgba(124,58,237,.15);color:#a78bfa}
 .src-aws{background:rgba(234,88,12,.15);color:#fb923c}
-.sl-msg{color:#6b7280;flex:1}
-.sl-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0}
-.sb-crit{background:rgba(220,38,38,.2);color:#f87171}
-.sb-warn{background:rgba(234,88,12,.2);color:#fb923c}
-.sb-ok{background:rgba(16,185,129,.2);color:#34d399}
+.sl-m{color:#6b7280;flex:1}
+.sl-b{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.sb-c{background:rgba(220,38,38,.2);color:#f87171}
+.sb-w{background:rgba(234,88,12,.2);color:#fb923c}
+.sb-o{background:rgba(16,185,129,.2);color:#34d399}
 
 /* RGPD */
-.rgpd-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;padding:14px 16px}
-.rgpd-score-box{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:20px;text-align:center}
-.rgpd-articles-box{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px}
+.rgpd-layout{display:grid;grid-template-columns:240px 1fr;gap:16px}
+.rgpd-score-box{text-align:center;padding:24px 16px}
+.rgpd-arts{display:flex;flex-direction:column;gap:8px}
 .rgpd-art{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
 .rgpd-art:last-child{border-bottom:none}
-.rgpd-art-name{font-size:12px;font-weight:600;color:var(--text);min-width:55px}
-.rgpd-art-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.rgpd-art-fill{height:100%;border-radius:3px;background:var(--blue)}
-.rgpd-art-score{font-size:11px;font-weight:700;color:var(--text2);min-width:30px;text-align:right}
+.rgpd-art-name{font-size:12px;font-weight:600;color:var(--text);min-width:60px}
+.rgpd-art-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.rgpd-art-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.rgpd-art-score{font-size:12px;font-weight:700;min-width:32px;text-align:right}
+
+/* CLOUD */
+.cloud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cloud-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px}
+.cloud-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cloud-icon{font-size:28px}
+.cloud-name{font-size:14px;font-weight:700;color:var(--text)}
+.cloud-status{font-size:11px;margin-top:2px}
 
 /* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .overlay.open{display:flex}
-.modal{background:var(--white);border-radius:14px;padding:24px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
-.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:18px}
-.fgroup{margin-bottom:14px}
-.flabel{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
-.finput,.fselect{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:.15s}
-.finput:focus,.fselect:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.modal{background:var(--white);border-radius:16px;padding:26px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,.15);animation:fadeIn .2s ease}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:18px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.fi,.fs{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:.15s;font-family:inherit}
+.fi:focus,.fs:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.modal-foot{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.mfoot{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
 
 /* LOGIN */
 .login-wrap{position:fixed;inset:0;background:linear-gradient(135deg,#0d1117,#1a2035);display:flex;align-items:center;justify-content:center;z-index:9999}
-.login-box{background:#161b28;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:36px;width:100%;max-width:380px;text-align:center}
-.login-icon{font-size:36px;margin-bottom:14px}
-.login-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:5px}
-.login-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:28px}
-.login-input{width:100%;padding:11px 13px;border:1px solid rgba(255,255,255,.1);border-radius:9px;font-size:13px;color:#fff;background:rgba(255,255,255,.05);outline:none;margin-bottom:10px;transition:.15s}
-.login-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
-.login-btn{width:100%;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;transition:.15s}
-.login-btn:hover{opacity:.9}
-.login-err{font-size:11px;color:#f87171;margin-top:6px;display:none}
-
-/* TOAST */
-.toast{position:fixed;bottom:20px;right:20px;background:#111827;color:#fff;padding:11px 16px;border-radius:9px;font-size:12px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;max-width:280px;border:1px solid rgba(255,255,255,.1)}
-.toast.show{opacity:1;transform:translateY(0)}
+.login-box{background:rgba(22,27,40,.9);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:40px;width:100%;max-width:400px;text-align:center;animation:fadeIn .4s ease;backdrop-filter:blur(20px)}
+.login-glow{width:80px;height:80px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;box-shadow:0 8px 32px rgba(37,99,235,.4)}
+.login-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:5px}
+.login-sub{font-size:13px;color:rgba(255,255,255,.35);margin-bottom:28px}
+.login-input{width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;font-size:13px;color:#fff;background:rgba(255,255,255,.05);outline:none;margin-bottom:10px;transition:.15s}
+.login-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.login-btn{width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;transition:.2s;margin-top:4px}
+.login-btn:hover{opacity:.9;transform:translateY(-1px)}
+.login-err{font-size:12px;color:#f87171;margin-top:8px;display:none}
 
 /* TABS */
-.tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;width:fit-content;margin-bottom:16px}
-.tab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:.15s;border:none;background:none}
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:3px;width:fit-content;margin-bottom:16px}
+.tab{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:.15s;border:none;background:none}
 .tab.active{background:var(--white);color:var(--text);box-shadow:var(--shadow)}
-.tab:hover:not(.active){color:var(--text)}
 
 /* EMPTY */
-.empty{text-align:center;padding:40px 20px;color:var(--text3)}
-.empty-icon{font-size:36px;margin-bottom:10px}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
 .empty-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.empty-sub{font-size:12px}
 
-/* INSTALL BOX */
-.install-box{background:#0d1117;border-radius:8px;padding:12px 14px;margin-top:10px}
-.install-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
-.install-cmd{font-family:monospace;font-size:11px;color:rgba(255,255,255,.7);word-break:break-all;line-height:1.5}
-.install-copy{display:flex;align-items:center;gap:4px;font-size:10px;color:#60a5fa;background:none;border:none;cursor:pointer;padding:5px 0;font-weight:600;margin-top:5px}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:#111827;color:#fff;padding:11px 16px;border-radius:10px;font-size:12px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;border:1px solid rgba(255,255,255,.08)}
+.toast.show{opacity:1;transform:translateY(0)}
 
-@media(max-width:900px){.metrics-row{grid-template-columns:repeat(3,1fr)}.sidebar{display:none}}
+@media(max-width:1100px){.metrics-row{grid-template-columns:repeat(3,1fr)}.chart-grid,.triage-grid,.rgpd-layout{grid-template-columns:1fr}.cloud-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{display:none}.ep-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -255,71 +282,71 @@ body{display:flex}
 <!-- LOGIN -->
 <div class="login-wrap" id="loginWrap">
   <div class="login-box">
-    <div class="login-icon">🛡</div>
+    <div class="login-glow">🛡</div>
     <div class="login-title">ShieldFlow MSSP</div>
     <div class="login-sub">Plateforme de surveillance — Accès réservé</div>
     <input class="login-input" type="password" id="loginPass" placeholder="Mot de passe administrateur" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Accéder à la plateforme →</button>
-    <div class="login-err" id="loginErr">Mot de passe incorrect. Réessayez.</div>
+    <div class="login-err" id="loginErr">Mot de passe incorrect</div>
   </div>
 </div>
 
 <!-- APP -->
-<div id="appWrap" style="display:none;width:100%;height:100%;overflow:hidden" class="app-flex">
-<style>.app-flex{display:flex}</style>
+<div id="appWrap" style="display:none;width:100%;height:100%;overflow:hidden;display:flex">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-mark">🛡</div>
-    <div><div class="sb-logo-name">ShieldFlow</div><div class="sb-logo-sub">MSSP Platform</div></div>
+    <div class="sb-mark">🛡</div>
+    <div><div class="sb-name">ShieldFlow</div><div class="sb-sub">MSSP Platform</div></div>
   </div>
   <div class="sb-nav">
-    <div class="sb-section">Principal</div>
-    <button class="sb-item active" id="nav-overview" onclick="goPage('overview')">
-      <span class="icon">🏠</span><span class="label">Vue d'ensemble</span>
-      <span class="sb-badge" id="badge-overview">0</span>
+    <div class="sb-section">Navigation</div>
+    <button class="sb-btn active" id="nav-overview" onclick="goPage('overview')">
+      <span class="ic">🏠</span><span class="lbl">Vue d'ensemble</span>
+      <span class="sb-n" id="badge-total">0</span>
     </button>
-    <button class="sb-item" id="nav-triage" onclick="goPage('triage')">
-      <span class="icon">📡</span><span class="label">Triage Feed</span>
-      <span class="sb-badge" id="badge-triage">0</span>
+    <button class="sb-btn" id="nav-triage" onclick="goPage('triage')">
+      <span class="ic">📡</span><span class="lbl">Triage Feed</span>
+      <span class="sb-n" id="badge-crit">0</span>
     </button>
-    <button class="sb-item" id="nav-endpoints" onclick="goPage('endpoints')">
-      <span class="icon">💻</span><span class="label">Agents / Endpoints</span>
+    <button class="sb-btn" id="nav-endpoints" onclick="goPage('endpoints')">
+      <span class="ic">💻</span><span class="lbl">Agents / Endpoints</span>
     </button>
-    <button class="sb-item" id="nav-incidents" onclick="goPage('incidents')">
-      <span class="icon">🚨</span><span class="label">Incidents</span>
-      <span class="sb-badge" id="badge-incidents">0</span>
+    <button class="sb-btn" id="nav-incidents" onclick="goPage('incidents')">
+      <span class="ic">🚨</span><span class="lbl">Incidents</span>
+      <span class="sb-n" id="badge-inc">0</span>
     </button>
-    <button class="sb-item" id="nav-cloud" onclick="goPage('cloud')">
-      <span class="icon">☁️</span><span class="label">Cloud & Identités</span>
+    <button class="sb-btn" id="nav-cloud" onclick="goPage('cloud')">
+      <span class="ic">☁️</span><span class="lbl">Cloud & Identités</span>
     </button>
-    <button class="sb-item" id="nav-siem" onclick="goPage('siem')">
-      <span class="icon">📊</span><span class="label">SIEM & Logs</span>
+    <button class="sb-btn" id="nav-siem" onclick="goPage('siem')">
+      <span class="ic">📊</span><span class="lbl">SIEM & Logs</span>
     </button>
-    <button class="sb-item" id="nav-rgpd" onclick="goPage('rgpd')">
-      <span class="icon">📋</span><span class="label">Conformité RGPD</span>
+    <button class="sb-btn" id="nav-rgpd" onclick="goPage('rgpd')">
+      <span class="ic">📋</span><span class="lbl">Conformité RGPD</span>
     </button>
-    <div class="sb-section">Organisations</div>
+    <div class="sb-section" style="margin-top:8px">Organisations</div>
     <div id="sbClients"></div>
-    <button class="sb-item" onclick="openModal('modalClient')" style="margin-top:4px">
-      <span class="icon">➕</span><span class="label">Ajouter un client</span>
+    <button class="sb-btn" onclick="openModal('modalClient')" style="margin-top:4px;color:rgba(255,255,255,.35)">
+      <span class="ic">➕</span><span class="lbl">Ajouter un client</span>
     </button>
   </div>
   <div class="sb-footer">
-    <div class="sb-avatar">H</div>
-    <div><div class="sb-user-name">Hanafi Gaci</div><div class="sb-user-role">Administrateur</div></div>
+    <div class="sb-av">H</div>
+    <div><div class="sb-un">Hanafi Gaci</div><div class="sb-ur">Administrateur MSSP</div></div>
   </div>
 </div>
 
-<!-- MAIN -->
+<!-- MAIN CONTENT -->
 <div class="main">
   <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-title" id="tbTitle">Vue d'ensemble</div>
-      <div class="topbar-breadcrumb" id="tbSub">· Tous les clients</div>
+    <div style="display:flex;align-items:center">
+      <div class="tb-title" id="tbTitle">Vue d'ensemble</div>
+      <div class="tb-sub" id="tbSub">· Toutes les organisations</div>
     </div>
-    <div class="topbar-right">
+    <div class="tb-right">
+      <div id="lastUpdate" style="font-size:11px;color:var(--text3)"></div>
       <button class="btn btn-ghost btn-sm" onclick="loadAll()">↻ Actualiser</button>
       <button class="btn btn-primary btn-sm" onclick="openModal('modalClient')">+ Nouveau client</button>
     </div>
@@ -327,113 +354,138 @@ body{display:flex}
 
   <div class="content">
 
-    <!-- PAGE: OVERVIEW -->
+    <!-- OVERVIEW -->
     <div id="page-overview">
-      <div class="metrics-row" id="metricsRow">
-        <div class="metric"><div class="metric-stripe" style="background:var(--red)"></div><div class="metric-top"><span class="metric-icon">🚨</span><span class="metric-status status-crit" id="ms-crit-label">CRITIQUE</span></div><div class="metric-value" id="ms-crit">0</div><div class="metric-label">Alertes critiques</div></div>
-        <div class="metric"><div class="metric-stripe" style="background:var(--orange)"></div><div class="metric-top"><span class="metric-icon">⚠️</span><span class="metric-status status-high">ÉLEVÉ</span></div><div class="metric-value" id="ms-high">0</div><div class="metric-label">Alertes élevées</div></div>
-        <div class="metric"><div class="metric-stripe" style="background:var(--blue)"></div><div class="metric-top"><span class="metric-icon">💻</span><span class="metric-status status-ok">ACTIFS</span></div><div class="metric-value" id="ms-agents">0</div><div class="metric-label">Agents en ligne</div></div>
-        <div class="metric"><div class="metric-stripe" style="background:var(--purple)"></div><div class="metric-top"><span class="metric-icon">👥</span><span class="metric-status" style="background:var(--purple-bg);color:var(--purple)">CLIENTS</span></div><div class="metric-value" id="ms-clients">0</div><div class="metric-label">Organisations</div></div>
-        <div class="metric"><div class="metric-stripe" style="background:var(--green)"></div><div class="metric-top"><span class="metric-icon">🔒</span><span class="metric-status status-ok">SÉCURISÉ</span></div><div class="metric-value" id="ms-protected">0</div><div class="metric-label">Machines protégées</div></div>
-        <div class="metric"><div class="metric-stripe" style="background:var(--amber)"></div><div class="metric-top"><span class="metric-icon">📋</span><span class="metric-status status-warn">RGPD</span></div><div class="metric-value" id="ms-rgpd">0%</div><div class="metric-label">Score moyen RGPD</div></div>
+      <div class="metrics-row fade-in">
+        <div class="mc"><div class="mc-stripe" style="background:var(--red)"></div><div class="mc-top"><span class="mc-icon">🚨</span><span class="mc-badge" style="background:var(--red-bg);color:var(--red)">CRITIQUE</span></div><div class="mc-val" id="m-crit">0</div><div class="mc-label">Alertes critiques</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:var(--orange)"></div><div class="mc-top"><span class="mc-icon">⚠️</span><span class="mc-badge" style="background:var(--orange-bg);color:var(--orange)">ÉLEVÉ</span></div><div class="mc-val" id="m-high">0</div><div class="mc-label">Alertes élevées</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:var(--green)"></div><div class="mc-top"><span class="mc-icon">💻</span><span class="mc-badge" style="background:var(--green-bg);color:var(--green)">EN LIGNE</span></div><div class="mc-val" id="m-online">0</div><div class="mc-label">Agents actifs</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:var(--blue)"></div><div class="mc-top"><span class="mc-icon">👥</span><span class="mc-badge" style="background:var(--blue-bg);color:var(--blue)">CLIENTS</span></div><div class="mc-val" id="m-clients">0</div><div class="mc-label">Organisations</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:var(--purple)"></div><div class="mc-top"><span class="mc-icon">🔒</span><span class="mc-badge" style="background:var(--purple-bg);color:var(--purple)">SCORE</span></div><div class="mc-val" id="m-score">0</div><div class="mc-label">Score moyen</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:var(--amber)"></div><div class="mc-top"><span class="mc-icon">📋</span><span class="mc-badge" style="background:var(--amber-bg);color:var(--amber)">RGPD</span></div><div class="mc-val" id="m-rgpd">0%</div><div class="mc-label">Conformité RGPD</div></div>
       </div>
 
-      <div class="sc">
-        <div class="sc-header">
+      <div class="chart-grid fade-in-d1">
+        <div class="chart-box">
+          <div class="chart-title">📊 Répartition des alertes par sévérité</div>
+          <div class="chart-wrap"><canvas id="chartAlertsDoughnut"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">📈 Score de sécurité par client</div>
+          <div class="chart-wrap"><canvas id="chartScoreBar"></canvas></div>
+        </div>
+      </div>
+
+      <div class="sc fade-in-d2">
+        <div class="sc-head">
           <div class="sc-title">👥 Organisations</div>
           <button class="btn btn-primary btn-sm" onclick="openModal('modalClient')">+ Ajouter</button>
         </div>
-        <div class="sc-body">
+        <div class="sc-nobody">
           <table class="tbl">
             <thead><tr>
               <th>Organisation</th><th>Agents</th><th>Incidents</th>
               <th>Score sécurité</th><th>RGPD</th><th>Statut</th><th>Actions</th>
             </tr></thead>
-            <tbody id="orgTableBody"><tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Chargement...</td></tr></tbody>
+            <tbody id="orgBody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- PAGE: TRIAGE -->
+    <!-- TRIAGE FEED -->
     <div id="page-triage" style="display:none">
-      <div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
-        <div class="sc">
-          <div class="sc-header">
-            <div class="sc-title">📡 Triage Feed — Incidents actifs</div>
-            <div class="tabs" style="margin:0">
-              <button class="tab active" onclick="filterTriage('all',this)">Tous</button>
-              <button class="tab" onclick="filterTriage('critical',this)">Critiques</button>
-              <button class="tab" onclick="filterTriage('high',this)">Élevés</button>
+      <div class="triage-grid">
+        <div>
+          <div class="sc">
+            <div class="sc-head">
+              <div class="sc-title">📡 Triage Feed — Incidents en temps réel</div>
+              <div class="tabs" style="margin:0">
+                <button class="tab active" onclick="filterTriage('all',this)">Tous</button>
+                <button class="tab" onclick="filterTriage('critical',this)">Critiques</button>
+                <button class="tab" onclick="filterTriage('high',this)">Élevés</button>
+              </div>
             </div>
+            <div id="triageFeed" class="sc-nobody"></div>
           </div>
-          <div class="sc-body" id="triageFeed"></div>
         </div>
         <div>
           <div class="sc" style="margin-bottom:14px">
-            <div class="sc-header"><div class="sc-title">🔒 Statut agents</div></div>
-            <div class="sc-body-pad" id="agentStatus"></div>
+            <div class="sc-head"><div class="sc-title">🖥 Statut agents</div></div>
+            <div class="sc-body" id="agentStatus"></div>
+          </div>
+          <div class="sc" style="margin-bottom:14px">
+            <div class="sc-head"><div class="sc-title">🔥 Pare-feu & Sécurité</div></div>
+            <div class="sc-body" id="fwStatus"></div>
           </div>
           <div class="sc">
-            <div class="sc-header"><div class="sc-title">🛡 Sécurité globale</div></div>
-            <div class="sc-body-pad" id="globalSecurity"></div>
+            <div class="sc-head"><div class="sc-title">📊 Alertes 24h</div></div>
+            <div class="sc-body"><div class="chart-wrap" style="height:120px"><canvas id="chartTriageBar"></canvas></div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- PAGE: ENDPOINTS -->
+    <!-- ENDPOINTS -->
     <div id="page-endpoints" style="display:none">
       <div class="tabs" id="epTabs"></div>
-      <div id="epContent"><div class="empty"><div class="empty-icon">💻</div><div class="empty-title">Sélectionnez un client</div></div></div>
+      <div id="epContent"></div>
     </div>
 
-    <!-- PAGE: INCIDENTS -->
+    <!-- INCIDENTS -->
     <div id="page-incidents" style="display:none">
       <div class="tabs" id="incTabs"></div>
       <div class="sc">
-        <div class="sc-header">
+        <div class="sc-head">
           <div class="sc-title">🚨 Incidents & Alertes</div>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="filterAlerts('all')">Toutes</button>
-            <button class="btn btn-ghost btn-sm" onclick="filterAlerts('critical')">Critiques</button>
-            <button class="btn btn-ghost btn-sm" onclick="filterAlerts('unresolved')">Non résolues</button>
+            <button class="btn btn-ghost btn-sm" onclick="setIncFilter('all',this)">Toutes</button>
+            <button class="btn btn-ghost btn-sm" onclick="setIncFilter('critical',this)">Critiques</button>
+            <button class="btn btn-ghost btn-sm" onclick="setIncFilter('unresolved',this)">Non résolues</button>
+            <button class="btn btn-ghost btn-sm" onclick="setIncFilter('resolved',this)">Résolues</button>
           </div>
         </div>
-        <div class="sc-body" id="incidentsList"></div>
+        <div id="incList" class="sc-nobody"></div>
       </div>
     </div>
 
-    <!-- PAGE: CLOUD -->
+    <!-- CLOUD -->
     <div id="page-cloud" style="display:none">
       <div class="tabs" id="cloudTabs"></div>
-      <div id="cloudContent"><div class="empty"><div class="empty-icon">☁️</div><div class="empty-title">Sélectionnez un client</div></div></div>
+      <div id="cloudContent"></div>
     </div>
 
-    <!-- PAGE: SIEM -->
+    <!-- SIEM -->
     <div id="page-siem" style="display:none">
       <div class="tabs" id="siemTabs"></div>
       <div class="sc">
-        <div class="sc-header">
+        <div class="sc-head">
           <div class="sc-title">📊 SIEM — Stream d'événements</div>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('siemBody').innerHTML=''">Effacer</button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="siemFilter='all';renderSiem()">Tous</button>
+            <button class="btn btn-ghost btn-sm" onclick="siemFilter='critical';renderSiem()">Critiques</button>
+            <button class="btn btn-red btn-sm" onclick="document.getElementById('siemBody').innerHTML=''">Effacer</button>
+          </div>
         </div>
         <div class="siem-wrap">
           <div class="siem-bar">
-            <div class="siem-dot-red"></div><div class="siem-dot-yel"></div><div class="siem-dot-grn"></div>
-            <div class="siem-title">ShieldFlow SIEM · Live Events</div>
+            <div class="s-dot" style="background:#ff5f57"></div>
+            <div class="s-dot" style="background:#ffbd2e"></div>
+            <div class="s-dot" style="background:#28c840"></div>
+            <span style="font-size:11px;color:rgba(255,255,255,.3);margin-left:8px;font-family:monospace">ShieldFlow SIEM · Live Event Stream</span>
+            <span id="siemCount" style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.2)">0 événements</span>
           </div>
           <div class="siem-body" id="siemBody">
-            <div class="siem-line"><span class="sl-time">--:--:--</span><span class="sl-src src-siem">SIEM</span><span class="sl-msg">En attente d'événements...</span></div>
+            <div class="sl"><span class="sl-t">--:--:--</span><span class="sl-s src-siem">SIEM</span><span class="sl-m">En attente d'événements...</span></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- PAGE: RGPD -->
+    <!-- RGPD -->
     <div id="page-rgpd" style="display:none">
       <div class="tabs" id="rgpdTabs"></div>
-      <div id="rgpdContent"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Sélectionnez un client</div></div></div>
+      <div id="rgpdContent"></div>
     </div>
 
   </div>
@@ -444,11 +496,11 @@ body{display:flex}
 <div class="overlay" id="modalClient">
   <div class="modal">
     <div class="modal-title">➕ Nouveau client</div>
-    <div class="fgroup"><label class="flabel">Nom *</label><input class="finput" id="nc-name" placeholder="Cabinet Dupont"></div>
+    <div class="fg"><label class="fl">Nom *</label><input class="fi" id="nc-name" placeholder="Cabinet Dupont"></div>
     <div class="frow">
-      <div class="fgroup"><label class="flabel">Email *</label><input class="finput" id="nc-email" type="email" placeholder="contact@cabinet.fr"></div>
-      <div class="fgroup"><label class="flabel">Secteur</label>
-        <select class="fselect" id="nc-sector">
+      <div class="fg"><label class="fl">Email *</label><input class="fi" id="nc-email" type="email" placeholder="contact@cabinet.fr"></div>
+      <div class="fg"><label class="fl">Secteur</label>
+        <select class="fs" id="nc-sector">
           <option value="">Choisir...</option>
           <option>Cabinet médical</option><option>Cabinet notaire</option>
           <option>Expert-comptable</option><option>Agence immobilière</option>
@@ -456,9 +508,9 @@ body{display:flex}
         </select>
       </div>
     </div>
-    <div class="modal-foot">
+    <div class="mfoot">
       <button class="btn btn-ghost" onclick="closeModal('modalClient')">Annuler</button>
-      <button class="btn btn-primary" onclick="createClient()">Créer →</button>
+      <button class="btn btn-primary" onclick="createClient()">Créer le client →</button>
     </div>
   </div>
 </div>
@@ -467,8 +519,8 @@ body{display:flex}
 <div class="overlay" id="modalCloud">
   <div class="modal">
     <div class="modal-title">☁️ Connecter un service cloud</div>
-    <div class="fgroup"><label class="flabel">Service</label>
-      <select class="fselect" id="cloudType" onchange="renderCloudFields()">
+    <div class="fg"><label class="fl">Service</label>
+      <select class="fs" id="cloudType" onchange="renderCloudFields()">
         <option value="">Choisir...</option>
         <option value="m365">🔵 Microsoft 365</option>
         <option value="gworkspace">🟡 Google Workspace</option>
@@ -476,7 +528,7 @@ body{display:flex}
       </select>
     </div>
     <div id="cloudFields"></div>
-    <div class="modal-foot">
+    <div class="mfoot">
       <button class="btn btn-ghost" onclick="closeModal('modalCloud')">Annuler</button>
       <button class="btn btn-primary" onclick="connectCloud()">Connecter →</button>
     </div>
@@ -486,193 +538,217 @@ body{display:flex}
 <div class="toast" id="toast"></div>
 
 <script>
-const S = 'https://shieldflow-rfzv.onrender.com';
-let tenants = [];
-let curPage = 'overview';
-let curClientId = null;
-let allAlertFilter = 'all';
+const S='https://shieldflow-rfzv.onrender.com';
+let tenants=[], curPage='overview', curClientId=null, incFilter='all', siemFilter='all', triageFilter='all';
+let charts={};
 
 // ── LOGIN ─────────────────────────────────────────────────────────────────────
-async function doLogin() {
-  const pass = document.getElementById('loginPass').value;
-  try {
-    const r = await fetch(S + '/api/mssp/login', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({password: pass})
-    });
-    const d = await r.json();
-    if (d.token || d.success) {
-      document.getElementById('loginWrap').style.display = 'none';
-      document.getElementById('appWrap').style.display = '';
+async function doLogin(){
+  const pass=document.getElementById('loginPass').value;
+  try{
+    const r=await fetch(S+'/api/mssp/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+    const d=await r.json();
+    if(d.token||d.success){
+      document.getElementById('loginWrap').style.display='none';
+      document.getElementById('appWrap').style.display='flex';
       loadAll();
-    } else {
-      document.getElementById('loginErr').style.display = 'block';
-      setTimeout(() => document.getElementById('loginErr').style.display = 'none', 3000);
+    }else{
+      document.getElementById('loginErr').style.display='block';
+      setTimeout(()=>document.getElementById('loginErr').style.display='none',3000);
     }
-  } catch(e) { showToast('Erreur serveur'); }
+  }catch(e){showToast('Erreur serveur');}
 }
-document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 // ── LOAD ──────────────────────────────────────────────────────────────────────
-async function loadAll() {
-  try {
-    const r = await fetch(S + '/api/mssp/tenants');
-    const d = await r.json();
-    const basics = d.tenants || [];
-    tenants = await Promise.all(basics.map(async t => {
-      const tid = t.id || t._id;
-      try {
-        const [dr, cr] = await Promise.all([
-          fetch(S + '/api/mssp/tenants/' + tid + '/dashboard'),
-          fetch(S + '/api/mssp/tenants/' + tid + '/cloud')
+async function loadAll(){
+  try{
+    const r=await fetch(S+'/api/mssp/tenants');
+    const d=await r.json();
+    const basics=d.tenants||[];
+    tenants=await Promise.all(basics.map(async t=>{
+      const tid=t.id||t._id;
+      try{
+        const [dr,cr]=await Promise.all([
+          fetch(S+'/api/mssp/tenants/'+tid+'/dashboard'),
+          fetch(S+'/api/mssp/tenants/'+tid+'/cloud')
         ]);
-        const dash = await dr.json();
-        const cloud = await cr.json();
-        return {
-          ...t, id: tid,
-          devices: dash.devices || [],
-          alerts: (dash.alerts || []),
-          score: dash.score || 0,
-          rgpd_score: t.rgpd_score || 0,
-          rgpd_articles: dash.rgpd_articles || {},
-          clouds: cloud.clouds || []
-        };
-      } catch(e) {
-        return {...t, id: tid, devices: [], alerts: [], clouds: [], score: 0, rgpd_score: 0};
-      }
+        const dash=await dr.json();
+        const cloud=await cr.json();
+        return{...t,id:tid,devices:dash.devices||[],alerts:dash.alerts||[],score:dash.score||0,rgpd_score:t.rgpd_score||0,rgpd_articles:dash.rgpd_articles||{},clouds:cloud.clouds||[]};
+      }catch(e){return{...t,id:tid,devices:[],alerts:[],clouds:[],score:0,rgpd_score:0};}
     }));
-    if (!curClientId && tenants.length) curClientId = tenants[0].id;
+    if(!curClientId&&tenants.length)curClientId=tenants[0].id;
+    document.getElementById('lastUpdate').textContent='Mis à jour '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     renderSidebar();
     renderMetrics();
+    renderCharts();
     renderPage(curPage);
-  } catch(e) { showToast('Erreur connexion serveur'); }
+  }catch(e){showToast('Erreur connexion serveur');}
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
-function renderSidebar() {
-  const totalAlerts = tenants.reduce((s,t) => s + (t.alerts||[]).filter(a=>!a.resolved).length, 0);
-  const totalCrit = tenants.reduce((s,t) => s + (t.alerts||[]).filter(a=>!a.resolved&&a.severity==='critical').length, 0);
-  document.getElementById('badge-overview').textContent = totalAlerts;
-  document.getElementById('badge-triage').textContent = totalCrit;
-  document.getElementById('badge-incidents').textContent = totalAlerts;
-
-  const el = document.getElementById('sbClients');
-  el.innerHTML = tenants.map(t => {
-    const alerts = (t.alerts||[]).filter(a=>!a.resolved).length;
-    const online = (t.devices||[]).filter(d=>d.status==='online'||d.online).length;
-    const hasAlert = alerts > 0;
-    return `<button class="sb-client ${curClientId===t.id?'active':''}" onclick="selectClient('${t.id}')">
+function renderSidebar(){
+  const total=tenants.reduce((s,t)=>s+(t.alerts||[]).filter(a=>!a.resolved).length,0);
+  const crit=tenants.reduce((s,t)=>s+(t.alerts||[]).filter(a=>!a.resolved&&a.severity==='critical').length,0);
+  document.getElementById('badge-total').textContent=total;
+  document.getElementById('badge-crit').textContent=crit;
+  document.getElementById('badge-inc').textContent=total;
+  const colors=['#2563eb','#059669','#7c3aed','#ea580c','#dc2626','#0891b2'];
+  document.getElementById('sbClients').innerHTML=tenants.map(t=>{
+    const alerts=(t.alerts||[]).filter(a=>!a.resolved).length;
+    const online=(t.devices||[]).filter(d=>d.status==='online'||d.online).length;
+    const color=colors[t.name.charCodeAt(0)%colors.length];
+    return`<button class="sb-client ${curClientId===t.id?'active':''}" onclick="selectClient('${t.id}')">
       <div class="sb-dot" style="background:${online>0?'#10b981':'#4b5568'}"></div>
+      <div style="width:20px;height:20px;border-radius:5px;background:${color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${t.name[0].toUpperCase()}</div>
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left">${t.name}</span>
-      ${hasAlert?`<span style="font-size:10px;font-weight:700;color:var(--red)">${alerts}</span>`:''}
+      ${alerts>0?`<span style="font-size:10px;font-weight:700;color:var(--red)">${alerts}</span>`:''}
     </button>`;
   }).join('');
 }
 
 // ── METRICS ───────────────────────────────────────────────────────────────────
-function renderMetrics() {
-  const allAlerts = tenants.flatMap(t => (t.alerts||[]).filter(a=>!a.resolved));
-  const crit = allAlerts.filter(a=>a.severity==='critical').length;
-  const high = allAlerts.filter(a=>a.severity==='high').length;
-  const agents = tenants.reduce((s,t) => s + (t.devices||[]).length, 0);
-  const online = tenants.reduce((s,t) => s + (t.devices||[]).filter(d=>d.status==='online'||d.online).length, 0);
-  const rgpdAvg = tenants.length ? Math.round(tenants.reduce((s,t)=>s+(t.rgpd_score||0),0)/tenants.length) : 0;
+function renderMetrics(){
+  const allA=tenants.flatMap(t=>(t.alerts||[]).filter(a=>!a.resolved));
+  const crit=allA.filter(a=>a.severity==='critical').length;
+  const high=allA.filter(a=>a.severity==='high').length;
+  const allD=tenants.flatMap(t=>t.devices||[]);
+  const online=allD.filter(d=>d.status==='online'||d.online).length;
+  const avgScore=tenants.length?Math.round(tenants.reduce((s,t)=>s+(t.score||0),0)/tenants.length):0;
+  const avgRgpd=tenants.length?Math.round(tenants.reduce((s,t)=>s+(t.rgpd_score||0),0)/tenants.length):0;
+  animateCount('m-crit',crit);
+  animateCount('m-high',high);
+  animateCount('m-online',online);
+  animateCount('m-clients',tenants.length);
+  animateCount('m-score',avgScore);
+  document.getElementById('m-rgpd').textContent=avgRgpd+'%';
+}
 
-  document.getElementById('ms-crit').textContent = crit;
-  document.getElementById('ms-high').textContent = high;
-  document.getElementById('ms-agents').textContent = online + '/' + agents;
-  document.getElementById('ms-clients').textContent = tenants.length;
-  document.getElementById('ms-protected').textContent = online;
-  document.getElementById('ms-rgpd').textContent = rgpdAvg + '%';
+function animateCount(id,target){
+  const el=document.getElementById(id);
+  if(!el)return;
+  let start=0;const dur=600;const step=target/dur*16;
+  const timer=setInterval(()=>{start=Math.min(start+step,target);el.textContent=Math.round(start);if(start>=target)clearInterval(timer);},16);
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+function renderCharts(){
+  const allA=tenants.flatMap(t=>t.alerts||[]).filter(a=>!a.resolved);
+  const crit=allA.filter(a=>a.severity==='critical').length;
+  const high=allA.filter(a=>a.severity==='high').length;
+  const med=allA.filter(a=>a.severity==='medium').length;
+  const low=allA.filter(a=>a.severity==='low').length;
+
+  // Doughnut alertes
+  const c1=document.getElementById('chartAlertsDoughnut');
+  if(c1){
+    if(charts.doughnut)charts.doughnut.destroy();
+    charts.doughnut=new Chart(c1,{
+      type:'doughnut',
+      data:{labels:['Critique','Élevé','Moyen','Faible'],datasets:[{data:[crit,high,med,low],backgroundColor:['#dc2626','#ea580c','#d97706','#059669'],borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},padding:12}}},cutout:'65%'}
+    });
+  }
+
+  // Bar scores
+  const c2=document.getElementById('chartScoreBar');
+  if(c2){
+    if(charts.scoreBar)charts.scoreBar.destroy();
+    charts.scoreBar=new Chart(c2,{
+      type:'bar',
+      data:{labels:tenants.map(t=>t.name),datasets:[{label:'Score sécurité',data:tenants.map(t=>t.score||0),backgroundColor:tenants.map(t=>{const s=t.score||0;return s>=80?'rgba(5,150,105,.7)':s>=60?'rgba(217,119,6,.7)':'rgba(220,38,38,.7)';}),borderRadius:6,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:11}}}}}
+    });
+  }
+
+  // Triage bar
+  const c3=document.getElementById('chartTriageBar');
+  if(c3){
+    if(charts.triageBar)charts.triageBar.destroy();
+    charts.triageBar=new Chart(c3,{
+      type:'bar',
+      data:{labels:['Crit','High','Med','Low'],datasets:[{data:[crit,high,med,low],backgroundColor:['#dc2626','#ea580c','#d97706','#059669'],borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{display:false},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+    });
+  }
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
-function goPage(page) {
-  curPage = page;
-  ['overview','triage','endpoints','incidents','cloud','siem','rgpd'].forEach(p => {
-    const el = document.getElementById('page-'+p);
-    const nav = document.getElementById('nav-'+p);
-    if(el) el.style.display = p===page?'':'none';
-    if(nav) nav.classList.toggle('active', p===page);
+function goPage(page){
+  curPage=page;
+  ['overview','triage','endpoints','incidents','cloud','siem','rgpd'].forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    const nav=document.getElementById('nav-'+p);
+    if(el)el.style.display=p===page?'':'none';
+    if(nav)nav.classList.toggle('active',p===page);
   });
-  const titles = {
+  const titles={
     overview:['Vue d\'ensemble','Toutes les organisations'],
-    triage:['Triage Feed','Incidents en cours'],
+    triage:['Triage Feed','Incidents en temps réel'],
     endpoints:['Agents & Endpoints','Machines surveillées'],
-    incidents:['Incidents','Alertes et incidents actifs'],
+    incidents:['Incidents','Alertes actives et historique'],
     cloud:['Cloud & Identités','Microsoft 365 · Google · AWS'],
     siem:['SIEM & Logs','Corrélation et détection'],
     rgpd:['Conformité RGPD','Scores et rapports officiels']
   };
-  if(titles[page]) {
-    document.getElementById('tbTitle').textContent = titles[page][0];
-    document.getElementById('tbSub').textContent = '· ' + titles[page][1];
+  if(titles[page]){
+    document.getElementById('tbTitle').textContent=titles[page][0];
+    document.getElementById('tbSub').textContent='· '+titles[page][1];
   }
   renderPage(page);
 }
 
-function renderPage(page) {
-  if(page==='overview') renderOverview();
-  if(page==='triage') renderTriage();
-  if(page==='endpoints') renderEndpoints();
-  if(page==='incidents') renderIncidents();
-  if(page==='cloud') renderCloud();
-  if(page==='siem') renderSiem();
-  if(page==='rgpd') renderRgpd();
+function renderPage(page){
+  if(page==='overview'){renderOverview();renderCharts();}
+  if(page==='triage')renderTriage();
+  if(page==='endpoints')renderEndpoints();
+  if(page==='incidents')renderIncidents();
+  if(page==='cloud')renderCloud();
+  if(page==='siem')renderSiem();
+  if(page==='rgpd')renderRgpd();
 }
 
-function selectClient(id) {
-  curClientId = id;
-  renderSidebar();
-  renderPage(curPage);
-}
-
-function makeTabs(pageKey) {
-  return tenants.map(t =>
-    `<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderPage('${pageKey}')">${t.name}</button>`
-  ).join('');
-}
-
-function getCurrentTenant() {
-  return tenants.find(t => t.id === curClientId) || tenants[0];
+function selectClient(id){curClientId=id;renderSidebar();renderPage(curPage);}
+function curTenant(){return tenants.find(t=>t.id===curClientId)||tenants[0];}
+function makeTabs(page){
+  return`<button class="tab ${!curClientId?'active':''}" onclick="curClientId=null;renderPage('${page}')">Tous</button>`+
+  tenants.map(t=>`<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderPage('${page}')">${t.name}</button>`).join('');
 }
 
 // ── OVERVIEW ──────────────────────────────────────────────────────────────────
-function renderOverview() {
-  const colors = ['#2563eb','#059669','#7c3aed','#ea580c','#dc2626','#0891b2'];
-  const tbody = document.getElementById('orgTableBody');
-  if(!tenants.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:32px;margin-bottom:8px">👥</div>Aucun client — cliquez sur "+ Nouveau client"</td></tr>';
+function renderOverview(){
+  const colors=['#2563eb','#059669','#7c3aed','#ea580c','#dc2626','#0891b2'];
+  if(!tenants.length){
+    document.getElementById('orgBody').innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:36px;margin-bottom:10px">👥</div>Aucun client — cliquez sur "+ Nouveau client"</td></tr>';
     return;
   }
-  tbody.innerHTML = tenants.map(t => {
-    const alerts = (t.alerts||[]).filter(a=>!a.resolved);
-    const crits = alerts.filter(a=>a.severity==='critical').length;
-    const highs = alerts.filter(a=>a.severity==='high').length;
-    const online = (t.devices||[]).filter(d=>d.status==='online'||d.online).length;
-    const total = (t.devices||[]).length;
-    const score = t.score || 0;
-    const rgpd = t.rgpd_score || 0;
-    const color = colors[t.name.charCodeAt(0)%colors.length];
-    const status = crits>0?'red':alerts.length>0?'orange':'green';
-    const statusLabel = crits>0?'🚨 Critique':alerts.length>0?'⚠️ Attention':'✓ Sécurisé';
-    const statusCls = crits>0?'pill-red':alerts.length>0?'pill-orange':'pill-green';
-    const scoreColor = score>=80?'#059669':score>=60?'#d97706':'#dc2626';
-    return `<tr onclick="selectClient('${t.id}');goPage('endpoints')">
+  document.getElementById('orgBody').innerHTML=tenants.map(t=>{
+    const alerts=(t.alerts||[]).filter(a=>!a.resolved);
+    const crits=alerts.filter(a=>a.severity==='critical').length;
+    const online=(t.devices||[]).filter(d=>d.status==='online'||d.online).length;
+    const total=(t.devices||[]).length;
+    const score=t.score||0;
+    const rgpd=t.rgpd_score||0;
+    const color=colors[t.name.charCodeAt(0)%colors.length];
+    const scoreColor=score>=80?'#059669':score>=60?'#d97706':'#dc2626';
+    const status=crits>0?'🚨 Critique':alerts.length>0?'⚠️ Attention':'✓ Sécurisé';
+    const sc=crits>0?'p-red':alerts.length>0?'p-orange':'p-green';
+    return`<tr class="tbl-row" onclick="selectClient('${t.id}');goPage('endpoints')">
       <td><div class="tbl-name">
-        <div class="tbl-avatar" style="background:${color}">${t.name[0].toUpperCase()}</div>
-        <div><div class="tbl-primary">${t.name}</div><div class="tbl-secondary">${t.email||''}</div></div>
+        <div class="tbl-av" style="background:${color}">${t.name[0].toUpperCase()}</div>
+        <div><div class="tbl-primary">${t.name}</div><div class="tbl-secondary">${t.email||t.plan||'PME'}</div></div>
       </div></td>
-      <td><span style="font-weight:700">${total}</span> <span style="color:var(--text3);font-size:11px">(${online} en ligne)</span></td>
-      <td>${crits>0?`<span style="color:var(--red);font-weight:700">${crits} crit.</span> `:''} ${highs>0?`<span style="color:var(--orange);font-size:12px">${highs} élevé</span>`:''}${!alerts.length?'<span style="color:var(--green);font-size:12px">✓ Aucune</span>':''}</td>
-      <td><div class="score-row"><div class="score-bar"><div class="score-fill" style="width:${score}%;background:${scoreColor}"></div></div><span class="score-val" style="color:${scoreColor}">${score}</span></div></td>
-      <td><div class="score-row"><div class="score-bar"><div class="score-fill" style="width:${rgpd}%"></div></div><span class="score-val">${rgpd}%</span></div></td>
-      <td><span class="pill ${statusCls}"><span class="pill-dot"></span>${statusLabel}</span></td>
+      <td><span style="font-weight:700">${total}</span><span style="color:var(--text3);font-size:11px"> (${online} en ligne)</span></td>
+      <td>${crits>0?`<span style="color:var(--red);font-weight:700">${crits} crit.</span> `:''}${alerts.length>crits?`<span style="color:var(--orange);font-size:12px">${alerts.length-crits} autres</span>`:''}${!alerts.length?'<span style="color:var(--green);font-size:12px">✓ Aucune</span>':''}</td>
+      <td><div class="sbar"><div class="sbar-track"><div class="sbar-fill" style="width:${score}%;background:${scoreColor}"></div></div><span class="sbar-val" style="color:${scoreColor}">${score}</span></div></td>
+      <td><div class="sbar"><div class="sbar-track"><div class="sbar-fill" style="width:${rgpd}%;background:var(--blue)"></div></div><span class="sbar-val">${rgpd}%</span></div></td>
+      <td><span class="pill ${sc}"><span class="pill-dot"></span>${status}</span></td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:5px">
-          <button class="btn btn-ghost btn-sm" onclick="selectClient('${t.id}');goPage('endpoints')">Agents</button>
-          <button class="btn btn-ghost btn-sm" onclick="selectClient('${t.id}');goPage('incidents')">Alertes</button>
-          <button class="btn btn-red btn-sm" onclick="deleteClient('${t.id}','${t.name}')">✕</button>
+          <button class="btn btn-ghost btn-xs" onclick="selectClient('${t.id}');goPage('endpoints')">Agents</button>
+          <button class="btn btn-ghost btn-xs" onclick="selectClient('${t.id}');goPage('incidents')">Alertes</button>
+          <button class="btn btn-red btn-xs" onclick="deleteClient('${t.id}','${t.name}')">✕</button>
         </div>
       </td>
     </tr>`;
@@ -680,154 +756,193 @@ function renderOverview() {
 }
 
 // ── TRIAGE ────────────────────────────────────────────────────────────────────
-let triageFilter = 'all';
-function filterTriage(f, btn) {
-  triageFilter = f;
+function filterTriage(f,btn){
+  triageFilter=f;
   document.querySelectorAll('#page-triage .tab').forEach(t=>t.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   renderTriage();
 }
 
-function renderTriage() {
-  let allAlerts = tenants.flatMap(t => (t.alerts||[]).filter(a=>!a.resolved).map(a=>({...a, tenantName:t.name, tenantId:t.id})));
-  if(triageFilter==='critical') allAlerts = allAlerts.filter(a=>a.severity==='critical');
-  if(triageFilter==='high') allAlerts = allAlerts.filter(a=>a.severity==='high'||a.severity==='critical');
-  allAlerts.sort((a,b) => {const o={critical:0,high:1,medium:2,low:3};return (o[a.severity]||4)-(o[b.severity]||4);});
+function renderTriage(){
+  let all=tenants.flatMap(t=>(t.alerts||[]).filter(a=>!a.resolved).map(a=>({...a,tenantName:t.name,tenantId:t.id})));
+  if(triageFilter==='critical')all=all.filter(a=>a.severity==='critical');
+  if(triageFilter==='high')all=all.filter(a=>['critical','high'].includes(a.severity));
+  all.sort((a,b)=>{const o={critical:0,high:1,medium:2,low:3};return(o[a.severity]||4)-(o[b.severity]||4);});
+  const feed=document.getElementById('triageFeed');
+  if(!all.length){feed.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Aucun incident actif</div><div style="font-size:12px;color:var(--text3)">Tous les systèmes sont protégés</div></div>';return;}
+  feed.innerHTML=all.map((a,i)=>{
+    const time=new Date(a.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const dotColor=a.severity==='critical'?'#dc2626':a.severity==='high'?'#ea580c':a.severity==='medium'?'#d97706':'#059669';
+    const bc=`s-${a.severity}`;
+    return`<div class="triage-item" style="animation-delay:${i*50}ms">
+      <div class="tr-time">${time}</div>
+      <div class="tr-dot" style="background:${dotColor}${a.severity==='critical'?';animation:pulse 1.5s infinite':''}"></div>
+      <div class="tr-body">
+        <div class="tr-title">${a.title}</div>
+        <div class="tr-meta">${a.tenantName} · ${a.device_name||'Système'}${a.type?` · ${a.type}`:''}</div>
+        ${a.recommendation?`<div style="font-size:11px;color:var(--text2);margin-top:3px">${a.recommendation}</div>`:''}
+      </div>
+      <span class="al-sev ${bc}">${a.severity==='critical'?'CRIT':a.severity==='high'?'HIGH':a.severity==='medium'?'MED':'LOW'}</span>
+      <button class="btn btn-green btn-xs" style="margin-left:6px" onclick="resolveAlert('${a.tenantId}','${a._id}',this)">✓</button>
+    </div>`;
+  }).join('');
 
-  const feed = document.getElementById('triageFeed');
-  if(!allAlerts.length) {
-    feed.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Aucun incident actif</div><div class="empty-sub">Tous les systèmes sont sécurisés</div></div>';
-  } else {
-    feed.innerHTML = allAlerts.map(a => {
-      const time = new Date(a.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-      const dotColor = a.severity==='critical'?'#dc2626':a.severity==='high'?'#ea580c':a.severity==='medium'?'#d97706':'#059669';
-      const badgeCls = a.severity==='critical'?'sev-critical':a.severity==='high'?'sev-high':a.severity==='medium'?'sev-medium':'sev-low';
-      return `<div class="triage-item">
-        <div class="triage-time">${time}</div>
-        <div class="triage-dot" style="background:${dotColor}"></div>
-        <div class="triage-body">
-          <div class="triage-title">${a.title}</div>
-          <div class="triage-meta">${a.tenantName} · ${a.device_name||'Système'}</div>
-          ${a.recommendation?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${a.recommendation}</div>`:''}
-        </div>
-        <span class="alert-sev ${badgeCls}">${a.severity==='critical'?'CRIT':a.severity==='high'?'HIGH':a.severity==='medium'?'MED':'LOW'}</span>
-        <button class="btn btn-green btn-sm" style="margin-left:6px" onclick="resolveAlert('${a.tenantId}','${a._id}')">✓</button>
-      </div>`;
-    }).join('');
-  }
-
-  // Statut agents
-  const total = tenants.reduce((s,t)=>s+(t.devices||[]).length,0);
-  const online = tenants.reduce((s,t)=>s+(t.devices||[]).filter(d=>d.status==='online'||d.online).length,0);
-  const offline = total - online;
-  document.getElementById('agentStatus').innerHTML = `
+  const allD=tenants.flatMap(t=>t.devices||[]);
+  const online=allD.filter(d=>d.status==='online'||d.online).length;
+  const offline=allD.length-online;
+  document.getElementById('agentStatus').innerHTML=`
     <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="display:flex;align-items:center;gap:6px;font-size:13px"><span style="color:var(--green)">●</span> En ligne</span>
-        <span style="font-size:15px;font-weight:800;color:var(--text)">${online}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="color:var(--green)">●</span>Protégés</span>
+        <span class="pill p-green">${online}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="display:flex;align-items:center;gap:6px;font-size:13px"><span style="color:var(--text3)">●</span> Hors ligne</span>
-        <span style="font-size:15px;font-weight:800;color:var(--text)">${offline}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="display:flex;align-items:center;gap:7px;font-size:13px"><span style="color:var(--text3)">●</span>Hors ligne</span>
+        <span class="pill p-gray">${offline}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
         <span style="font-size:13px;color:var(--text2)">Total agents</span>
-        <span style="font-size:15px;font-weight:800;color:var(--text)">${total}</span>
+        <span style="font-weight:700;font-size:15px">${allD.length}</span>
       </div>
     </div>`;
 
-  const allA = tenants.flatMap(t=>(t.alerts||[]).filter(a=>!a.resolved));
-  const fw = tenants.reduce((s,t)=>{const d=(t.devices||[]);return s+d.filter(dev=>(dev.snapshot||{}).firewall_enabled).length},0);
-  document.getElementById('globalSecurity').innerHTML = `
+  const fw=allD.filter(d=>(d.snapshot||{}).firewall_enabled).length;
+  const enc=allD.filter(d=>(d.snapshot||{}).disk_encrypted).length;
+  const av=allD.filter(d=>(d.snapshot||{}).antivirus_enabled).length;
+  document.getElementById('fwStatus').innerHTML=`
     <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:13px">🔥 Pare-feu actifs</span>
-        <span class="pill ${fw===total&&total>0?'pill-green':'pill-orange'}">${fw}/${total}</span>
+        <span class="pill ${fw===allD.length&&allD.length>0?'p-green':'p-orange'}">${fw}/${allD.length}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:13px">🚨 Alertes critiques</span>
-        <span class="pill ${allA.filter(a=>a.severity==='critical').length>0?'pill-red':'pill-green'}">${allA.filter(a=>a.severity==='critical').length}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px">🔒 Disques chiffrés</span>
+        <span class="pill ${enc===allD.length&&allD.length>0?'p-green':'p-orange'}">${enc}/${allD.length}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0">
-        <span style="font-size:13px">👥 Clients actifs</span>
-        <span class="pill pill-blue">${tenants.length}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0">
+        <span style="font-size:13px">🛡 Antivirus actifs</span>
+        <span class="pill ${av===allD.length&&allD.length>0?'p-green':'p-red'}">${av}/${allD.length}</span>
       </div>
     </div>`;
 }
 
 // ── ENDPOINTS ─────────────────────────────────────────────────────────────────
-function renderEndpoints() {
-  document.getElementById('epTabs').innerHTML = makeTabs('endpoints');
-  const t = getCurrentTenant();
-  if(!t) { document.getElementById('epContent').innerHTML = '<div class="empty"><div class="empty-icon">💻</div><div class="empty-title">Aucun client</div></div>'; return; }
-  curClientId = t.id;
+function renderEndpoints(){
+  document.getElementById('epTabs').innerHTML=tenants.map(t=>`<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderPage('endpoints')">${t.name}</button>`).join('');
+  const t=curTenant();
+  if(!t){document.getElementById('epContent').innerHTML='<div class="empty"><div class="empty-icon">💻</div><div class="empty-title">Aucun client</div></div>';return;}
+  curClientId=t.id;
+  const devices=t.devices||[];
+  const installCmd=`curl -sSL ${S}/install.sh | bash -s -- ${t.id} ${t.agent_key||''}`;
+  const osIcons={Darwin:'🍎',Windows:'🪟',Linux:'🐧'};
 
-  const devices = t.devices || [];
-  const installCmd = `curl -sSL ${S}/install.sh | bash -s -- ${t.id} ${t.agent_key||''}`;
-  const osIcons = {Darwin:'🍎',Windows:'🪟',Linux:'🐧'};
-
-  if(!devices.length) {
-    document.getElementById('epContent').innerHTML = `
-      <div class="sc">
-        <div class="sc-header"><div class="sc-title">💻 Aucun agent pour ${t.name}</div></div>
-        <div class="sc-body-pad">
-          <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Lancez cette commande sur chaque machine du client pour installer l'agent ShieldFlow :</p>
-          <div class="install-box">
-            <div class="install-label">Commande universelle — Mac, Linux, Windows (WSL)</div>
-            <div class="install-cmd">${installCmd}</div>
-            <button class="install-copy" onclick="copyCmd('${installCmd.replace(/'/g,"\\'")}')">📋 Copier la commande</button>
-          </div>
-          <p style="font-size:11px;color:var(--text3);margin-top:12px">L'agent apparaît dans le dashboard dans les 2 minutes suivant l'installation.</p>
+  if(!devices.length){
+    document.getElementById('epContent').innerHTML=`
+      <div class="sc"><div class="sc-head"><div class="sc-title">💻 Aucun agent installé — ${t.name}</div></div>
+      <div class="sc-body">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Installez l'agent ShieldFlow sur chaque machine du client avec cette commande :</p>
+        <div class="install-box">
+          <div class="install-label">Commande universelle — Mac · Linux · Windows WSL</div>
+          <div class="install-cmd">${installCmd}</div>
+          <button class="install-copy" onclick="copyText('${installCmd.replace(/'/g,"\\'")}','✅ Commande copiée !')">📋 Copier la commande</button>
         </div>
-      </div>`;
+        <p style="font-size:11px;color:var(--text3);margin-top:12px">L'agent apparaît dans le dashboard dans les 2 minutes suivant l'installation.</p>
+      </div></div>`;
     return;
   }
 
-  document.getElementById('epContent').innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="font-size:13px;color:var(--text2)">${devices.length} agent${devices.length>1?'s':''} · <span style="color:var(--green)">${devices.filter(d=>d.status==='online'||d.online).length} en ligne</span></div>
-      <button class="btn btn-ghost btn-sm" onclick="copyCmd('${installCmd.replace(/'/g,"\\'")}')">📋 Commande installation</button>
+  document.getElementById('epContent').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px" class="fade-in">
+      <div style="font-size:13px;color:var(--text2)">
+        <strong>${devices.length}</strong> agent${devices.length>1?'s':''} · 
+        <span style="color:var(--green)">${devices.filter(d=>d.status==='online'||d.online).length} en ligne</span> · 
+        Tenant: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px;border:1px solid var(--border)">${t.id}</code>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="copyText('${installCmd.replace(/'/g,"\\'")}','✅ Commande copiée !')">📋 Commande installation</button>
+        <button class="btn btn-purple btn-sm" onclick="generateAIReport('${t.id}')">🤖 Rapport IA global</button>
+      </div>
     </div>
     <div class="ep-grid">
-      ${devices.map(d => {
-        const snap = d.snapshot || {};
-        const isOnline = d.status==='online'||d.online;
-        const alerts = (t.alerts||[]).filter(a=>a.device_id===d.device_id&&!a.resolved);
-        const crits = alerts.filter(a=>a.severity==='critical').length;
-        const score = crits>0?Math.max(20,100-crits*20-alerts.length*5):Math.max(60,100-alerts.length*5);
-        const scoreColor = score>=80?'#059669':score>=60?'#d97706':'#dc2626';
-        const cpu = snap.cpu_percent?snap.cpu_percent.toFixed(0)+'%':'--';
-        const ram = snap.ram_percent?snap.ram_percent.toFixed(0)+'%':'--';
-        const checks = [
-          {l:'Pare-feu',v:snap.firewall_enabled},{l:'Chiffrement',v:snap.disk_encrypted},
-          {l:'Antivirus',v:snap.antivirus_enabled},{l:'MàJ OK',v:!snap.updates_available},
-          {l:'Screensaver',v:snap.screensaver_enabled},{l:'Logs',v:snap.logs_enabled},
+      ${devices.map((d,i)=>{
+        const snap=d.snapshot||{};
+        const isOnline=d.status==='online'||d.online;
+        const alerts=(t.alerts||[]).filter(a=>a.device_id===d.device_id&&!a.resolved);
+        const crits=alerts.filter(a=>a.severity==='critical').length;
+        const score=crits>0?Math.max(20,100-crits*20-(alerts.length-crits)*5):Math.max(50,100-(alerts.length)*8);
+        const scoreColor=score>=80?'#059669':score>=60?'#d97706':'#dc2626';
+        const cpu=snap.cpu_percent?snap.cpu_percent.toFixed(0):0;
+        const ram=snap.ram_percent?snap.ram_percent.toFixed(0):0;
+        const disk=snap.disk_usage_percent?snap.disk_usage_percent.toFixed(0):0;
+        const checks=[
+          {l:'Pare-feu',v:snap.firewall_enabled,icon:'🔥'},
+          {l:'Chiffrement',v:snap.disk_encrypted,icon:'🔒'},
+          {l:'Antivirus',v:snap.antivirus_enabled,icon:'🛡'},
+          {l:'Màj OK',v:!snap.updates_available,icon:'🔄'},
+          {l:'Screensaver',v:snap.screensaver_enabled,icon:'🖥'},
+          {l:'Logs actifs',v:snap.logs_enabled,icon:'📝'},
         ];
-        const cmd = `curl -sSL ${S}/install.sh | bash -s -- ${t.id} ${t.agent_key||''}`;
-        return `<div class="ep-card">
+        const cmd=`curl -sSL ${S}/install.sh | bash -s -- ${t.id} ${t.agent_key||''}`;
+        return`<div class="ep-card" style="animation-delay:${i*80}ms">
           <div class="ep-head">
             <div class="ep-os">${osIcons[d.platform]||'💻'}</div>
             <div class="ep-info">
               <div class="ep-name">${d.name||d.hostname||d.device_id}</div>
-              <div class="ep-platform">${d.platform||'Inconnu'} · ${isOnline?'<span style="color:#059669">● En ligne</span>':'<span style="color:#9ca3af">● Hors ligne</span>'}</div>
+              <div class="ep-plat">${d.platform||'Inconnu'} · ${isOnline?'<span style="color:#059669;font-weight:600">● En ligne</span>':'<span style="color:#9ca3af">● Hors ligne</span>'}</div>
             </div>
-            <span class="pill ${crits>0?'pill-red':alerts.length>0?'pill-orange':'pill-green'} btn-sm">
+            <span class="pill ${crits>0?'p-red':alerts.length>0?'p-orange':'p-green'} btn-sm">
               ${crits>0?'🚨 Critique':alerts.length>0?'⚠️ Alerte':'✓ OK'}
             </span>
           </div>
           <div class="ep-body">
-            <div class="ep-stats">
-              <div class="ep-stat"><div class="ep-stat-val" style="color:${scoreColor}">${score}</div><div class="ep-stat-label">Score</div></div>
-              <div class="ep-stat"><div class="ep-stat-val">${cpu}</div><div class="ep-stat-label">CPU</div></div>
-              <div class="ep-stat"><div class="ep-stat-val">${ram}</div><div class="ep-stat-label">RAM</div></div>
+            <div class="gauges-row">
+              <div class="gauge-box">
+                <div class="gauge-val" style="color:${scoreColor}">${score}</div>
+                <div class="gauge-label">Score</div>
+                <div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden">
+                  <div style="height:100%;width:${score}%;background:${scoreColor};border-radius:2px;transition:width .8s ease"></div>
+                </div>
+              </div>
+              <div class="gauge-box">
+                <div class="gauge-val" style="color:${cpu>80?'#dc2626':cpu>60?'#d97706':'#059669'}">${cpu}%</div>
+                <div class="gauge-label">CPU</div>
+                <div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden">
+                  <div style="height:100%;width:${cpu}%;background:${cpu>80?'#dc2626':cpu>60?'#d97706':'#059669'};border-radius:2px"></div>
+                </div>
+              </div>
+              <div class="gauge-box">
+                <div class="gauge-val" style="color:${ram>85?'#dc2626':ram>70?'#d97706':'#059669'}">${ram}%</div>
+                <div class="gauge-label">RAM</div>
+                <div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden">
+                  <div style="height:100%;width:${ram}%;background:${ram>85?'#dc2626':ram>70?'#d97706':'#059669'};border-radius:2px"></div>
+                </div>
+              </div>
             </div>
-            <div class="ep-checks">
-              ${checks.map(c=>`<span class="ep-check ${c.v?'ep-check-ok':'ep-check-fail'}">${c.v?'✓':'✗'} ${c.l}</span>`).join('')}
+            <div class="checks-row">
+              ${checks.map(c=>`<span class="check ${c.v?'chk-ok':'chk-fail'}">${c.icon} ${c.l}</span>`).join('')}
             </div>
-            <div class="ep-install">
-              <div class="ep-install-label">Commande pour cette machine</div>
-              <div class="ep-install-cmd">${cmd}</div>
-              <button class="ep-copy" onclick="copyCmd('${cmd.replace(/'/g,"\\'")}')">📋 Copier</button>
+            ${alerts.length>0?`
+            <div style="margin-bottom:10px">
+              ${alerts.slice(0,2).map(a=>`<div style="font-size:11px;padding:5px 8px;background:var(--red-bg);border-radius:5px;color:var(--red);margin-bottom:3px;display:flex;align-items:center;gap:5px">
+                <span>🚨</span><span>${a.title}</span>
+                <button class="btn btn-green btn-xs" style="margin-left:auto" onclick="resolveAlert('${t.id}','${a._id}',this)">✓</button>
+              </div>`).join('')}
+              ${alerts.length>2?`<div style="font-size:11px;color:var(--text3);margin-top:4px">+${alerts.length-2} autres alertes</div>`:''}
+            </div>`:''}
+            <div class="ai-box" id="ai-${d.device_id}">
+              <div class="ai-header">
+                <div class="ai-dot"></div>
+                <div class="ai-title">Rapport IA — ${d.name||d.hostname}</div>
+                <button onclick="loadAIForDevice('${t.id}','${d.device_id}','${d.name||d.hostname}')" style="margin-left:auto;font-size:10px;color:#60a5fa;background:none;border:none;cursor:pointer;font-weight:600">↻ Analyser</button>
+              </div>
+              <div class="ai-content" id="ai-content-${d.device_id}">
+                <div class="ai-loading"><div class="ai-spinner"></div>Cliquez sur Analyser pour lancer l'analyse IA...</div>
+              </div>
+            </div>
+            <div class="install-box">
+              <div class="install-label">Commande d'installation pour cette machine</div>
+              <div class="install-cmd">${cmd}</div>
+              <button class="install-copy" onclick="copyText('${cmd.replace(/'/g,"\\'")}','✅ Commande copiée !')">📋 Copier</button>
             </div>
           </div>
         </div>`;
@@ -835,303 +950,316 @@ function renderEndpoints() {
     </div>`;
 }
 
+// ── AI ANALYSE ────────────────────────────────────────────────────────────────
+async function loadAIForDevice(tenantId, deviceId, deviceName){
+  const el=document.getElementById('ai-content-'+deviceId);
+  if(!el)return;
+  el.innerHTML='<div class="ai-loading"><div class="ai-spinner"></div>Analyse IA en cours...</div>';
+  try{
+    const t=tenants.find(x=>x.id===tenantId);
+    const device=(t.devices||[]).find(d=>d.device_id===deviceId);
+    const alerts=(t.alerts||[]).filter(a=>a.device_id===deviceId&&!a.resolved);
+    const snap=device?.snapshot||{};
+    const prompt=`Tu es un expert cybersécurité analysant la machine "${deviceName}" (${device?.platform||'inconnu'}).
+Score de sécurité: ${Math.max(50,100-alerts.length*8)}/100.
+État: Pare-feu ${snap.firewall_enabled?'actif':'INACTIF'}, Chiffrement ${snap.disk_encrypted?'actif':'INACTIF'}, Antivirus ${snap.antivirus_enabled?'actif':'INACTIF'}.
+CPU: ${snap.cpu_percent||0}%, RAM: ${snap.ram_percent||0}%.
+Alertes actives: ${alerts.map(a=>a.title).join(', ')||'Aucune'}.
+Donne un rapport court (4-5 lignes max) avec: niveau de risque, problèmes principaux, actions prioritaires. Sois direct et concis.`;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await r.json();
+    const text=data.content?.[0]?.text||'Analyse non disponible';
+    el.innerHTML=text.replace(/\n/g,'<br>');
+  }catch(e){el.innerHTML='<span style="color:#f87171">Erreur: Clé API non configurée dans le navigateur</span>';}
+}
+
+async function generateAIReport(tenantId){
+  showToast('🤖 Génération rapport IA global...');
+  try{
+    const r=await fetch(S+'/api/mssp/tenants/'+tenantId+'/ai-report',{method:'POST'});
+    const d=await r.json();
+    if(d.success)showToast('✅ Rapport IA généré et envoyé par email');
+    else showToast('Rapport IA: '+(d.error||'erreur'));
+  }catch(e){showToast('Erreur rapport IA');}
+}
+
 // ── INCIDENTS ─────────────────────────────────────────────────────────────────
-function filterAlerts(f) { allAlertFilter=f; renderIncidents(); }
+function setIncFilter(f){incFilter=f;renderIncidents();}
 
-function renderIncidents() {
-  document.getElementById('incTabs').innerHTML = `<button class="tab ${!curClientId?'active':''}" onclick="curClientId=null;renderIncidents()">Tous</button>` + makeTabs('incidents');
-  let all = tenants.flatMap(t => (t.alerts||[]).map(a=>({...a,tenantName:t.name,tenantId:t.id})));
-  if(allAlertFilter==='critical') all=all.filter(a=>a.severity==='critical');
-  if(allAlertFilter==='unresolved') all=all.filter(a=>!a.resolved);
-  if(curClientId) all=all.filter(a=>a.tenantId===curClientId);
+function renderIncidents(){
+  document.getElementById('incTabs').innerHTML=makeTabs('incidents');
+  let all=tenants.flatMap(t=>(t.alerts||[]).map(a=>({...a,tenantName:t.name,tenantId:t.id})));
+  if(curClientId)all=all.filter(a=>a.tenantId===curClientId);
+  if(incFilter==='critical')all=all.filter(a=>a.severity==='critical'&&!a.resolved);
+  if(incFilter==='unresolved')all=all.filter(a=>!a.resolved);
+  if(incFilter==='resolved')all=all.filter(a=>a.resolved);
   all.sort((a,b)=>{const o={critical:0,high:1,medium:2,low:3};return(o[a.severity]||4)-(o[b.severity]||4);});
-
-  const list = document.getElementById('incidentsList');
-  if(!all.length) {
-    list.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Aucun incident</div><div class="empty-sub">Tous les systèmes sont sécurisés</div></div>';
-    return;
-  }
-  list.innerHTML = all.map(a=>{
+  const list=document.getElementById('incList');
+  if(!all.length){list.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Aucun incident</div></div>';return;}
+  list.innerHTML=all.map((a,i)=>{
     const t=new Date(a.created_at||Date.now()).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const bc=a.severity==='critical'?'sev-critical':a.severity==='high'?'sev-high':a.severity==='medium'?'sev-medium':'sev-low';
-    return `<div class="alert-item">
-      <span class="alert-sev ${bc}">${a.severity==='critical'?'CRITIQUE':a.severity==='high'?'ÉLEVÉ':a.severity==='medium'?'MOYEN':'FAIBLE'}</span>
-      <div class="alert-body">
-        <div class="alert-title">${a.title}</div>
-        <div class="alert-meta">${a.tenantName} · ${a.device_name||'Système'} · ${t} ${a.resolved?'· <span style="color:var(--green)">✓ Résolu</span>':''}</div>
-        ${a.recommendation?`<div class="alert-rec">${a.recommendation}</div>`:''}
+    const bc=`s-${a.severity}`;
+    return`<div class="alert-item" style="animation-delay:${i*40}ms">
+      <span class="al-sev ${bc}">${a.severity==='critical'?'CRITIQUE':a.severity==='high'?'ÉLEVÉ':a.severity==='medium'?'MOYEN':'FAIBLE'}</span>
+      <div class="al-body">
+        <div class="al-title">${a.title}</div>
+        <div class="al-meta">${a.tenantName} · ${a.device_name||'Système'} · ${t}${a.resolved?' · <span style="color:var(--green);font-weight:600">✓ Résolu</span>':''}</div>
+        ${a.description?`<div class="al-rec">${a.description}</div>`:''}
+        ${a.recommendation?`<div style="font-size:11px;color:var(--blue);margin-top:3px">→ ${a.recommendation}</div>`:''}
       </div>
-      <div class="alert-btns">
-        ${!a.resolved?`<button class="btn btn-green btn-sm" onclick="resolveAlert('${a.tenantId}','${a._id}')">✓ Résoudre</button>`:''}
-        <button class="btn btn-ghost btn-sm" onclick="aiAnalyze('${a.tenantId}','${a._id}')">🤖 IA</button>
+      <div class="al-btns">
+        ${!a.resolved?`<button class="btn btn-green btn-xs" onclick="resolveAlert('${a.tenantId}','${a._id}',this)">✓ Résoudre</button>`:''}
+        <button class="btn btn-purple btn-xs" onclick="analyzeAlert('${a.tenantId}','${a._id}')">🤖 IA</button>
       </div>
     </div>`;
   }).join('');
 }
 
-async function resolveAlert(tenantId, alertId) {
-  try {
+async function resolveAlert(tenantId,alertId,btn){
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  try{
     await fetch(S+`/api/mssp/tenants/${tenantId}/alerts/${alertId}/remediate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'resolve'})});
     showToast('✅ Alerte résolue');
-    loadAll();
-  } catch(e) { showToast('Erreur'); }
+    await loadAll();
+  }catch(e){showToast('Erreur résolution');}
 }
 
-async function aiAnalyze(tenantId, alertId) {
-  showToast('🤖 Analyse IA en cours...');
-  try {
-    const r = await fetch(S+`/api/mssp/tenants/${tenantId}/alerts/${alertId}/ai-analysis`);
-    const d = await r.json();
-    if(d.analysis) alert('🤖 Analyse IA:\n\n'+d.analysis);
+async function analyzeAlert(tenantId,alertId){
+  showToast('🤖 Analyse IA...');
+  try{
+    const r=await fetch(S+`/api/mssp/tenants/${tenantId}/alerts/${alertId}/ai-analysis`);
+    const d=await r.json();
+    if(d.analysis)alert('🤖 Analyse IA:\n\n'+d.analysis);
     else showToast('Analyse IA non disponible');
-  } catch(e) { showToast('Erreur IA'); }
+  }catch(e){showToast('Erreur IA');}
 }
 
 // ── CLOUD ─────────────────────────────────────────────────────────────────────
-function renderCloud() {
-  document.getElementById('cloudTabs').innerHTML = makeTabs('cloud');
-  const t = getCurrentTenant();
-  if(!t) return;
-  curClientId = t.id;
-
-  const cloudAlerts = (t.alerts||[]).filter(a=>!a.resolved&&(a.device_id||'').startsWith('cloud_'));
-  const services = [
-    {type:'m365',icon:'📧',name:'Microsoft 365'},
-    {type:'gworkspace',icon:'🟡',name:'Google Workspace'},
-    {type:'aws',icon:'🟠',name:'Amazon AWS'}
-  ];
-
-  document.getElementById('cloudContent').innerHTML = `
+function renderCloud(){
+  document.getElementById('cloudTabs').innerHTML=tenants.map(t=>`<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderPage('cloud')">${t.name}</button>`).join('');
+  const t=curTenant();
+  if(!t)return;
+  curClientId=t.id;
+  const cloudAlerts=(t.alerts||[]).filter(a=>!a.resolved&&(a.device_id||'').startsWith('cloud_'));
+  document.getElementById('cloudContent').innerHTML=`
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-      <button class="btn btn-primary btn-sm" onclick="openCloudModal('${t.id}')">+ Connecter un service</button>
+      <button class="btn btn-primary btn-sm" onclick="openCloudModal('${t.id}')">+ Connecter un service cloud</button>
     </div>
     ${cloudAlerts.length?`
     <div class="sc" style="margin-bottom:14px">
-      <div class="sc-header"><div class="sc-title">🚨 Alertes cloud actives (${cloudAlerts.length})</div></div>
-      <div class="sc-body">
-        ${cloudAlerts.map(a=>`
-          <div class="alert-item">
-            <span class="alert-sev sev-${a.severity==='critical'?'critical':'high'}">${a.severity.toUpperCase()}</span>
-            <div class="alert-body">
-              <div class="alert-title">${a.title}</div>
-              <div class="alert-meta">${a.device_name||'Cloud'} · ${a.recommendation||''}</div>
-            </div>
-            ${a.type==='M365_FOREIGN_LOGIN'?`<button class="btn btn-red btn-sm" onclick="revokeM365('${t.id}')">🚫 Révoquer</button>`:''}
-          </div>`).join('')}
+      <div class="sc-head"><div class="sc-title">🚨 Alertes cloud actives (${cloudAlerts.length})</div></div>
+      <div class="sc-nobody">
+        ${cloudAlerts.map(a=>`<div class="alert-item">
+          <span class="al-sev s-${a.severity}">${a.severity.toUpperCase()}</span>
+          <div class="al-body"><div class="al-title">${a.title}</div><div class="al-meta">${a.recommendation||''}</div></div>
+          ${a.type==='M365_FOREIGN_LOGIN'?`<button class="btn btn-red btn-xs" onclick="revokeM365('${t.id}')">🚫 Révoquer M365</button>`:''}
+        </div>`).join('')}
       </div>
     </div>`:''}
     <div class="cloud-grid">
-      ${services.map(svc=>{
-        const conn = (t.clouds||[]).find(c=>c.type===svc.type);
-        const svcAlerts = cloudAlerts.filter(a=>(a.device_id||'').includes(svc.type));
-        return `<div class="cloud-card">
+      ${[{type:'m365',icon:'📧',name:'Microsoft 365'},{type:'gworkspace',icon:'🟡',name:'Google Workspace'},{type:'aws',icon:'🟠',name:'Amazon AWS'}].map(svc=>{
+        const conn=(t.clouds||[]).find(c=>c.type===svc.type);
+        const svcAlerts=cloudAlerts.filter(a=>(a.device_id||'').includes(svc.type));
+        return`<div class="cloud-card">
           <div class="cloud-head">
             <div class="cloud-icon">${svc.icon}</div>
-            <div>
-              <div class="cloud-title">${svc.name}</div>
-              <div class="cloud-status-text" style="color:${conn?'var(--green)':'var(--text3)'}">${conn?'● Connecté · Surveillance active':'○ Non connecté'}</div>
-            </div>
+            <div><div class="cloud-name">${svc.name}</div><div class="cloud-status" style="color:${conn?'var(--green)':'var(--text3)'}">${conn?'● Connecté · Surveillance active':'○ Non connecté'}</div></div>
           </div>
-          <div class="cloud-alerts">
-            ${svcAlerts.length?svcAlerts.map(a=>`<div class="cloud-alert-item ca-${a.severity==='critical'?'crit':'high'}">${a.title}</div>`).join(''):
-              conn?'<div class="cloud-alert-item ca-ok">✓ Aucune anomalie détectée</div>':
-              `<div class="ca-none" onclick="openCloudModal('${t.id}','${svc.type}')" style="cursor:pointer">Cliquez pour connecter →</div>`}
-          </div>
-          ${conn&&svc.type==='m365'?`<button class="btn btn-red btn-sm" style="margin-top:10px;width:100%;justify-content:center" onclick="revokeM365('${t.id}')">🚫 Révoquer toutes les sessions M365</button>`:''}
-          ${conn?`<button class="btn btn-ghost btn-sm" style="margin-top:6px;width:100%;justify-content:center" onclick="scanCloud('${t.id}','${svc.type}')">🔍 Scanner maintenant</button>`:''}
+          ${svcAlerts.length?svcAlerts.map(a=>`<div style="padding:7px 10px;border-radius:7px;font-size:12px;background:var(--red-bg);color:var(--red);margin-bottom:5px;border:1px solid rgba(220,38,38,.15)">${a.title}</div>`).join(''):
+            conn?'<div style="padding:8px 10px;border-radius:7px;font-size:12px;background:var(--green-bg);color:var(--green);border:1px solid rgba(5,150,105,.15)">✓ Aucune anomalie détectée</div>':
+            `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:8px" onclick="openCloudModal('${t.id}','${svc.type}')">Connecter →</button>`}
+          ${conn&&svc.type==='m365'?`<button class="btn btn-red btn-sm" style="margin-top:8px;width:100%;justify-content:center" onclick="revokeM365('${t.id}')">🚫 Révoquer toutes les sessions</button>`:''}
+          ${conn?`<button class="btn btn-ghost btn-sm" style="margin-top:6px;width:100%;justify-content:center" onclick="scanCloud('${t.id}')">🔍 Scanner maintenant</button>`:''}
         </div>`;
       }).join('')}
     </div>`;
 }
 
-async function scanCloud(tenantId, type) {
-  showToast('Scan cloud en cours...');
-  try {
-    await fetch(S+`/api/mssp/tenants/${tenantId}/cloud/scan`,{method:'POST'});
-    showToast('✅ Scan terminé');
-    loadAll();
-  } catch(e) { showToast('Erreur scan'); }
-}
-
-async function revokeM365(tenantId) {
-  if(!confirm('Révoquer toutes les sessions Microsoft 365 ?')) return;
+async function revokeM365(tenantId){
+  if(!confirm('Révoquer toutes les sessions Microsoft 365 ? Les utilisateurs devront se reconnecter.'))return;
   showToast('Révocation en cours...');
-  try {
-    const r = await fetch(S+`/api/mssp/tenants/${tenantId}/cloud/m365/revoke-sessions`,{method:'POST'});
-    const d = await r.json();
-    showToast(d.success?`✅ ${d.revoked} sessions révoquées`:'Erreur: '+(d.error||'inconnue'));
+  try{
+    const r=await fetch(S+`/api/mssp/tenants/${tenantId}/cloud/m365/revoke-sessions`,{method:'POST'});
+    const d=await r.json();
+    showToast(d.success?`✅ ${d.revoked||0} sessions révoquées`:'Erreur: '+(d.error||'inconnue'));
     loadAll();
-  } catch(e) { showToast('Erreur réseau'); }
+  }catch(e){showToast('Erreur réseau');}
 }
 
-function openCloudModal(tenantId, preset) {
-  curClientId = tenantId;
-  document.getElementById('cloudType').value = preset||'';
-  if(preset) renderCloudFields();
+async function scanCloud(tenantId){
+  showToast('🔍 Scan cloud en cours...');
+  try{await fetch(S+`/api/mssp/tenants/${tenantId}/cloud/scan`,{method:'POST'});showToast('✅ Scan terminé');loadAll();}
+  catch(e){showToast('Erreur scan');}
+}
+
+function openCloudModal(tenantId,preset){
+  curClientId=tenantId;
+  document.getElementById('cloudType').value=preset||'';
+  if(preset)renderCloudFields();
   openModal('modalCloud');
 }
 
-function renderCloudFields() {
-  const type = document.getElementById('cloudType').value;
-  const el = document.getElementById('cloudFields');
-  if(type==='m365') {
-    el.innerHTML=`
-      <div class="fgroup"><label class="flabel">Tenant ID</label><input class="finput" id="cf-tid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
-      <div class="frow">
-        <div class="fgroup"><label class="flabel">Client ID</label><input class="finput" id="cf-cid" placeholder="Application (client) ID"></div>
-        <div class="fgroup"><label class="flabel">Client Secret</label><input class="finput" id="cf-cs" type="password" placeholder="Secret value"></div>
-      </div>`;
-  } else if(type==='aws') {
-    el.innerHTML=`
-      <div class="frow">
-        <div class="fgroup"><label class="flabel">Access Key ID</label><input class="finput" id="cf-ak" placeholder="AKIAIOSFODNN7EXAMPLE"></div>
-        <div class="fgroup"><label class="flabel">Secret Key</label><input class="finput" id="cf-sk" type="password" placeholder="Secret Access Key"></div>
-      </div>
-      <div class="fgroup"><label class="flabel">Région</label>
-        <select class="fselect" id="cf-reg">
-          <option value="eu-west-1">Europe (Irlande) eu-west-1</option>
-          <option value="eu-west-3">Europe (Paris) eu-west-3</option>
-          <option value="us-east-1">US East us-east-1</option>
-        </select>
-      </div>`;
-  } else if(type==='gworkspace') {
-    el.innerHTML=`
-      <div class="fgroup"><label class="flabel">Email Admin</label><input class="finput" id="cf-ae" type="email" placeholder="admin@domaine.com"></div>
-      <div class="fgroup"><label class="flabel">Email Compte de Service</label><input class="finput" id="cf-se" placeholder="service@projet.iam.gserviceaccount.com"></div>
-      <div class="fgroup"><label class="flabel">Clé Privée</label><textarea class="finput" id="cf-pk" rows="3" placeholder="-----BEGIN RSA PRIVATE KEY-----"></textarea></div>`;
-  } else { el.innerHTML=''; }
+function renderCloudFields(){
+  const type=document.getElementById('cloudType').value;
+  const el=document.getElementById('cloudFields');
+  if(type==='m365'){
+    el.innerHTML=`<div class="fg"><label class="fl">Tenant ID</label><input class="fi" id="cf-tid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+    <div class="frow"><div class="fg"><label class="fl">Client ID</label><input class="fi" id="cf-cid" placeholder="Application (client) ID"></div>
+    <div class="fg"><label class="fl">Client Secret</label><input class="fi" id="cf-cs" type="password" placeholder="Secret value"></div></div>`;
+  }else if(type==='aws'){
+    el.innerHTML=`<div class="frow"><div class="fg"><label class="fl">Access Key ID</label><input class="fi" id="cf-ak" placeholder="AKIAIOSFODNN7EXAMPLE"></div>
+    <div class="fg"><label class="fl">Secret Key</label><input class="fi" id="cf-sk" type="password" placeholder="Secret Access Key"></div></div>
+    <div class="fg"><label class="fl">Région</label><select class="fs" id="cf-reg"><option value="eu-west-1">Europe (Irlande)</option><option value="eu-west-3">Europe (Paris)</option><option value="us-east-1">US East</option></select></div>`;
+  }else if(type==='gworkspace'){
+    el.innerHTML=`<div class="fg"><label class="fl">Email Admin</label><input class="fi" id="cf-ae" type="email" placeholder="admin@domaine.com"></div>
+    <div class="fg"><label class="fl">Email Compte Service</label><input class="fi" id="cf-se" placeholder="service@projet.iam.gserviceaccount.com"></div>
+    <div class="fg"><label class="fl">Clé Privée</label><textarea class="fi" id="cf-pk" rows="3" placeholder="-----BEGIN RSA PRIVATE KEY-----"></textarea></div>`;
+  }else{el.innerHTML='';}
 }
 
-async function connectCloud() {
-  const type = document.getElementById('cloudType').value;
+async function connectCloud(){
+  const type=document.getElementById('cloudType').value;
   if(!type||!curClientId){showToast('Sélectionnez un service');return;}
   let creds={};
-  if(type==='m365') creds={tenant_id:document.getElementById('cf-tid')?.value,client_id:document.getElementById('cf-cid')?.value,client_secret:document.getElementById('cf-cs')?.value};
-  else if(type==='aws') creds={access_key:document.getElementById('cf-ak')?.value,secret_key:document.getElementById('cf-sk')?.value,region:document.getElementById('cf-reg')?.value};
-  else if(type==='gworkspace') creds={admin_email:document.getElementById('cf-ae')?.value,client_email:document.getElementById('cf-se')?.value,private_key:document.getElementById('cf-pk')?.value};
+  if(type==='m365')creds={tenant_id:document.getElementById('cf-tid')?.value,client_id:document.getElementById('cf-cid')?.value,client_secret:document.getElementById('cf-cs')?.value};
+  else if(type==='aws')creds={access_key:document.getElementById('cf-ak')?.value,secret_key:document.getElementById('cf-sk')?.value,region:document.getElementById('cf-reg')?.value};
+  else if(type==='gworkspace')creds={admin_email:document.getElementById('cf-ae')?.value,client_email:document.getElementById('cf-se')?.value,private_key:document.getElementById('cf-pk')?.value};
   showToast('Connexion en cours...');
-  try {
+  try{
     const r=await fetch(S+`/api/mssp/tenants/${curClientId}/cloud`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cloud_type:type,credentials:creds})});
     const d=await r.json();
-    if(d.success){showToast('✅ Cloud connecté — scan lancé');closeModal('modalCloud');loadAll();}
+    if(d.success){showToast('✅ Service cloud connecté');closeModal('modalCloud');loadAll();}
     else showToast('Erreur: '+(d.error||'inconnue'));
-  } catch(e){showToast('Erreur réseau');}
+  }catch(e){showToast('Erreur réseau');}
 }
 
 // ── SIEM ──────────────────────────────────────────────────────────────────────
-function renderSiem() {
-  document.getElementById('siemTabs').innerHTML = makeTabs('siem');
-  const t = getCurrentTenant();
-  if(!t) return;
-  curClientId = t.id;
-
-  const body = document.getElementById('siemBody');
-  const alerts = [...(t.alerts||[])].reverse().slice(0,30);
-  if(!alerts.length) {
-    body.innerHTML='<div class="siem-line"><span class="sl-time">--:--:--</span><span class="sl-src src-siem">SIEM</span><span class="sl-msg">Aucun événement</span></div>';
-    return;
-  }
-  body.innerHTML = alerts.map(a=>{
+function renderSiem(){
+  document.getElementById('siemTabs').innerHTML=tenants.map(t=>`<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderPage('siem')">${t.name}</button>`).join('');
+  const t=curTenant();
+  if(!t)return;
+  curClientId=t.id;
+  let alerts=[...(t.alerts||[])].reverse().slice(0,50);
+  if(siemFilter==='critical')alerts=alerts.filter(a=>a.severity==='critical');
+  const body=document.getElementById('siemBody');
+  const count=document.getElementById('siemCount');
+  if(count)count.textContent=alerts.length+' événements';
+  if(!alerts.length){body.innerHTML='<div class="sl"><span class="sl-t">--:--</span><span class="sl-s src-siem">SIEM</span><span class="sl-m">Aucun événement</span></div>';return;}
+  body.innerHTML=alerts.map((a,i)=>{
     const time=new Date(a.created_at||Date.now()).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     const isCloud=(a.device_id||'').startsWith('cloud_');
     const src=isCloud?'src-m365':'src-edr';
     const srcL=isCloud?'M365':'EDR';
-    const badge=a.severity==='critical'?'sb-crit':a.severity==='high'?'sb-warn':'sb-ok';
+    const badge=a.severity==='critical'?'sb-c':a.severity==='high'?'sb-w':'sb-o';
     const badgeL=a.severity==='critical'?'CRIT':a.severity==='high'?'WARN':'INFO';
-    return `<div class="siem-line">
-      <span class="sl-time">${time}</span>
-      <span class="sl-src ${src}">${srcL}</span>
-      <span class="sl-msg">${a.title} · ${a.device_name||'Système'}${a.resolved?' · <span style="color:#34d399">résolu</span>':''}</span>
-      <span class="sl-badge ${badge}">${badgeL}</span>
+    return`<div class="sl" style="animation-delay:${i*20}ms">
+      <span class="sl-t">${time}</span>
+      <span class="sl-s ${src}">${srcL}</span>
+      <span class="sl-m">${a.title} · ${a.device_name||'Système'}${a.resolved?' <span style="color:#34d399">✓ résolu</span>':''}</span>
+      <span class="sl-b ${badge}">${badgeL}</span>
     </div>`;
   }).join('');
 }
 
 // ── RGPD ──────────────────────────────────────────────────────────────────────
-function renderRgpd() {
-  document.getElementById('rgpdTabs').innerHTML = makeTabs('rgpd');
-  const t = getCurrentTenant();
-  if(!t) return;
-  curClientId = t.id;
-
-  const score = t.rgpd_score || 0;
-  const level = score>=80?'CONFORME':score>=60?'PARTIEL':'NON CONFORME';
-  const lColor = score>=80?'#059669':score>=60?'#d97706':'#dc2626';
-  const articles = t.rgpd_articles || {};
-
-  document.getElementById('rgpdContent').innerHTML = `
+function renderRgpd(){
+  document.getElementById('rgpdTabs').innerHTML=tenants.map(t=>`<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderPage('rgpd')">${t.name}</button>`).join('');
+  const t=curTenant();
+  if(!t)return;
+  curClientId=t.id;
+  const score=t.rgpd_score||0;
+  const level=score>=80?'CONFORME':score>=60?'PARTIELLEMENT CONFORME':'NON CONFORME';
+  const lColor=score>=80?'#059669':score>=60?'#d97706':'#dc2626';
+  const articles=t.rgpd_articles||{};
+  document.getElementById('rgpdContent').innerHTML=`
     <div class="rgpd-layout">
-      <div class="rgpd-score-box">
-        <svg width="120" height="120" viewBox="0 0 120 120" style="display:block;margin:0 auto 12px">
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="10"/>
-          <circle cx="60" cy="60" r="50" fill="none" stroke="${lColor}" stroke-width="10"
-            stroke-dasharray="${score*3.14} 314" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-          <text x="60" y="56" text-anchor="middle" font-size="24" font-weight="800" fill="${lColor}">${score}</text>
-          <text x="60" y="72" text-anchor="middle" font-size="9" fill="#9ca3af">/100</text>
-        </svg>
-        <div style="font-size:13px;font-weight:700;color:${lColor};margin-bottom:16px">${level}</div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:12px" onclick="window.open('${S}/api/mssp/tenants/${t.id}/rgpd-report','_blank')">
-          📄 Télécharger rapport PDF
-        </button>
+      <div class="sc">
+        <div class="sc-head"><div class="sc-title">📋 Score RGPD</div></div>
+        <div class="rgpd-score-box">
+          <svg width="120" height="120" viewBox="0 0 120 120" style="display:block;margin:0 auto 14px">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="${lColor}" stroke-width="10"
+              stroke-dasharray="${score*3.14} 314" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            <text x="60" y="55" text-anchor="middle" font-size="24" font-weight="800" fill="${lColor}">${score}</text>
+            <text x="60" y="71" text-anchor="middle" font-size="9" fill="#9ca3af">/100</text>
+          </svg>
+          <div style="font-size:13px;font-weight:700;color:${lColor};margin-bottom:16px">${level}</div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:8px" onclick="window.open('${S}/api/mssp/tenants/${t.id}/rgpd-report','_blank')">
+            📄 Télécharger rapport PDF
+          </button>
+          <button class="btn btn-purple" style="width:100%;justify-content:center" onclick="generateAIReport('${t.id}')">
+            🤖 Rapport IA complet
+          </button>
+        </div>
       </div>
-      <div class="rgpd-articles-box">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">Articles RGPD</div>
-        <div class="rgpd-articles">
-          ${Object.entries(articles).length?Object.entries(articles).map(([art,data])=>{
-            const s=typeof data==='object'?(data.score||0):data;
-            const c=s>=80?'#059669':s>=60?'#d97706':'#dc2626';
-            return `<div class="rgpd-art">
-              <div class="rgpd-art-name">${art}</div>
-              <div class="rgpd-art-bar"><div class="rgpd-art-fill" style="width:${s}%;background:${c}"></div></div>
-              <div class="rgpd-art-score" style="color:${c}">${s}%</div>
-            </div>`;
-          }).join(''):`<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Installez l'agent sur les machines pour calculer le score RGPD</div>`}
+      <div class="sc">
+        <div class="sc-head"><div class="sc-title">📑 Articles RGPD</div></div>
+        <div class="sc-body">
+          <div class="rgpd-arts">
+            ${Object.entries(articles).length?Object.entries(articles).map(([art,data])=>{
+              const s=typeof data==='object'?(data.score||0):Number(data)||0;
+              const c=s>=80?'#059669':s>=60?'#d97706':'#dc2626';
+              return`<div class="rgpd-art">
+                <div class="rgpd-art-name">${art}</div>
+                <div class="rgpd-art-bar"><div class="rgpd-art-fill" style="width:${s}%;background:${c}"></div></div>
+                <div class="rgpd-art-score" style="color:${c}">${s}%</div>
+              </div>`;
+            }).join(''):`<div style="color:var(--text3);font-size:13px;text-align:center;padding:24px">
+              <div style="font-size:28px;margin-bottom:8px">📋</div>
+              Installez l'agent sur les machines du client<br>pour calculer le score RGPD automatiquement
+            </div>`}
+          </div>
         </div>
       </div>
     </div>`;
 }
 
 // ── CLIENTS CRUD ──────────────────────────────────────────────────────────────
-async function createClient() {
+async function createClient(){
   const name=document.getElementById('nc-name').value.trim();
   const email=document.getElementById('nc-email').value.trim();
   const sector=document.getElementById('nc-sector').value;
   if(!name||!email){showToast('Nom et email requis');return;}
-  try {
+  try{
     const r=await fetch(S+'/api/mssp/tenants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,plan:sector})});
     const d=await r.json();
     if(d.success){showToast('✅ Client créé — '+name);closeModal('modalClient');document.getElementById('nc-name').value='';document.getElementById('nc-email').value='';loadAll();}
     else showToast('Erreur: '+(d.error||'inconnue'));
-  } catch(e){showToast('Erreur réseau');}
+  }catch(e){showToast('Erreur réseau');}
 }
 
-async function deleteClient(id, name) {
-  if(!confirm(`Supprimer "${name}" ? Action irréversible.`)) return;
-  try {
+async function deleteClient(id,name){
+  if(!confirm(`Supprimer "${name}" et toutes ses données ? Action irréversible.`))return;
+  try{
     const r=await fetch(S+'/api/mssp/tenants/'+id,{method:'DELETE'});
     const d=await r.json();
-    if(d.success){showToast('Client supprimé');if(curClientId===id)curClientId=null;loadAll();}
-    else showToast('Erreur suppression');
-  } catch(e){showToast('Erreur réseau');}
+    if(d.success){showToast('✅ Client "'+name+'" supprimé');if(curClientId===id)curClientId=null;loadAll();}
+    else showToast('Erreur: '+(d.error||'inconnue'));
+  }catch(e){showToast('Erreur réseau: '+(e.message||''));}
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
-function openModal(id){document.getElementById(id).classList.add('open')}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
-document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+  setTimeout(()=>t.classList.remove('show'),3500);
 }
 
-async function copyCmd(text) {
-  try{await navigator.clipboard.writeText(text);showToast('✅ Commande copiée !');}
+async function copyText(text,msg){
+  try{await navigator.clipboard.writeText(text);showToast(msg||'✅ Copié !');}
   catch(e){showToast('Copie manuelle requise');}
 }
 
-setInterval(loadAll, 60000);
+// Auto-refresh toutes les 60s
+setInterval(loadAll,60000);
 </script>
 </body>
 </html>
