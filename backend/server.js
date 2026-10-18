@@ -514,11 +514,15 @@ app.post('/api/mssp/login', async (req, res) => {
 });
 
 app.post('/api/mssp/tenants', async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !password) return res.status(400).json({ error: 'name et password requis' });
-  const agent_key = crypto.randomBytes(16).toString('hex');
-  const tenant = await Tenant.create({ name, email: email||'', password, agent_key });
-  res.json({ tenant_id: tenant._id, agent_key, message: 'Client cree' });
+  try {
+    const { name, email, plan } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nom requis', success: false });
+    const agent_key = crypto.randomBytes(16).toString('hex');
+    const tenant = await Tenant.create({ name, email: email||'', plan: plan||'', agent_key });
+    res.json({ success: true, tenant_id: tenant._id, agent_key, message: 'Client cree' });
+  } catch(e) {
+    res.json({ success: false, error: e.message });
+  }
 });
 
 app.get('/api/mssp/tenants', async (req, res) => {
