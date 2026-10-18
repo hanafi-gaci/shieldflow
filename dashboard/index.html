@@ -539,6 +539,11 @@ body{display:flex}
 
 <script>
 const S='https://shieldflow-rfzv.onrender.com';
+function apiFetch(url, opts={}) {
+  const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
+  if(window._msspToken) headers['Authorization'] = 'Bearer '+window._msspToken;
+  return fetch(S+url, {...opts, headers});
+}
 let tenants=[], curPage='overview', curClientId=null, incFilter='all', siemFilter='all', triageFilter='all';
 let charts={};
 
@@ -546,9 +551,10 @@ let charts={};
 async function doLogin(){
   const pass=document.getElementById('loginPass').value;
   try{
-    const r=await fetch(S+'/api/mssp/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+    const r=await apiFetch('/api/mssp/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
     const d=await r.json();
     if(d.token||d.success){
+      if(d.token) window._msspToken = d.token;
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('appWrap').style.display='flex';
       loadAll();
@@ -563,15 +569,15 @@ document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='
 // ── LOAD ──────────────────────────────────────────────────────────────────────
 async function loadAll(){
   try{
-    const r=await fetch(S+'/api/mssp/tenants');
+    const r=await apiFetch('/api/mssp/tenants');
     const d=await r.json();
     const basics=d.tenants||[];
     tenants=await Promise.all(basics.map(async t=>{
       const tid=t.id||t._id;
       try{
         const [dr,cr]=await Promise.all([
-          fetch(S+'/api/mssp/tenants/'+tid+'/dashboard'),
-          fetch(S+'/api/mssp/tenants/'+tid+'/cloud')
+          apiFetch('/api/mssp/tenants/'+tid+'/dashboard'),
+          apiFetch('/api/mssp/tenants/'+tid+'/cloud')
         ]);
         const dash=await dr.json();
         const cloud=await cr.json();
@@ -980,7 +986,7 @@ Donne un rapport court (4-5 lignes max) avec: niveau de risque, problèmes princ
 async function generateAIReport(tenantId){
   showToast('🤖 Génération rapport IA global...');
   try{
-    const r=await fetch(S+'/api/mssp/tenants/'+tenantId+'/ai-report',{method:'POST'});
+    const r=await apiFetch('/api/mssp/tenants/'+tenantId+'/ai-report',{method:'POST'});
     const d=await r.json();
     if(d.success)showToast('✅ Rapport IA généré et envoyé par email');
     else showToast('Rapport IA: '+(d.error||'erreur'));
@@ -1225,7 +1231,7 @@ async function createClient(){
   const sector=document.getElementById('nc-sector').value;
   if(!name||!email){showToast('Nom et email requis');return;}
   try{
-    const r=await fetch(S+'/api/mssp/tenants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,plan:sector})});
+    const r=await apiFetch('/api/mssp/tenants',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,plan:sector})});
     const d=await r.json();
     if(d.success){showToast('✅ Client créé — '+name);closeModal('modalClient');document.getElementById('nc-name').value='';document.getElementById('nc-email').value='';loadAll();}
     else showToast('Erreur: '+(d.error||'inconnue'));
@@ -1235,7 +1241,7 @@ async function createClient(){
 async function deleteClient(id,name){
   if(!confirm(`Supprimer "${name}" et toutes ses données ? Action irréversible.`))return;
   try{
-    const r=await fetch(S+'/api/mssp/tenants/'+id,{method:'DELETE'});
+    const r=await apiFetch('/api/mssp/tenants/'+id,{method:'DELETE'});
     const d=await r.json();
     if(d.success){showToast('✅ Client "'+name+'" supprimé');if(curClientId===id)curClientId=null;loadAll();}
     else showToast('Erreur: '+(d.error||'inconnue'));
