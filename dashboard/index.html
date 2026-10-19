@@ -581,7 +581,16 @@ async function loadAll(){
         ]);
         const dash=await dr.json();
         const cloud=await cr.json();
-        return{...t,id:tid,devices:dash.devices||[],alerts:dash.alerts||[],score:dash.score||0,rgpd_score:t.rgpd_score||0,rgpd_articles:dash.rgpd_articles||{},clouds:cloud.clouds||[]};
+        // Charger aussi le score RGPD
+let rgpdScore = 0;
+let rgpdArticles = {};
+try {
+  const rgpdR = await fetch(S+'/api/mssp/tenants/'+tid+'/rgpd');
+  const rgpd = await rgpdR.json();
+  rgpdScore = rgpd.score || 0;
+  rgpdArticles = rgpd.articles || {};
+} catch(e) {}
+return{...t,id:tid,devices:dash.devices||[],alerts:dash.alerts||[],score:dash.score||0,rgpd_score:rgpdScore,rgpd_articles:rgpdArticles,clouds:cloud.clouds||[]};
       }catch(e){return{...t,id:tid,devices:[],alerts:[],clouds:[],score:0,rgpd_score:0};}
     }));
     if(!curClientId&&tenants.length)curClientId=tenants[0].id;
