@@ -333,6 +333,9 @@ body{display:flex}
     <button class="sb-btn" id="nav-webhooks" onclick="goPage('webhooks')">
       <span class="ic">🔗</span><span class="lbl">Webhooks</span>
     </button>
+    <button class="sb-btn" id="nav-api" onclick="goPage('api')">
+      <span class="ic">🔑</span><span class="lbl">API Partenaires</span>
+    </button>
     <div class="sb-section" style="margin-top:8px">Organisations</div>
     <div id="sbClients"></div>
     <button class="sb-btn" onclick="openModal('modalClient')" style="margin-top:4px;color:rgba(255,255,255,.35)">
@@ -547,6 +550,45 @@ body{display:flex}
       </div>
     </div>
 
+    <!-- API PARTENAIRES -->
+    <div id="page-api" style="display:none">
+      <div class="sc" style="margin-bottom:16px">
+        <div class="sc-head">
+          <div class="sc-title">🔑 API Partenaires MSP</div>
+          <button class="btn btn-primary btn-sm" onclick="openApiKeyModal()">+ Générer une clé API</button>
+        </div>
+        <div class="sc-body">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px">
+            Donnez à vos partenaires IT un accès API sécurisé pour intégrer ShieldFlow dans leurs outils (PSA, RMM, ticketing).
+          </p>
+          <div id="apiKeysList">
+            <div class="empty"><div class="empty-icon">🔑</div><div class="empty-title">Chargement...</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc">
+        <div class="sc-head"><div class="sc-title">📖 Documentation API</div></div>
+        <div class="sc-body">
+          <div style="background:#0d1117;border-radius:10px;padding:20px;font-family:monospace;font-size:12px;color:rgba(255,255,255,.7)">
+            <div style="color:#60a5fa;margin-bottom:12px;font-weight:700">Base URL: https://shieldflow-rfzv.onrender.com/api/v1</div>
+            <div style="color:rgba(255,255,255,.4);margin-bottom:8px"># Authentication</div>
+            <div style="color:#34d399">curl -H "X-API-Key: sf_votre_cle" [URL]</div>
+            <br>
+            <div style="color:rgba(255,255,255,.4);margin-bottom:8px"># Endpoints disponibles</div>
+            <div><span style="color:#f97316">GET</span>  /api/v1/organizations         — Liste vos clients</div>
+            <div><span style="color:#f97316">GET</span>  /api/v1/organizations/:id     — Détail client</div>
+            <div><span style="color:#10b981">POST</span> /api/v1/organizations         — Créer un client</div>
+            <div><span style="color:#f97316">GET</span>  /api/v1/alerts?severity=critical — Alertes actives</div>
+            <div><span style="color:#10b981">POST</span> /api/v1/alerts/:id/resolve    — Résoudre alerte</div>
+            <div><span style="color:#f97316">GET</span>  /api/v1/docs                  — Documentation complète</div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <a href="https://shieldflow-rfzv.onrender.com/api/v1/docs" target="_blank" class="btn btn-ghost btn-sm">📖 Voir la doc complète</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- RGPD -->
     <div id="page-rgpd" style="display:none">
       <div class="tabs" id="rgpdTabs"></div>
@@ -633,6 +675,20 @@ body{display:flex}
     <div class="mfoot">
       <button class="btn btn-ghost" onclick="closeModal('modalWebhook')">Annuler</button>
       <button class="btn btn-primary" onclick="createWebhook()">Créer le webhook →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL API KEY -->
+<div class="overlay" id="modalApiKey">
+  <div class="modal">
+    <div class="modal-title">🔑 Créer une clé API partenaire</div>
+    <div class="fg"><label class="fl">Nom du partenaire *</label><input class="fi" id="ak-name" placeholder="Prestataire IT Martin"></div>
+    <div class="fg"><label class="fl">Email *</label><input class="fi" id="ak-email" type="email" placeholder="contact@prestataire.fr"></div>
+    <p style="font-size:12px;color:var(--text3);margin-top:8px">La clé sera affichée une seule fois après création. Transmettez-la au partenaire de façon sécurisée.</p>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeModal('modalApiKey')">Annuler</button>
+      <button class="btn btn-primary" onclick="createApiKey()">Générer la clé →</button>
     </div>
   </div>
 </div>
@@ -793,7 +849,7 @@ function renderCharts(){
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function goPage(page){
   curPage=page;
-  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks'].forEach(p=>{
+  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks','api'].forEach(p=>{
     const el=document.getElementById('page-'+p);
     const nav=document.getElementById('nav-'+p);
     if(el)el.style.display=p===page?'':'none';
@@ -808,7 +864,8 @@ function goPage(page){
     siem:['SIEM & Logs','Corrélation et détection'],
     rgpd:['Conformité RGPD','Scores et rapports officiels'],
     soc:['Bot SOC — Athena','Assistant IA cybersécurité'],
-    webhooks:['Webhooks','Alertes temps réel vers Slack et email']
+    webhooks:['Webhooks','Alertes temps réel vers Slack et email'],
+    api:['API Partenaires','Intégration MSP avec clé API']
   };
   if(titles[page]){
     document.getElementById('tbTitle').textContent=titles[page][0];
@@ -826,6 +883,7 @@ function renderPage(page){
   if(page==='siem')renderSiem();
   if(page==='rgpd')renderRgpd();
   if(page==='soc')renderSocPage();
+  if(page==='api')renderApiPage();
   if(page==='webhooks')renderWebhooksPage();
 }
 
@@ -1619,6 +1677,80 @@ async function createWebhook() {
       closeModal('modalWebhook');
       document.getElementById('wh-url').value = '';
       renderWebhooksPage();
+    } else showToast('Erreur: ' + (d.error||'inconnue'));
+  } catch(e) { showToast('Erreur réseau'); }
+}
+
+// ── API PARTENAIRES ──────────────────────────────────────────────────────────
+async function renderApiPage() {
+  try {
+    const r = await apiFetch('/api/admin/api-keys');
+    const d = await r.json();
+    const keys = d.keys || [];
+    const list = document.getElementById('apiKeysList');
+    if (!keys.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div><div class="empty-title">Aucune clé API créée</div><div class="empty-sub">Créez une clé pour votre premier partenaire IT</div></div>';
+      return;
+    }
+    list.innerHTML = keys.map(k => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border-radius:9px;border:1px solid var(--border);margin-bottom:8px">
+        <span style="font-size:20px">🔑</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${k.partner_name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">
+            ${k.partner_email} · 
+            ${k.active ? '<span style="color:var(--green)">● Active</span>' : '<span style="color:var(--text3)">○ Inactive</span>'} · 
+            ${k.request_count || 0} requêtes · 
+            Créée le ${new Date(k.created_at).toLocaleDateString('fr-FR')}
+            ${k.last_used ? ' · Dernière utilisation: ' + new Date(k.last_used).toLocaleDateString('fr-FR') : ''}
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px">Permissions: ${(k.permissions||[]).join(', ')}</div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="deleteApiKey('${k._id}')">Révoquer</button>
+      </div>`).join('');
+  } catch(e) { showToast('Erreur chargement clés API'); }
+}
+
+async function deleteApiKey(id) {
+  if (!confirm('Révoquer cette clé API ? Le partenaire perdra immédiatement l accès.')) return;
+  try {
+    await apiFetch('/api/admin/api-keys/' + id, {method:'DELETE'});
+    showToast('✅ Clé API révoquée');
+    renderApiPage();
+  } catch(e) { showToast('Erreur'); }
+}
+
+function openApiKeyModal() {
+  document.getElementById('modalApiKey').classList.add('open');
+}
+
+async function createApiKey() {
+  const name = document.getElementById('ak-name').value.trim();
+  const email = document.getElementById('ak-email').value.trim();
+  if (!name || !email) { showToast('Nom et email requis'); return; }
+  try {
+    const r = await apiFetch('/api/admin/api-keys', {
+      method: 'POST',
+      body: JSON.stringify({partner_name: name, partner_email: email})
+    });
+    const d = await r.json();
+    if (d.success) {
+      closeModal('modalApiKey');
+      document.getElementById('ak-name').value = '';
+      document.getElementById('ak-email').value = '';
+      // Afficher la clé une seule fois
+      const keyDisplay = document.createElement('div');
+      keyDisplay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+      keyDisplay.innerHTML = `<div style="background:var(--white);border-radius:14px;padding:28px;max-width:500px;width:90%">
+        <div style="font-size:17px;font-weight:700;margin-bottom:12px">✅ Clé API créée</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">⚠️ Copiez cette clé maintenant — elle ne sera plus affichée.</p>
+        <div style="background:#0d1117;border-radius:8px;padding:14px;font-family:monospace;font-size:13px;color:#34d399;word-break:break-all;margin-bottom:16px">${d.api_key}</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="copyText('${d.api_key}','✅ Clé copiée !')">📋 Copier la clé</button>
+          <button class="btn btn-ghost" onclick="this.closest('[style*=fixed]').remove();renderApiPage()">Fermer</button>
+        </div>
+      </div>`;
+      document.body.appendChild(keyDisplay);
     } else showToast('Erreur: ' + (d.error||'inconnue'));
   } catch(e) { showToast('Erreur réseau'); }
 }
