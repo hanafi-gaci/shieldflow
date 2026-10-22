@@ -3075,6 +3075,127 @@ cronIspm.schedule('0 6 * * *', async () => {
   } catch(e) { console.error('[ISPM] Erreur scan quotidien:', e.message); }
 });
 
+
+// ─── RAPPORTS D INCIDENTS STRUCTURÉS ─────────────────────────────────────────
+// Comme Huntress : rapport complet pour chaque incident avec timeline et actions
+
+const IncidentReportSchema = new mongoose.Schema({
+  tenant_id:      { type: String, required: true },
+  title:          { type: String, required: true },
+  severity:       { type: String, enum: ['critical','high','medium','low'] },
+  status:         { type: String, enum: ['open','investigating','contained','resolved'], default: 'open' },
+  summary:        { type: String },
+  timeline:       [{ timestamp: Date, event: String, actor: String, type: String }],
+  alerts:         [{ type: mongoose.Schema.Types.ObjectId, ref: 'Alert' }],
+  devices:        [String],
+  ai_analysis:    { type: String },
+  recommendations:[String],
+  actions_taken:  [{ timestamp: Date, action: String, performed_by: String, result: String }],
+  created_at:     { type: Date, default: Date.now },
+  resolved_at:    { type: Date },
+  report_pdf_url: { type: String }
+});
+const IncidentReport = mongoose.model('IncidentReport', IncidentReportSchema);
+
+// Créer automatiquement un rapport d incident pour les alertes critiques
+async function createIncidentReport(tenantId, alerts) {
+  try {
+    if (!alerts || alerts.length === 0) return null;
+    const criticals = alerts.filter(a => a.severity === 'critical');
+    if (criticals.length === 0) return null;
+
+    const tenant = await Tenant.findById(tenantId);
+    const mainAlert = criticals[0];
+
+    // Générer analyse IA si disponible
+    let aiAnalysis = '';
+    let recommendations = [];
+    if (ANTHROPIC_API_KEY) {
+      try {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 800,
+            messages: [{
+              role: 'user',
+              content: `Rapport d incident cybersécurité pour ${tenant?.name || 'client'}. 
+Alertes: ${alerts.map(a => a.title).join(', ')}.
+Machines: ${[...new Set(alerts.map(a => a.device_name).filter(Boolean))].join(', ')}.
+Fournis: 1) Résumé exécutif (2 phrases) 2) Niveau de risque 3) Actions immédiates (3 points) 4) Prévention (2 points). Format court et pratique.`
+            }]
+          })
+        });
+        const data = await resp.json();
+        aiAnalysis = data.content?.[0]?.text || '';
+        recommendations = ['Vérifier tous les systèmes affectés', 'Mettre à jour les règles de sécurité', 'Former les utilisateurs concernés'];
+      } catch(e) {
+        aiAnalysis = 'Analyse IA non disponible';
+      }
+    }
+
+    const report = await IncidentReport.create({
+      tenant_id: tenantId.toString(),
+      title: `Incident ${mainAlert.severity.toUpperCase()} — ${mainAlert.title}`,
+      severity: mainAlert.severity,
+      summary: aiAnalysis.substring(0, 500),
+      timeline: alerts.map(a => ({
+        timestamp: a.created_at || new Date(),
+        event: a.title,
+        actor: 'ShieldFlow Agent',
+        type: 'detection'
+      })),
+      alerts: alerts.map(a => a._id),
+      devices: [...new Set(alerts.map(a => a.device_name).filter(Boolean))],
+      ai_analysis: aiAnalysis,
+      recommendations
+    });
+
+    console.log(`[Incident] Rapport créé: ${report._id} pour tenant ${tenantId}`);
+    return report;
+  } catch(e) {
+    console.error('[Incident] Erreur création rapport:', e.message);
+    return null;
+  }
+}
+
+// Routes rapports d incidents
+app.get('/api/mssp/tenants/:id/incidents', async (req, res) => {
+  try {
+    const reports = await IncidentReport.find({ tenant_id: req.params.id }).sort({ created_at: -1 }).limit(50);
+    res.json({ success: true, count: reports.length, reports });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/mssp/tenants/:id/incidents/:reportId', async (req, res) => {
+  try {
+    const report = await IncidentReport.findById(req.params.reportId);
+    if (!report) return res.status(404).json({ error: 'Rapport non trouvé' });
+    res.json({ success: true, report });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/mssp/tenants/:id/incidents/:reportId', async (req, res) => {
+  try {
+    const { status, actions_taken } = req.body;
+    const update = {};
+    if (status) { update.status = status; if (status === 'resolved') update.resolved_at = new Date(); }
+    if (actions_taken) update.$push = { actions_taken: { ...actions_taken, timestamp: new Date(), performed_by: 'Analyste SOC' } };
+    const report = await IncidentReport.findByIdAndUpdate(req.params.reportId, update, { new: true });
+    res.json({ success: true, report });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/mssp/tenants/:id/incidents/generate', async (req, res) => {
+  try {
+    const alerts = await Alert.find({ tenant_id: req.params.id, resolved: false, severity: { $in: ['critical','high'] } }).sort({ created_at: -1 }).limit(10);
+    if (!alerts.length) return res.json({ success: false, message: 'Aucune alerte critique à rapporter' });
+    const report = await createIncidentReport(req.params.id, alerts);
+    res.json({ success: !!report, report });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.use(express.static(path.join(__dirname, '../dashboard')));
 
 
