@@ -326,6 +326,10 @@ body{display:flex}
     <button class="sb-btn" id="nav-rgpd" onclick="goPage('rgpd')">
       <span class="ic">📋</span><span class="lbl">Conformité RGPD</span>
     </button>
+    <button class="sb-btn" id="nav-soc" onclick="goPage('soc')">
+      <span class="ic">🤖</span><span class="lbl">Bot SOC — Athena</span>
+      <span class="sb-n sb-n-ok" id="badge-soc">IA</span>
+    </button>
     <div class="sb-section" style="margin-top:8px">Organisations</div>
     <div id="sbClients"></div>
     <button class="sb-btn" onclick="openModal('modalClient')" style="margin-top:4px;color:rgba(255,255,255,.35)">
@@ -704,7 +708,8 @@ function goPage(page){
     incidents:['Incidents','Alertes actives et historique'],
     cloud:['Cloud & Identités','Microsoft 365 · Google · AWS'],
     siem:['SIEM & Logs','Corrélation et détection'],
-    rgpd:['Conformité RGPD','Scores et rapports officiels']
+    rgpd:['Conformité RGPD','Scores et rapports officiels'],
+    soc:['Bot SOC — Athena','Assistant IA cybersécurité']
   };
   if(titles[page]){
     document.getElementById('tbTitle').textContent=titles[page][0];
@@ -721,6 +726,7 @@ function renderPage(page){
   if(page==='cloud')renderCloud();
   if(page==='siem')renderSiem();
   if(page==='rgpd')renderRgpd();
+  if(page==='soc')renderSocPage();
 }
 
 function selectClient(id){curClientId=id;renderSidebar();renderPage(curPage);}
@@ -1270,6 +1276,128 @@ function showToast(msg){
 async function copyText(text,msg){
   try{await navigator.clipboard.writeText(text);showToast(msg||'✅ Copié !');}
   catch(e){showToast('Copie manuelle requise');}
+}
+
+// ── BOT SOC ATHENA ───────────────────────────────────────────────────────────
+let socClientFilter = null;
+
+function renderSocPage() {
+  // Remettre à jour la navigation
+  document.getElementById('tbTitle').textContent = 'Bot SOC — Athena';
+  document.getElementById('tbSub').textContent = '· Assistant IA cybersécurité';
+
+  // Afficher toutes les alertes non résolues
+  let allAlerts = tenants.flatMap(t =>
+    (t.alerts||[]).filter(a => !a.resolved).map(a => ({...a, tenantName: t.name, tenantId: t.id}))
+  );
+  allAlerts.sort((a,b) => {
+    const o = {critical:0,high:1,medium:2,low:3};
+    return (o[a.severity]||4) - (o[b.severity]||4);
+  });
+
+  const list = document.getElementById('socAlertsList');
+  if (!allAlerts.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Aucune alerte active</div><div class="empty-sub">Tous les systèmes sont protégés</div></div>';
+    return;
+  }
+
+  list.innerHTML = allAlerts.map((a,i) => {
+    const bc = `s-${a.severity}`;
+    const sevLabel = a.severity==='critical'?'CRITIQUE':a.severity==='high'?'ÉLEVÉ':a.severity==='medium'?'MOYEN':'FAIBLE';
+    return `<div class="alert-item" style="cursor:pointer" onclick="getSocGuide('${a.tenantId}','${a._id}','${a.title.replace(/'/g,"\'")}','${a.severity}')">
+      <span class="al-sev ${bc}">${sevLabel}</span>
+      <div class="al-body">
+        <div class="al-title">${a.title}</div>
+        <div class="al-meta">${a.tenantName} · ${a.device_name||'Système'}</div>
+      </div>
+      <button class="btn btn-purple btn-xs" onclick="event.stopPropagation();getSocGuide('${a.tenantId}','${a._id}','${a.title.replace(/'/g,"\'")}','${a.severity}')">
+        🤖 Guide SOC
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function getSocGuide(tenantId, alertId, title, severity) {
+  // Ajouter message dans le chat
+  addSocMessage('user', `Guide SOC pour : ${title} (${severity})`);
+  addSocMessage('athena', '⏳ Analyse en cours... Athena génère le guide de remédiation complet.');
+
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${tenantId}/alerts/${alertId}/soc-guide`, {method:'POST'});
+    const d = await r.json();
+    if (d.success) {
+      // Remplacer le message de chargement par le guide
+      const chat = document.getElementById('socChat');
+      const lastMsg = chat.lastElementChild;
+      if (lastMsg) lastMsg.remove();
+      addSocMessage('athena', d.guide);
+    } else {
+      addSocMessage('athena', `❌ Erreur: ${d.error || 'Guide non disponible'}`);
+    }
+  } catch(e) {
+    addSocMessage('athena', '❌ Erreur de connexion au service IA.');
+  }
+}
+
+async function sendSocMessage() {
+  const input = document.getElementById('socInput');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+  addSocMessage('user', question);
+  addSocMessage('athena', '⏳ Athena réfléchit...');
+
+  // Contexte des tenants actuels
+  const context = {
+    clients: tenants.length,
+    alertes_actives: tenants.reduce((s,t) => s+(t.alerts||[]).filter(a=>!a.resolved).length, 0),
+    machines: tenants.reduce((s,t) => s+(t.devices||[]).length, 0)
+  };
+
+  try {
+    const r = await apiFetch('/api/soc/chat', {
+      method: 'POST',
+      body: JSON.stringify({question, context})
+    });
+    const d = await r.json();
+    const chat = document.getElementById('socChat');
+    const lastMsg = chat.lastElementChild;
+    if (lastMsg) lastMsg.remove();
+    if (d.success) {
+      addSocMessage('athena', d.answer);
+    } else {
+      addSocMessage('athena', `❌ ${d.error || 'Erreur IA'}`);
+    }
+  } catch(e) {
+    addSocMessage('athena', '❌ Erreur de connexion.');
+  }
+}
+
+function quickSoc(question) {
+  document.getElementById('socInput').value = question;
+  sendSocMessage();
+}
+
+function addSocMessage(role, text) {
+  const chat = document.getElementById('socChat');
+  const isAthena = role === 'athena';
+  const div = document.createElement('div');
+  div.style.cssText = isAthena
+    ? 'background:linear-gradient(135deg,#1a1f35,#0d1117);border-radius:12px 12px 12px 4px;padding:12px 14px;max-width:95%'
+    : 'background:#2563eb;border-radius:12px 12px 4px 12px;padding:12px 14px;max-width:85%;align-self:flex-end;margin-left:auto';
+  div.innerHTML = `
+    <div style="font-size:10px;color:${isAthena?'rgba(255,255,255,.4)':'rgba(255,255,255,.6)'};margin-bottom:5px;font-weight:600">
+      ${isAthena ? '🤖 ATHENA' : '👤 VOUS'}
+    </div>
+    <div style="font-size:13px;color:${isAthena?'rgba(255,255,255,.85)':'#fff'};line-height:1.65;white-space:pre-wrap">${text}</div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function clearSocChat() {
+  const chat = document.getElementById('socChat');
+  chat.innerHTML = '';
+  addSocMessage('athena', 'Chat effacé. Comment puis-je vous aider ?');
 }
 
 // Auto-refresh toutes les 60s

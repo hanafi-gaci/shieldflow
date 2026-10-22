@@ -2515,6 +2515,117 @@ app.get('/dashboard', (req, res) => {
 });
 
 // Static files
+
+// ─── BOT SOC IA ───────────────────────────────────────────────────────────────
+// Guide l analyste pas a pas pour chaque alerte
+
+app.post('/api/mssp/tenants/:tenantId/alerts/:alertId/soc-guide', async (req, res) => {
+  try {
+    const alert = await Alert.findById(req.params.alertId);
+    if (!alert) return res.status(404).json({ error: 'Alerte non trouvee' });
+
+    const tenant = await Tenant.findById(req.params.tenantId);
+    const device = await Device.findOne({ device_id: alert.device_id });
+    const snap = device?.snapshot || {};
+    const platform = device?.platform || 'Windows';
+
+    if (!ANTHROPIC_API_KEY) {
+      return res.json({
+        success: false,
+        error: 'Cle API Anthropic non configuree'
+      });
+    }
+
+    const systemPrompt = `Tu es Athena, l assistant SOC de ShieldFlow. Tu guides des analystes cybersecurite, y compris debutants, pour resoudre des incidents de securite.
+Pour chaque alerte, tu fournis:
+1. DIAGNOSTIC — explication claire du probleme en francais simple
+2. NIVEAU DE RISQUE — critique/eleve/moyen/faible avec justification
+3. ACTIONS IMMEDIATES — etapes numerotees tres detaillees (commandes exactes si applicable)
+4. PRISE EN MAIN A DISTANCE — comment acceder a la machine a distance pour remedier (TeamViewer, AnyDesk, SSH, RDP selon l OS)
+5. VERIFICATION — comment confirmer que le probleme est resolu
+6. PREVENTION — comment eviter que ca se reproduise
+Sois precis, pratique et accessible pour un analyste junior.`;
+
+    const userPrompt = `ALERTE A ANALYSER:
+Type: ${alert.type || 'INCONNU'}
+Titre: ${alert.title}
+Description: ${alert.description || 'Non disponible'}
+Severite: ${alert.severity}
+Machine: ${device?.name || alert.device_name || 'Inconnue'}
+Systeme: ${platform}
+Client: ${tenant?.name || 'Inconnu'}
+Recommendation existante: ${alert.recommendation || 'Aucune'}
+
+ETAT DE LA MACHINE:
+- Pare-feu: ${snap.firewall_enabled ? 'Actif' : 'INACTIF'}
+- Chiffrement: ${snap.disk_encrypted ? 'Actif' : 'INACTIF'}
+- Antivirus: ${snap.antivirus_enabled ? 'Actif' : 'INACTIF'}
+- CPU: ${snap.cpu_percent || 0}%
+- RAM: ${snap.ram_percent || 0}%
+- Mises a jour: ${snap.updates_available ? 'EN ATTENTE' : 'OK'}
+
+Fournis le guide SOC complet pour remedier a cette alerte.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    const data = await response.json();
+    const guide = data.content?.[0]?.text || 'Guide non disponible';
+
+    // Sauvegarder le guide dans l alerte pour reference future
+    alert.soc_guide = guide;
+    alert.soc_guide_at = new Date();
+    await alert.save().catch(() => {});
+
+    res.json({ success: true, guide, alert_id: alert._id, generated_at: new Date() });
+  } catch(e) {
+    console.error('[SOC Bot]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Route pour questions libres au bot SOC
+app.post('/api/soc/chat', async (req, res) => {
+  try {
+    const { question, context } = req.body;
+    if (!question) return res.status(400).json({ error: 'Question requise' });
+    if (!ANTHROPIC_API_KEY) return res.status(500).json({ error: 'API IA non configuree' });
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: `Tu es Athena, l assistant SOC de ShieldFlow. Tu aides les analystes cybersecurite a comprendre et resoudre les incidents. Tu reponds en francais, de facon claire et pratique. Contexte plateforme: ${JSON.stringify(context || {})}`,
+        messages: [{ role: 'user', content: question }]
+      })
+    });
+
+    const data = await response.json();
+    const answer = data.content?.[0]?.text || 'Reponse non disponible';
+    res.json({ success: true, answer, generated_at: new Date() });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.use(express.static(path.join(__dirname, '../dashboard')));
 
 
