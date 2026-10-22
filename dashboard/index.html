@@ -541,8 +541,7 @@ body{display:flex}
 const S='https://shieldflow-rfzv.onrender.com';
 function apiFetch(url, opts={}) {
   const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
-  if(null /* cookie httpOnly */) headers['Authorization'] = 'Bearer '+null /* cookie httpOnly */;
-  return fetch(S+url, {...opts, headers});
+  return fetch(S+url, {...opts, headers, credentials:"include"});
 }
 let tenants=[], curPage='overview', curClientId=null, incFilter='all', siemFilter='all', triageFilter='all';
 let charts={};
