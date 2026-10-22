@@ -330,6 +330,9 @@ body{display:flex}
       <span class="ic">🤖</span><span class="lbl">Bot SOC — Athena</span>
       <span class="sb-n sb-n-ok" id="badge-soc">IA</span>
     </button>
+    <button class="sb-btn" id="nav-webhooks" onclick="goPage('webhooks')">
+      <span class="ic">🔗</span><span class="lbl">Webhooks</span>
+    </button>
     <div class="sb-section" style="margin-top:8px">Organisations</div>
     <div id="sbClients"></div>
     <button class="sb-btn" onclick="openModal('modalClient')" style="margin-top:4px;color:rgba(255,255,255,.35)">
@@ -536,6 +539,14 @@ body{display:flex}
       </div>
     </div>
 
+    <!-- WEBHOOKS -->
+    <div id="page-webhooks" style="display:none">
+      <div class="tabs" id="webhookTabs"></div>
+      <div id="webhookContent">
+        <div class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Sélectionnez un client</div></div>
+      </div>
+    </div>
+
     <!-- RGPD -->
     <div id="page-rgpd" style="display:none">
       <div class="tabs" id="rgpdTabs"></div>
@@ -585,6 +596,43 @@ body{display:flex}
     <div class="mfoot">
       <button class="btn btn-ghost" onclick="closeModal('modalCloud')">Annuler</button>
       <button class="btn btn-primary" onclick="connectCloud()">Connecter →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL WEBHOOK -->
+<div class="overlay" id="modalWebhook">
+  <div class="modal">
+    <div class="modal-title">🔗 Ajouter un webhook</div>
+    <div class="fg">
+      <label class="fl">URL de destination *</label>
+      <input class="fi" id="wh-url" placeholder="https://hooks.slack.com/services/... ou https://hooks.zapier.com/...">
+    </div>
+    <div class="fg">
+      <label class="fl">Type</label>
+      <select class="fs" id="wh-type">
+        <option value="generic">🔗 Générique (JSON)</option>
+        <option value="slack">💬 Slack</option>
+        <option value="email">📧 Email via Zapier</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Événements à surveiller</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" class="wh-event" value="alert.critical" checked> 🔴 Alertes critiques
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" class="wh-event" value="alert.high" checked> 🟠 Alertes élevées
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" class="wh-event" value="alert.new"> 🟡 Toutes nouvelles alertes
+        </label>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeModal('modalWebhook')">Annuler</button>
+      <button class="btn btn-primary" onclick="createWebhook()">Créer le webhook →</button>
     </div>
   </div>
 </div>
@@ -745,7 +793,7 @@ function renderCharts(){
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function goPage(page){
   curPage=page;
-  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc'].forEach(p=>{
+  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks'].forEach(p=>{
     const el=document.getElementById('page-'+p);
     const nav=document.getElementById('nav-'+p);
     if(el)el.style.display=p===page?'':'none';
@@ -759,7 +807,8 @@ function goPage(page){
     cloud:['Cloud & Identités','Microsoft 365 · Google · AWS'],
     siem:['SIEM & Logs','Corrélation et détection'],
     rgpd:['Conformité RGPD','Scores et rapports officiels'],
-    soc:['Bot SOC — Athena','Assistant IA cybersécurité']
+    soc:['Bot SOC — Athena','Assistant IA cybersécurité'],
+    webhooks:['Webhooks','Alertes temps réel vers Slack et email']
   };
   if(titles[page]){
     document.getElementById('tbTitle').textContent=titles[page][0];
@@ -777,6 +826,7 @@ function renderPage(page){
   if(page==='siem')renderSiem();
   if(page==='rgpd')renderRgpd();
   if(page==='soc')renderSocPage();
+  if(page==='webhooks')renderWebhooksPage();
 }
 
 function selectClient(id){curClientId=id;renderSidebar();renderPage(curPage);}
@@ -1448,6 +1498,129 @@ function clearSocChat() {
   const chat = document.getElementById('socChat');
   chat.innerHTML = '';
   addSocMessage('athena', 'Chat effacé. Comment puis-je vous aider ?');
+}
+
+// ── WEBHOOKS ─────────────────────────────────────────────────────────────────
+async function renderWebhooksPage() {
+  document.getElementById('webhookTabs').innerHTML = tenants.map(t =>
+    `<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderWebhooksPage()">${t.name}</button>`
+  ).join('');
+
+  const t = curTenant();
+  const container = document.getElementById('webhookContent');
+  if (!t) { container.innerHTML = '<div class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Aucun client</div></div>'; return; }
+  curClientId = t.id;
+
+  let webhooks = [];
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${t.id}/webhooks`);
+    const d = await r.json();
+    webhooks = d.webhooks || [];
+  } catch(e) {}
+
+  container.innerHTML = `
+    <div class="sc" style="margin-bottom:16px">
+      <div class="sc-head">
+        <div class="sc-title">🔗 Webhooks — ${t.name}</div>
+        <button class="btn btn-primary btn-sm" onclick="openWebhookModal('${t.id}')">+ Ajouter webhook</button>
+      </div>
+      <div class="sc-body">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px">
+          Les webhooks envoient une notification automatique vers votre Slack, email ou système de ticketing dès qu un incident critique est détecté.
+        </p>
+        ${webhooks.length ? `
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${webhooks.map(w => `
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border-radius:9px;border:1px solid var(--border)">
+              <span style="font-size:20px">${w.type==='slack'?'💬':w.type==='email'?'📧':'🔗'}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">${w.url.substring(0,60)}${w.url.length>60?'...':''}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">
+                  ${w.type.toUpperCase()} · Événements: ${(w.events||[]).join(', ')} · 
+                  ${w.active?'<span style="color:var(--green)">● Actif</span>':'<span style="color:var(--text3)">○ Inactif</span>'} · 
+                  ${w.fire_count||0} envois
+                </div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" onclick="testWebhook('${t.id}','${w._id}')">🧪 Tester</button>
+                <button class="btn btn-red btn-sm" onclick="deleteWebhook('${t.id}','${w._id}')">✕</button>
+              </div>
+            </div>`).join('')}
+        </div>` : `
+        <div class="empty" style="padding:32px">
+          <div class="empty-icon">🔗</div>
+          <div class="empty-title">Aucun webhook configuré</div>
+          <div class="empty-sub" style="margin-bottom:16px">Ajoutez un webhook pour recevoir les alertes en temps réel</div>
+          <button class="btn btn-primary" onclick="openWebhookModal('${t.id}')">+ Ajouter le premier webhook</button>
+        </div>`}
+      </div>
+    </div>
+    <div class="sc">
+      <div class="sc-head"><div class="sc-title">📖 Guide d intégration</div></div>
+      <div class="sc-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <div style="padding:16px;background:var(--bg);border-radius:9px;border:1px solid var(--border)">
+            <div style="font-size:20px;margin-bottom:8px">💬</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Slack</div>
+            <div style="font-size:12px;color:var(--text2)">1. Créez une Slack App<br>2. Activez les Incoming Webhooks<br>3. Copiez l URL du webhook Slack<br>4. Sélectionnez le type "Slack"</div>
+          </div>
+          <div style="padding:16px;background:var(--bg);border-radius:9px;border:1px solid var(--border)">
+            <div style="font-size:20px;margin-bottom:8px">📧</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Email via Zapier</div>
+            <div style="font-size:12px;color:var(--text2)">1. Créez un Zap sur zapier.com<br>2. Trigger: Webhook (Catch Hook)<br>3. Action: Envoi email<br>4. Copiez l URL Zapier</div>
+          </div>
+          <div style="padding:16px;background:var(--bg);border-radius:9px;border:1px solid var(--border)">
+            <div style="font-size:20px;margin-bottom:8px">🔗</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">Générique (PSA/Ticketing)</div>
+            <div style="font-size:12px;color:var(--text2)">Compatible ConnectWise, Autotask, Freshdesk. Payload JSON standard avec signature HMAC-SHA256.</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function testWebhook(tenantId, webhookId) {
+  showToast('🧪 Test webhook en cours...');
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${tenantId}/webhooks/${webhookId}/test`, {method:'POST'});
+    const d = await r.json();
+    showToast(d.success ? '✅ Webhook envoyé avec succès' : '❌ Échec: ' + (d.message||'erreur'));
+  } catch(e) { showToast('❌ Erreur réseau'); }
+}
+
+async function deleteWebhook(tenantId, webhookId) {
+  if (!confirm('Supprimer ce webhook ?')) return;
+  try {
+    await apiFetch(`/api/mssp/tenants/${tenantId}/webhooks/${webhookId}`, {method:'DELETE'});
+    showToast('✅ Webhook supprimé');
+    renderWebhooksPage();
+  } catch(e) { showToast('❌ Erreur'); }
+}
+
+function openWebhookModal(tenantId) {
+  curClientId = tenantId;
+  document.getElementById('modalWebhook').classList.add('open');
+}
+
+async function createWebhook() {
+  const url = document.getElementById('wh-url').value.trim();
+  const type = document.getElementById('wh-type').value;
+  const events = Array.from(document.querySelectorAll('.wh-event:checked')).map(e => e.value);
+  if (!url) { showToast('URL requise'); return; }
+  if (!events.length) { showToast('Sélectionnez au moins un événement'); return; }
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${curClientId}/webhooks`, {
+      method:'POST',
+      body: JSON.stringify({url, type, events})
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast('✅ Webhook créé');
+      closeModal('modalWebhook');
+      document.getElementById('wh-url').value = '';
+      renderWebhooksPage();
+    } else showToast('Erreur: ' + (d.error||'inconnue'));
+  } catch(e) { showToast('Erreur réseau'); }
 }
 
 // Auto-refresh toutes les 60s

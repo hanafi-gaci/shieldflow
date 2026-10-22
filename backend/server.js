@@ -2626,6 +2626,127 @@ app.post('/api/soc/chat', async (req, res) => {
   }
 });
 
+
+// ─── WEBHOOKS — ALERTES TEMPS RÉEL ───────────────────────────────────────────
+
+// Schéma webhook
+const WebhookSchema = new mongoose.Schema({
+  tenant_id:   { type: String, required: true },
+  url:         { type: String, required: true },
+  type:        { type: String, enum: ['slack','email','generic'], default: 'generic' },
+  events:      { type: [String], default: ['alert.critical','alert.high'] },
+  secret:      { type: String },
+  active:      { type: Boolean, default: true },
+  created_at:  { type: Date, default: Date.now },
+  last_fired:  { type: Date },
+  fire_count:  { type: Number, default: 0 }
+});
+const Webhook = mongoose.model('Webhook', WebhookSchema);
+
+// Envoyer un webhook
+async function fireWebhook(webhook, payload) {
+  try {
+    const body = JSON.stringify({
+      source: 'ShieldFlow',
+      event: payload.event,
+      timestamp: new Date().toISOString(),
+      data: payload
+    });
+    const headers = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'ShieldFlow-Webhook/1.0',
+      'X-ShieldFlow-Event': payload.event
+    };
+    if (webhook.secret) {
+      const sig = require('crypto')
+        .createHmac('sha256', webhook.secret)
+        .update(body)
+        .digest('hex');
+      headers['X-ShieldFlow-Signature'] = 'sha256=' + sig;
+    }
+    const resp = await fetch(webhook.url, { method: 'POST', headers, body });
+    webhook.last_fired = new Date();
+    webhook.fire_count = (webhook.fire_count || 0) + 1;
+    await webhook.save().catch(() => {});
+    console.log('[Webhook] Envoyé:', webhook.url, resp.status);
+    return resp.ok;
+  } catch(e) {
+    console.error('[Webhook] Erreur:', webhook.url, e.message);
+    return false;
+  }
+}
+
+// Déclencher les webhooks pour une alerte
+async function triggerAlertWebhooks(tenantId, alert) {
+  try {
+    const eventType = alert.severity === 'critical' ? 'alert.critical' : 
+                      alert.severity === 'high' ? 'alert.high' : 'alert.new';
+    const webhooks = await Webhook.find({ 
+      tenant_id: tenantId.toString(), 
+      active: true,
+      events: eventType
+    });
+    if (!webhooks.length) return;
+    const payload = {
+      event: eventType,
+      tenant_id: tenantId,
+      alert: {
+        id: alert._id,
+        title: alert.title,
+        severity: alert.severity,
+        description: alert.description,
+        device_name: alert.device_name,
+        recommendation: alert.recommendation,
+        created_at: alert.created_at
+      }
+    };
+    await Promise.all(webhooks.map(w => fireWebhook(w, payload)));
+  } catch(e) {
+    console.error('[Webhook] triggerAlertWebhooks:', e.message);
+  }
+}
+
+// CRUD Webhooks
+app.get('/api/mssp/tenants/:id/webhooks', async (req, res) => {
+  try {
+    const webhooks = await Webhook.find({ tenant_id: req.params.id });
+    res.json({ success: true, webhooks });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/mssp/tenants/:id/webhooks', async (req, res) => {
+  try {
+    const { url, type, events, secret } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL requise' });
+    const webhook = await Webhook.create({
+      tenant_id: req.params.id, url, type: type||'generic',
+      events: events || ['alert.critical','alert.high'],
+      secret: secret || require('crypto').randomBytes(16).toString('hex')
+    });
+    res.json({ success: true, webhook });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/mssp/tenants/:id/webhooks/:webhookId', async (req, res) => {
+  try {
+    await Webhook.findByIdAndDelete(req.params.webhookId);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/mssp/tenants/:id/webhooks/:webhookId/test', async (req, res) => {
+  try {
+    const webhook = await Webhook.findById(req.params.webhookId);
+    if (!webhook) return res.status(404).json({ error: 'Webhook non trouvé' });
+    const ok = await fireWebhook(webhook, {
+      event: 'webhook.test',
+      tenant_id: req.params.id,
+      message: 'Test webhook ShieldFlow — connexion réussie'
+    });
+    res.json({ success: ok, message: ok ? 'Webhook envoyé avec succès' : 'Échec envoi webhook' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.use(express.static(path.join(__dirname, '../dashboard')));
 
 
