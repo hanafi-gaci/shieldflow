@@ -486,6 +486,56 @@ body{display:flex}
       </div>
     </div>
 
+    <!-- BOT SOC ATHENA -->
+    <div id="page-soc" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="sc">
+            <div class="sc-head">
+              <div class="sc-title">🤖 Athena — Assistant SOC IA</div>
+              <span class="pill p-green">● En ligne</span>
+            </div>
+            <div style="background:linear-gradient(135deg,#0d1117,#1a1f35);padding:20px;border-radius:0 0 10px 10px">
+              <div style="font-size:13px;color:rgba(255,255,255,.6);font-family:monospace">ATHENA v1.0 — ShieldFlow SOC Assistant</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.3);font-family:monospace;margin-top:4px">Prêt à analyser vos alertes et guider la remédiation.</div>
+            </div>
+          </div>
+          <div class="sc">
+            <div class="sc-head"><div class="sc-title">🚨 Alertes actives — Cliquez pour le guide SOC</div></div>
+            <div id="socAlertsList" class="sc-nobody">
+              <div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Chargement...</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="sc" style="display:flex;flex-direction:column;height:calc(100vh - 160px)">
+          <div class="sc-head" style="flex-shrink:0">
+            <div class="sc-title">💬 Chat avec Athena</div>
+            <button class="btn btn-ghost btn-sm" onclick="clearSocChat()">Effacer</button>
+          </div>
+          <div id="socChat" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#fafafa">
+            <div style="background:linear-gradient(135deg,#1a1f35,#0d1117);border-radius:12px 12px 12px 4px;padding:12px 14px">
+              <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px;font-weight:600">🤖 ATHENA</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6">Bonjour ! Je suis Athena, votre assistante SOC. Posez-moi vos questions sur les alertes, les procédures de remédiation, ou comment prendre le contrôle à distance d une machine compromise.</div>
+            </div>
+          </div>
+          <div style="padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0">
+            <div style="display:flex;gap:8px">
+              <input id="socInput" type="text" placeholder="Ex: Comment isoler une machine compromise ?"
+                style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:inherit"
+                onkeydown="if(event.key==='Enter')sendSocMessage()">
+              <button class="btn btn-primary btn-sm" onclick="sendSocMessage()">→</button>
+            </div>
+            <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="quickSoc('Comment prendre le contrôle à distance d une machine Mac ?')">🖥 Accès distant Mac</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickSoc('Comment isoler une machine du réseau en urgence ?')">🔌 Isoler</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickSoc('Que faire en cas de ransomware détecté ?')">🦠 Ransomware</button>
+              <button class="btn btn-ghost btn-sm" onclick="quickSoc('Comment vérifier si un compte Microsoft 365 est compromis ?')">☁️ M365</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- RGPD -->
     <div id="page-rgpd" style="display:none">
       <div class="tabs" id="rgpdTabs"></div>
@@ -695,7 +745,7 @@ function renderCharts(){
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function goPage(page){
   curPage=page;
-  ['overview','triage','endpoints','incidents','cloud','siem','rgpd'].forEach(p=>{
+  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc'].forEach(p=>{
     const el=document.getElementById('page-'+p);
     const nav=document.getElementById('nav-'+p);
     if(el)el.style.display=p===page?'':'none';
