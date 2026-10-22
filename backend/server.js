@@ -1893,26 +1893,32 @@ app.get('/api/mssp/tenants/:tenantId/alerts/:alertId/instructions', async (req, 
 app.post('/api/mssp/tenants/:tenantId/alerts/:alertId/remediate', async (req, res) => {
   try {
     const alert = await Alert.findById(req.params.alertId);
-    if (!alert) return res.status(404).json({ error: 'Alerte non trouvée' });
-    
-    // Créer la commande
-    const command = {
-      id: require('crypto').randomBytes(8).toString('hex'),
-      alert_type: alert.type,
-      alert_id: alert._id.toString(),
-      device_id: alert.device_id,
-      params: req.body.params || {},
-      created_at: new Date(),
-      executed: false
-    };
-    
-    // Stocker dans la file d'attente du device
-    await Device.findOneAndUpdate(
-      { device_id: alert.device_id, tenant_id: req.params.tenantId },
-      { $push: { pending_commands: command } }
-    );
-    
-    res.json({ success: true, command_id: command.id, message: 'Commande envoyée à l\'agent' });
+    if (!alert) return res.status(404).json({ error: 'Alerte non trouvee' });
+
+    // 1. Marquer l alerte comme resolue immediatement en base MongoDB
+    alert.resolved = true;
+    alert.resolved_at = new Date();
+    await alert.save();
+
+    // 2. Si auto-fixable, envoyer commande a l agent pour correction reelle
+    if (alert.auto_fixable) {
+      const command = {
+        id: require('crypto').randomBytes(8).toString('hex'),
+        alert_type: alert.type,
+        alert_id: alert._id.toString(),
+        device_id: alert.device_id,
+        action: 'fix',
+        params: req.body.params || {},
+        created_at: new Date(),
+        executed: false
+      };
+      await Device.findOneAndUpdate(
+        { device_id: alert.device_id, tenant_id: req.params.tenantId },
+        { $push: { pending_commands: command } }
+      );
+    }
+
+    res.json({ success: true, resolved: true, message: 'Alerte marquee comme resolue' });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
