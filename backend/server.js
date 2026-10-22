@@ -2747,6 +2747,167 @@ app.post('/api/mssp/tenants/:id/webhooks/:webhookId/test', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ─── API PARTENAIRES (MSP) ────────────────────────────────────────────────────
+// API publique pour les MSPs partenaires — authentification par clé API
+
+const ApiKeySchema = new mongoose.Schema({
+  partner_name: { type: String, required: true },
+  partner_email: { type: String, required: true },
+  api_key:       { type: String, required: true, unique: true },
+  active:        { type: Boolean, default: true },
+  permissions:   { type: [String], default: ['read:tenants','read:alerts','write:tenants'] },
+  created_at:    { type: Date, default: Date.now },
+  last_used:     { type: Date },
+  request_count: { type: Number, default: 0 }
+});
+const ApiKey = mongoose.model('ApiKey', ApiKeySchema);
+
+// Middleware authentification API partenaire
+async function requireApiKey(req, res, next) {
+  const key = req.headers['x-api-key'] || req.query.api_key;
+  if (!key) return res.status(401).json({ error: 'Clé API requise. Header: X-API-Key' });
+  const apiKey = await ApiKey.findOne({ api_key: key, active: true }).catch(() => null);
+  if (!apiKey) return res.status(401).json({ error: 'Clé API invalide ou inactive' });
+  apiKey.last_used = new Date();
+  apiKey.request_count = (apiKey.request_count || 0) + 1;
+  await apiKey.save().catch(() => {});
+  req.apiKey = apiKey;
+  next();
+}
+
+// ── GESTION CLÉS API (admin MSSP) ────────────────────────────────────────────
+app.get('/api/admin/api-keys', async (req, res) => {
+  try {
+    const keys = await ApiKey.find().select('-api_key');
+    res.json({ success: true, keys });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/api-keys', async (req, res) => {
+  try {
+    const { partner_name, partner_email, permissions } = req.body;
+    if (!partner_name || !partner_email) return res.status(400).json({ error: 'Nom et email requis' });
+    const api_key = 'sf_' + require('crypto').randomBytes(24).toString('hex');
+    const key = await ApiKey.create({
+      partner_name, partner_email, api_key,
+      permissions: permissions || ['read:tenants','read:alerts','write:tenants']
+    });
+    res.json({ success: true, api_key, partner_name, message: 'Conservez cette clé — elle ne sera plus affichée' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/api-keys/:id', async (req, res) => {
+  try {
+    await ApiKey.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── API PARTENAIRES — ENDPOINTS PUBLICS ──────────────────────────────────────
+
+// GET /api/v1/organizations — liste toutes les organisations du partenaire
+app.get('/api/v1/organizations', requireApiKey, async (req, res) => {
+  try {
+    const tenants = await Tenant.find().sort({ created_at: -1 });
+    const result = await Promise.all(tenants.map(async t => {
+      const devices = await Device.countDocuments({ tenant_id: t._id.toString() });
+      const alerts  = await Alert.countDocuments({ tenant_id: t._id.toString(), resolved: false });
+      const critical = await Alert.countDocuments({ tenant_id: t._id.toString(), resolved: false, severity: 'critical' });
+      return {
+        id: t._id, name: t.name, email: t.email,
+        agent_key: t.agent_key,
+        device_count: devices, alert_count: alerts, critical_count: critical,
+        security_score: Math.max(0, 100 - critical*20 - alerts*5),
+        created_at: t.created_at
+      };
+    }));
+    res.json({ success: true, count: result.length, organizations: result });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/v1/organizations/:id — détail d une organisation
+app.get('/api/v1/organizations/:id', requireApiKey, async (req, res) => {
+  try {
+    const t = await Tenant.findById(req.params.id);
+    if (!t) return res.status(404).json({ error: 'Organisation non trouvée' });
+    const devices = await Device.find({ tenant_id: req.params.id });
+    const alerts  = await Alert.find({ tenant_id: req.params.id, resolved: false }).sort({ created_at: -1 });
+    res.json({
+      success: true,
+      organization: { id: t._id, name: t.name, email: t.email, agent_key: t.agent_key },
+      devices: devices.map(d => ({
+        id: d._id, name: d.name, platform: d.platform,
+        status: d.status, last_seen: d.last_seen,
+        score: d.snapshot ? Math.max(0, 100 - alerts.filter(a => a.device_id === d.device_id).length * 10) : null
+      })),
+      alerts: alerts.map(a => ({
+        id: a._id, title: a.title, severity: a.severity,
+        device_name: a.device_name, recommendation: a.recommendation,
+        created_at: a.created_at
+      }))
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/v1/organizations — créer une organisation
+app.post('/api/v1/organizations', requireApiKey, async (req, res) => {
+  try {
+    const { name, email, plan } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nom requis' });
+    const agent_key = require('crypto').randomBytes(16).toString('hex');
+    const tenant = await Tenant.create({ name, email: email||'', plan: plan||'', agent_key });
+    res.json({
+      success: true,
+      organization: { id: tenant._id, name, agent_key },
+      install_command: `curl -sSL https://shieldflow-rfzv.onrender.com/install.sh | bash -s -- ${tenant._id} ${agent_key}`
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/v1/alerts — toutes les alertes actives
+app.get('/api/v1/alerts', requireApiKey, async (req, res) => {
+  try {
+    const { severity, limit = 50, org_id } = req.query;
+    const filter = { resolved: false };
+    if (severity) filter.severity = severity;
+    if (org_id) filter.tenant_id = org_id;
+    const alerts = await Alert.find(filter).sort({ created_at: -1 }).limit(parseInt(limit));
+    res.json({ success: true, count: alerts.length, alerts });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/v1/alerts/:id/resolve — résoudre une alerte
+app.post('/api/v1/alerts/:id/resolve', requireApiKey, async (req, res) => {
+  try {
+    const alert = await Alert.findByIdAndUpdate(req.params.id,
+      { resolved: true, resolved_at: new Date() }, { new: true }
+    );
+    if (!alert) return res.status(404).json({ error: 'Alerte non trouvée' });
+    res.json({ success: true, alert_id: alert._id, resolved: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/v1/docs — documentation API
+app.get('/api/v1/docs', (req, res) => {
+  res.json({
+    version: '1.0',
+    base_url: 'https://shieldflow-rfzv.onrender.com/api/v1',
+    authentication: 'Header X-API-Key: sf_xxxx (obtenez votre clé depuis le dashboard ShieldFlow)',
+    endpoints: [
+      { method: 'GET',  path: '/organizations',     description: 'Liste toutes vos organisations' },
+      { method: 'GET',  path: '/organizations/:id', description: 'Détail organisation + devices + alertes' },
+      { method: 'POST', path: '/organizations',     description: 'Créer une organisation', body: { name: 'string (requis)', email: 'string', plan: 'string' } },
+      { method: 'GET',  path: '/alerts',            description: 'Alertes actives', params: { severity: 'critical|high|medium|low', org_id: 'string', limit: 'number (max 50)' } },
+      { method: 'POST', path: '/alerts/:id/resolve', description: 'Résoudre une alerte' },
+      { method: 'GET',  path: '/docs',              description: 'Cette documentation' }
+    ],
+    example_request: {
+      curl: 'curl -H "X-API-Key: sf_votre_cle" https://shieldflow-rfzv.onrender.com/api/v1/organizations'
+    }
+  });
+});
+
 app.use(express.static(path.join(__dirname, '../dashboard')));
 
 
