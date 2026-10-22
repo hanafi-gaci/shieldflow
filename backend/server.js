@@ -33,7 +33,18 @@ const MANUAL_INSTRUCTIONS = require('./instructions');
 const RESEND_API_KEY  = process.env.RESEND_API_KEY  || '';
 const ALERT_EMAIL     = process.env.ALERT_EMAIL     || '';
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://www.conformite-rgpd.org',
+    'https://conformite-rgpd.org',
+    'https://shieldflow-rfzv.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:8080'
+  ],
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','X-Agent-Key']
+}));
 app.use(express.json({ limit: '10mb' }));
 // Static files served after routes
 
