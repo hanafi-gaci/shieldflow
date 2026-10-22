@@ -22,7 +22,30 @@
 | Boutons rapides SOC | ✅ Codé | Accès distant, isoler, ransomware, M365 |
 | Guide remédiation IA | ✅ Codé | Instructions pas à pas pour chaque alerte |
 
-## MODULE 3 — Managed ISPM 🔲 À FAIRE
+## MODULE 3 — Webhooks ✅ TERMINÉ
+
+| Élément | Statut | Notes |
+|---------|--------|-------|
+| Schéma Webhook MongoDB | ✅ Codé | Types: slack/email/generic |
+| Route GET/POST/DELETE webhooks | ✅ Codé | CRUD complet |
+| Route test webhook | ✅ Codé | Envoi test avec payload |
+| Signature HMAC-SHA256 | ✅ Codé | Sécurité payload |
+| Page webhooks dashboard | ✅ Codé | Guide intégration Slack/Zapier/PSA |
+| Modal création webhook | ✅ Codé | Sélection événements |
+
+## MODULE 4 — API Partenaires ✅ TERMINÉ
+
+| Élément | Statut | Notes |
+|---------|--------|-------|
+| Schéma ApiKey MongoDB | ✅ Codé | Permissions, compteur requêtes |
+| Middleware requireApiKey | ✅ Codé | Header X-API-Key |
+| GET/POST /api/v1/organizations | ✅ Codé | CRUD organisations |
+| GET /api/v1/alerts | ✅ Codé | Filtres severity/org_id |
+| GET /api/v1/docs | ✅ Codé | Documentation JSON auto |
+| Page API dashboard | ✅ Codé | Gestion clés + docs intégrées |
+| Modal génération clé API | ✅ Codé | Affichage unique de la clé |
+
+## MODULE 5 — Managed ISPM 🔲 À FAIRE
 
 ## MODULE 4 — Managed SIEM complet 🔲 À FAIRE
 
