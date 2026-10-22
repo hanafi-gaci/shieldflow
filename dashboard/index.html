@@ -336,6 +336,9 @@ body{display:flex}
     <button class="sb-btn" id="nav-api" onclick="goPage('api')">
       <span class="ic">🔑</span><span class="lbl">API Partenaires</span>
     </button>
+    <button class="sb-btn" id="nav-ispm" onclick="goPage('ispm')">
+      <span class="ic">🛡</span><span class="lbl">ISPM — Durcissement</span>
+    </button>
     <div class="sb-section" style="margin-top:8px">Organisations</div>
     <div id="sbClients"></div>
     <button class="sb-btn" onclick="openModal('modalClient')" style="margin-top:4px;color:rgba(255,255,255,.35)">
@@ -586,6 +589,14 @@ body{display:flex}
             <a href="https://shieldflow-rfzv.onrender.com/api/v1/docs" target="_blank" class="btn btn-ghost btn-sm">📖 Voir la doc complète</a>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ISPM -->
+    <div id="page-ispm" style="display:none">
+      <div class="tabs" id="ispmTabs"></div>
+      <div id="ispmContent">
+        <div class="empty"><div class="empty-icon">🛡</div><div class="empty-title">Sélectionnez un client</div></div>
       </div>
     </div>
 
@@ -849,7 +860,7 @@ function renderCharts(){
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function goPage(page){
   curPage=page;
-  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks','api'].forEach(p=>{
+  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks','api','ispm'].forEach(p=>{
     const el=document.getElementById('page-'+p);
     const nav=document.getElementById('nav-'+p);
     if(el)el.style.display=p===page?'':'none';
@@ -865,7 +876,8 @@ function goPage(page){
     rgpd:['Conformité RGPD','Scores et rapports officiels'],
     soc:['Bot SOC — Athena','Assistant IA cybersécurité'],
     webhooks:['Webhooks','Alertes temps réel vers Slack et email'],
-    api:['API Partenaires','Intégration MSP avec clé API']
+    api:['API Partenaires','Intégration MSP avec clé API'],
+    ispm:['ISPM — Durcissement M365','Détection et correction des mauvaises configurations']
   };
   if(titles[page]){
     document.getElementById('tbTitle').textContent=titles[page][0];
@@ -884,6 +896,7 @@ function renderPage(page){
   if(page==='rgpd')renderRgpd();
   if(page==='soc')renderSocPage();
   if(page==='api')renderApiPage();
+  if(page==='ispm')renderIspmPage();
   if(page==='webhooks')renderWebhooksPage();
 }
 
@@ -1753,6 +1766,127 @@ async function createApiKey() {
       document.body.appendChild(keyDisplay);
     } else showToast('Erreur: ' + (d.error||'inconnue'));
   } catch(e) { showToast('Erreur réseau'); }
+}
+
+// ── ISPM ──────────────────────────────────────────────────────────────────────
+async function renderIspmPage() {
+  document.getElementById('ispmTabs').innerHTML = tenants.map(t =>
+    `<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderIspmPage()">${t.name}</button>`
+  ).join('');
+
+  const t = curTenant();
+  const container = document.getElementById('ispmContent');
+  if (!t) { container.innerHTML = '<div class="empty"><div class="empty-icon">🛡</div><div class="empty-title">Aucun client</div></div>'; return; }
+  curClientId = t.id;
+
+  container.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Chargement ISPM...</div></div>';
+
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${t.id}/ispm`);
+    const d = await r.json();
+    const findings = d.findings || [];
+    const score = d.score || 100;
+    const scoreColor = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--amber)' : 'var(--red)';
+    const open_findings = findings.filter(f => f.status === 'open');
+
+    const sevColors = {critical:'var(--red)',high:'var(--orange)',medium:'var(--amber)',low:'var(--green)'};
+    const sevLabels = {critical:'CRITIQUE',high:'ÉLEVÉ',medium:'MOYEN',low:'FAIBLE'};
+    const sevBg = {critical:'s-critical',high:'s-high',medium:'s-medium',low:'s-low'};
+
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;margin-bottom:16px">
+        <div class="sc">
+          <div class="sc-head"><div class="sc-title">📊 Score ISPM</div></div>
+          <div class="sc-body" style="text-align:center">
+            <svg width="100" height="100" viewBox="0 0 100 100" style="display:block;margin:0 auto 10px">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="${scoreColor}" stroke-width="8"
+                stroke-dasharray="${score*2.51} 251" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+              <text x="50" y="45" text-anchor="middle" font-size="20" font-weight="800" fill="${scoreColor}">${score}</text>
+              <text x="50" y="60" text-anchor="middle" font-size="9" fill="#9ca3af">/100</text>
+            </svg>
+            <div style="font-size:12px;color:${scoreColor};font-weight:700;margin-bottom:14px">
+              ${score>=80?'✓ Bien configuré':score>=60?'⚠ À améliorer':'🚨 Risqué'}
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:12px" onclick="runIspmScan('${t.id}')">
+              🔍 Scanner maintenant
+            </button>
+          </div>
+        </div>
+        <div class="sc">
+          <div class="sc-head">
+            <div class="sc-title">🛡 Findings ISPM M365 — ${t.name}</div>
+            <span class="pill ${open_findings.length>0?'p-red':'p-green'}">${open_findings.length} ouvert${open_findings.length>1?'s':''}</span>
+          </div>
+          <div class="sc-nobody">
+            ${findings.length === 0 ? `
+              <div class="empty">
+                <div class="empty-icon">✅</div>
+                <div class="empty-title">Aucun finding ISPM</div>
+                <div class="empty-sub">Connectez Microsoft 365 et lancez un scan pour analyser la configuration</div>
+                <button class="btn btn-primary" style="margin-top:16px" onclick="runIspmScan('${t.id}')">🔍 Lancer le scan ISPM</button>
+              </div>` :
+            findings.map(f => `
+              <div class="alert-item ${f.status==='resolved'?'':''}">
+                <span class="al-sev ${sevBg[f.severity]||'s-medium'}">${sevLabels[f.severity]||f.severity}</span>
+                <div class="al-body">
+                  <div class="al-title" style="${f.status==='resolved'?'text-decoration:line-through;color:var(--text3)':''}">${f.title}</div>
+                  <div class="al-meta">${f.category||'M365'} · ${f.status==='resolved'?'✓ Résolu':'Ouvert'}</div>
+                  ${f.remediation ? `<div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5">→ ${f.remediation}</div>` : ''}
+                  ${f.reference ? `<div style="font-size:10px;color:var(--text3);margin-top:3px">📖 ${f.reference}</div>` : ''}
+                </div>
+                ${f.status !== 'resolved' ? `
+                <div style="display:flex;gap:5px;flex-shrink:0">
+                  <button class="btn btn-success btn-xs" onclick="updateIspmFinding('${t.id}','${f._id}','resolved')">✓ Résolu</button>
+                  <button class="btn btn-ghost btn-xs" onclick="updateIspmFinding('${t.id}','${f._id}','acknowledged')">Pris en compte</button>
+                </div>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="sc">
+        <div class="sc-head"><div class="sc-title">📚 Guide de durcissement M365</div></div>
+        <div class="sc-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            ${[
+              {icon:'🔐',title:'MFA obligatoire',desc:'Imposez le MFA pour 100% des utilisateurs via Azure AD Conditional Access.'},
+              {icon:'🚫',title:'Bloquer legacy auth',desc:'Désactivez IMAP, POP3 et SMTP Auth qui ne supportent pas le MFA.'},
+              {icon:'👑',title:'Limiter les admins',desc:'Maximum 2-4 admins globaux. Utilisez des rôles spécifiques.'},
+              {icon:'📋',title:'Activer l audit',desc:'Activez les logs d audit M365 et conservez-les 90+ jours.'},
+              {icon:'🔒',title:'Restreindre le partage',desc:'Limitez le partage externe SharePoint aux invités authentifiés.'},
+              {icon:'🛡',title:'Protection passwords',desc:'Activez la protection par mot de passe et bloquez les mots de passe courants.'}
+            ].map(g => `
+              <div style="padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                <div style="font-size:20px;margin-bottom:8px">${g.icon}</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px">${g.title}</div>
+                <div style="font-size:12px;color:var(--text2)">${g.desc}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">❌</div><div class="empty-title">Erreur chargement ISPM</div><div class="empty-sub">${e.message}</div></div>`;
+  }
+}
+
+async function runIspmScan(tenantId) {
+  showToast('🔍 Scan ISPM en cours...');
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${tenantId}/ispm/scan`, {method:'POST'});
+    const d = await r.json();
+    showToast(`✅ Scan terminé — ${d.findings_count||0} finding(s) détecté(s)`);
+    renderIspmPage();
+  } catch(e) { showToast('Erreur scan ISPM'); }
+}
+
+async function updateIspmFinding(tenantId, findingId, status) {
+  try {
+    await apiFetch(`/api/mssp/tenants/${tenantId}/ispm/${findingId}`, {
+      method:'PATCH', body:JSON.stringify({status})
+    });
+    showToast(status==='resolved' ? '✅ Finding résolu' : '✓ Pris en compte');
+    renderIspmPage();
+  } catch(e) { showToast('Erreur mise à jour'); }
 }
 
 // Auto-refresh toutes les 60s

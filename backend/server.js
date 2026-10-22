@@ -2908,6 +2908,173 @@ app.get('/api/v1/docs', (req, res) => {
   });
 });
 
+
+// ─── MANAGED ISPM — DURCISSEMENT M365 ────────────────────────────────────────
+// Détecte et corrige les mauvaises configurations Microsoft 365 proactivement
+
+const IspmFindingSchema = new mongoose.Schema({
+  tenant_id:    { type: String, required: true },
+  category:     { type: String },
+  title:        { type: String, required: true },
+  description:  { type: String },
+  severity:     { type: String, enum: ['critical','high','medium','low'], default: 'medium' },
+  status:       { type: String, enum: ['open','acknowledged','resolved'], default: 'open' },
+  remediation:  { type: String },
+  reference:    { type: String },
+  created_at:   { type: Date, default: Date.now },
+  resolved_at:  { type: Date }
+});
+const IspmFinding = mongoose.model('IspmFinding', IspmFindingSchema);
+
+// Analyse ISPM — vérifie les configs M365 d un tenant
+async function runIspmAnalysis(tenantId) {
+  try {
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant || !tenant.cloud || !tenant.cloud.m365) return [];
+
+    const findings = [];
+    const cloud = tenant.cloud.m365;
+
+    // Vérification 1: MFA non enforced
+    if (!cloud.mfa_enforced) {
+      findings.push({
+        tenant_id: tenantId.toString(),
+        category: 'Authentification',
+        title: 'MFA non obligatoire pour tous les utilisateurs',
+        description: 'L authentification multi-facteurs n est pas imposée globalement. Un mot de passe volé suffit pour compromettre un compte.',
+        severity: 'critical',
+        remediation: 'Dans Azure AD > Sécurité > Accès conditionnel, créez une règle qui impose le MFA pour tous les utilisateurs et toutes les applications.',
+        reference: 'CIS Microsoft 365 Benchmark v2.0 — Control 1.1.1'
+      });
+    }
+
+    // Vérification 2: Legacy authentication enabled
+    if (cloud.legacy_auth_enabled !== false) {
+      findings.push({
+        tenant_id: tenantId.toString(),
+        category: 'Authentification',
+        title: 'Authentification héritée (legacy) activée',
+        description: 'Les protocoles d authentification anciens (IMAP, POP3, SMTP Auth) ne supportent pas le MFA et sont exploités pour contourner la sécurité.',
+        severity: 'high',
+        remediation: 'Dans Azure AD > Sécurité > Accès conditionnel, créez une règle bloquant l authentification héritée pour tous les utilisateurs.',
+        reference: 'CIS Microsoft 365 Benchmark v2.0 — Control 1.1.4'
+      });
+    }
+
+    // Vérification 3: Trop d admins globaux
+    const adminCount = cloud.global_admin_count || 0;
+    if (adminCount > 4) {
+      findings.push({
+        tenant_id: tenantId.toString(),
+        category: 'Privilèges',
+        title: `Trop d administrateurs globaux (${adminCount} détectés)`,
+        description: 'Avoir plus de 4 administrateurs globaux augmente significativement la surface d attaque. Chaque compte admin est une cible prioritaire.',
+        severity: 'high',
+        remediation: 'Réduisez le nombre d admins globaux à 2-4 maximum. Utilisez des rôles spécifiques (Exchange Admin, SharePoint Admin) à la place.',
+        reference: 'CIS Microsoft 365 Benchmark v2.0 — Control 1.1.3'
+      });
+    }
+
+    // Vérification 4: Audit logs désactivés
+    if (!cloud.audit_enabled) {
+      findings.push({
+        tenant_id: tenantId.toString(),
+        category: 'Journalisation',
+        title: 'Journalisation d audit Microsoft 365 désactivée',
+        description: 'Sans audit logs, il est impossible de détecter les connexions suspectes, les accès non autorisés ou les modifications de configuration.',
+        severity: 'critical',
+        remediation: 'Dans le Centre de conformité M365 > Audit, activez la journalisation d audit. Conservez les logs au minimum 90 jours.',
+        reference: 'CIS Microsoft 365 Benchmark v2.0 — Control 1.3.1'
+      });
+    }
+
+    // Vérification 5: Partage externe non restreint
+    if (cloud.external_sharing === 'anyone') {
+      findings.push({
+        tenant_id: tenantId.toString(),
+        category: 'Partage',
+        title: 'Partage externe SharePoint/OneDrive non restreint',
+        description: 'Les fichiers peuvent être partagés avec n importe qui sans authentification. Risque élevé de fuite de données confidentielles.',
+        severity: 'high',
+        remediation: 'Dans SharePoint Admin Center > Politiques > Partage, définissez le partage externe sur "Invités existants" ou "Nouvelles et invités existants uniquement".',
+        reference: 'CIS Microsoft 365 Benchmark v2.0 — Control 6.1'
+      });
+    }
+
+    // Vérification 6: Absence de politique de mots de passe
+    if (!cloud.password_policy_enabled) {
+      findings.push({
+        tenant_id: tenantId.toString(),
+        category: 'Mots de passe',
+        title: 'Politique de complexité des mots de passe absente',
+        description: 'Sans politique de mot de passe, les utilisateurs peuvent définir des mots de passe faibles facilement devinables.',
+        severity: 'medium',
+        remediation: 'Dans Azure AD > Sécurité > Méthodes d authentification, activez la protection par mot de passe et définissez une liste de mots de passe interdits.',
+        reference: 'CIS Microsoft 365 Benchmark v2.0 — Control 1.1.2'
+      });
+    }
+
+    // Sauvegarder les nouveaux findings
+    if (findings.length > 0) {
+      // Supprimer les anciens findings ouverts pour ce tenant
+      await IspmFinding.deleteMany({ tenant_id: tenantId.toString(), status: 'open' });
+      await IspmFinding.insertMany(findings);
+      console.log(`[ISPM] ${findings.length} findings pour tenant ${tenantId}`);
+    }
+
+    return findings;
+  } catch(e) {
+    console.error('[ISPM] Erreur analyse:', e.message);
+    return [];
+  }
+}
+
+// Routes ISPM
+app.get('/api/mssp/tenants/:id/ispm', async (req, res) => {
+  try {
+    const findings = await IspmFinding.find({ tenant_id: req.params.id }).sort({ severity: 1, created_at: -1 });
+    const score = findings.length === 0 ? 100 :
+      Math.max(0, 100 -
+        findings.filter(f => f.severity === 'critical' && f.status === 'open').length * 25 -
+        findings.filter(f => f.severity === 'high' && f.status === 'open').length * 10 -
+        findings.filter(f => f.severity === 'medium' && f.status === 'open').length * 5
+      );
+    res.json({ success: true, score, findings });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/mssp/tenants/:id/ispm/scan', async (req, res) => {
+  try {
+    const findings = await runIspmAnalysis(req.params.id);
+    res.json({ success: true, findings_count: findings.length, findings });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/mssp/tenants/:id/ispm/:findingId', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const finding = await IspmFinding.findByIdAndUpdate(
+      req.params.findingId,
+      { status, resolved_at: status === 'resolved' ? new Date() : null },
+      { new: true }
+    );
+    res.json({ success: true, finding });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Scanner ISPM toutes les 24h pour tous les tenants avec M365 connecté
+const cronIspm = require('node-cron');
+cronIspm.schedule('0 6 * * *', async () => {
+  console.log('[ISPM] Scan quotidien démarré');
+  try {
+    const tenants = await Tenant.find({ 'cloud.m365': { $exists: true } });
+    for (const tenant of tenants) {
+      await runIspmAnalysis(tenant._id);
+    }
+    console.log(`[ISPM] Scan terminé — ${tenants.length} tenants analysés`);
+  } catch(e) { console.error('[ISPM] Erreur scan quotidien:', e.message); }
+});
+
 app.use(express.static(path.join(__dirname, '../dashboard')));
 
 
