@@ -992,7 +992,7 @@ function calculateRGPD(snap) {
   return {
     conforme,
     score,
-    level: conforme ? 'CONFORME' : score >= 60 ? 'PARTIELLEMENT CONFORME' : 'NON CONFORME',
+    level: conforme ? 'Indicateur technique : BON (≥80%)' : score >= 60 ? 'Indicateur technique : MOYEN (60-79%)' : 'Indicateur technique : INSUFFISANT (<60%)',
     articles,
     passed,
     total
@@ -1048,7 +1048,7 @@ function calculateNIS2(snap) {
   const global = Math.round(totalScore / totalWeight);
   return {
     score: global,
-    level: global >= 80 ? 'CONFORME' : global >= 60 ? 'PARTIELLEMENT CONFORME' : 'NON CONFORME',
+    level: global >= 80 ? 'Indicateur technique : BON (≥80%)' : global >= 60 ? 'Indicateur technique : MOYEN (60-79%)' : 'Indicateur technique : INSUFFISANT (<60%)',
     criteria: results,
     checks
   };
@@ -1684,7 +1684,7 @@ app.get('/api/mssp/tenants/:id/rgpd-report', async (req, res) => {
 
     // Score global
     const scoreColor = rgpd.conforme ? '#10b981' : rgpd.score >= 60 ? '#f97316' : '#ef4444';
-    const badge = rgpd.conforme ? 'CONFORME' : rgpd.level;
+    const badge = rgpd.level || (rgpd.conforme ? 'Indicateur technique : BON' : 'Indicateur technique : INSUFFISANT');
 
     doc.fillColor('#1a1d27').roundedRect(50, 135, doc.page.width - 100, 80, 8).fill();
     doc.fillColor(scoreColor).fontSize(36).font('Helvetica-Bold').text(rgpd.score + '/100', 70, 150);
