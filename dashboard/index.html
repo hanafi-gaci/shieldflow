@@ -541,7 +541,7 @@ body{display:flex}
 const S='https://shieldflow-rfzv.onrender.com';
 function apiFetch(url, opts={}) {
   const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
-  if(window._msspToken) headers['Authorization'] = 'Bearer '+window._msspToken;
+  if(null /* cookie httpOnly */) headers['Authorization'] = 'Bearer '+null /* cookie httpOnly */;
   return fetch(S+url, {...opts, headers});
 }
 let tenants=[], curPage='overview', curClientId=null, incFilter='all', siemFilter='all', triageFilter='all';
@@ -553,8 +553,8 @@ async function doLogin(){
   try{
     const r=await apiFetch('/api/mssp/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
     const d=await r.json();
-    if(d.token||d.success){
-      if(d.token) window._msspToken = d.token;
+    if(d.success){
+      // Cookie httpOnly géré automatiquement par le navigateur
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('appWrap').style.display='flex';
       loadAll();

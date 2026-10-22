@@ -460,17 +460,18 @@ console.log('[Scheduler] Rapport PDF quotidien programme a 8h00 Paris');
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────────────────────────
 
 async function requireAuth(req, res, next) {
-  const auth = req.headers['authorization'];
-  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Non authentifie' });
-  const token = auth.replace('Bearer ', '');
+  // Cookie httpOnly en priorité, puis header Authorization
+  const cookieToken = req.cookies && req.cookies["sf_session"];
+  const auth = req.headers["authorization"] || "";
+  const token = cookieToken || auth.replace("Bearer ", "");
+  if (!token) return res.status(401).json({ error: "Non authentifie" });
   try {
     const session = await Session.findOne({ token, expires_at: { $gt: new Date() } });
-    if (!session) return res.status(401).json({ error: 'Session expiree' });
+    if (!session) return res.status(401).json({ error: "Session expiree" });
     req.session = session;
     next();
-  } catch(e) { res.status(500).json({ error: 'Erreur auth' }); }
+  } catch(e) { res.status(500).json({ error: "Erreur auth" }); }
 }
-
 async function requireAgentKey(tenantId, key) {
   if (key === SECRET_KEY) return true; // Legacy
   const tenant = await Tenant.findById(tenantId).catch(() => null);
@@ -506,11 +507,19 @@ app.post('/api/auth/logout', requireAuth, async (req, res) => {
 
 app.post('/api/mssp/login', async (req, res) => {
   const { password } = req.body;
-  if (password !== MSSP_PASSWORD) return res.status(401).json({ error: 'Mot de passe MSSP incorrect' });
-  const token = crypto.randomBytes(32).toString('hex');
+  if (password !== MSSP_PASSWORD) return res.status(401).json({ success: false, error: "Mot de passe MSSP incorrect" });
+  const token = crypto.randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + 24*60*60*1000);
-  await Session.create({ token, role: 'mssp', expires_at: expires });
-  res.json({ token, expires_at: expires, role: 'mssp' });
+  await Session.create({ token, role: "mssp", expires_at: expires });
+  // Cookie httpOnly — jamais accessible depuis JavaScript
+  res.cookie("sf_session", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
+    expires: expires,
+    path: "/"
+  });
+  res.json({ success: true, expires_at: expires, role: "mssp" });
 });
 
 app.post('/api/mssp/tenants', async (req, res) => {
