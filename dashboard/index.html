@@ -317,6 +317,9 @@ body{display:flex}
       <span class="ic">🚨</span><span class="lbl">Incidents</span>
       <span class="sb-n" id="badge-inc">0</span>
     </button>
+    <button class="sb-btn" id="nav-reports" onclick="goPage('reports')">
+      <span class="ic">📄</span><span class="lbl">Rapports d incidents</span>
+    </button>
     <button class="sb-btn" id="nav-cloud" onclick="goPage('cloud')">
       <span class="ic">☁️</span><span class="lbl">Cloud & Identités</span>
     </button>
@@ -600,6 +603,14 @@ body{display:flex}
       </div>
     </div>
 
+    <!-- RAPPORTS INCIDENTS -->
+    <div id="page-reports" style="display:none">
+      <div class="tabs" id="reportsTabs"></div>
+      <div id="reportsContent">
+        <div class="empty"><div class="empty-icon">📄</div><div class="empty-title">Sélectionnez un client</div></div>
+      </div>
+    </div>
+
     <!-- RGPD -->
     <div id="page-rgpd" style="display:none">
       <div class="tabs" id="rgpdTabs"></div>
@@ -860,7 +871,7 @@ function renderCharts(){
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function goPage(page){
   curPage=page;
-  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks','api','ispm'].forEach(p=>{
+  ['overview','triage','endpoints','incidents','cloud','siem','rgpd','soc','webhooks','api','ispm','reports'].forEach(p=>{
     const el=document.getElementById('page-'+p);
     const nav=document.getElementById('nav-'+p);
     if(el)el.style.display=p===page?'':'none';
@@ -877,7 +888,8 @@ function goPage(page){
     soc:['Bot SOC — Athena','Assistant IA cybersécurité'],
     webhooks:['Webhooks','Alertes temps réel vers Slack et email'],
     api:['API Partenaires','Intégration MSP avec clé API'],
-    ispm:['ISPM — Durcissement M365','Détection et correction des mauvaises configurations']
+    ispm:['ISPM — Durcissement M365','Détection et correction des mauvaises configurations'],
+    reports:['Rapports d incidents','Timeline et analyse complète des incidents']
   };
   if(titles[page]){
     document.getElementById('tbTitle').textContent=titles[page][0];
@@ -897,6 +909,7 @@ function renderPage(page){
   if(page==='soc')renderSocPage();
   if(page==='api')renderApiPage();
   if(page==='ispm')renderIspmPage();
+  if(page==='reports')renderReportsPage();
   if(page==='webhooks')renderWebhooksPage();
 }
 
@@ -1887,6 +1900,139 @@ async function updateIspmFinding(tenantId, findingId, status) {
     showToast(status==='resolved' ? '✅ Finding résolu' : '✓ Pris en compte');
     renderIspmPage();
   } catch(e) { showToast('Erreur mise à jour'); }
+}
+
+// ── RAPPORTS D INCIDENTS ─────────────────────────────────────────────────────
+async function renderReportsPage() {
+  document.getElementById('reportsTabs').innerHTML = tenants.map(t =>
+    `<button class="tab ${curClientId===t.id?'active':''}" onclick="curClientId='${t.id}';renderReportsPage()">${t.name}</button>`
+  ).join('');
+
+  const t = curTenant();
+  const container = document.getElementById('reportsContent');
+  if (!t) { container.innerHTML = '<div class="empty"><div class="empty-icon">📄</div><div class="empty-title">Aucun client</div></div>'; return; }
+  curClientId = t.id;
+
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${t.id}/incidents`);
+    const d = await r.json();
+    const reports = d.reports || [];
+
+    const statusColors = {open:'p-red',investigating:'p-orange',contained:'p-amber',resolved:'p-green'};
+    const statusLabels = {open:'Ouvert',investigating:'En cours',contained:'Contenu',resolved:'Résolu'};
+    const sevBg = {critical:'s-critical',high:'s-high',medium:'s-medium',low:'s-low'};
+    const sevLabels = {critical:'CRITIQUE',high:'ÉLEVÉ',medium:'MOYEN',low:'FAIBLE'};
+
+    container.innerHTML = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;gap:10px">
+        <button class="btn btn-primary btn-sm" onclick="generateIncidentReport('${t.id}')">
+          🤖 Générer rapport IA
+        </button>
+      </div>
+      ${reports.length === 0 ? `
+        <div class="sc"><div class="sc-body">
+          <div class="empty">
+            <div class="empty-icon">📄</div>
+            <div class="empty-title">Aucun rapport d incident</div>
+            <div class="empty-sub" style="margin-bottom:16px">Les rapports sont générés automatiquement lors d alertes critiques</div>
+            <button class="btn btn-primary" onclick="generateIncidentReport('${t.id}')">🤖 Générer un rapport maintenant</button>
+          </div>
+        </div></div>` :
+      `<div style="display:flex;flex-direction:column;gap:12px">
+        ${reports.map(rep => `
+          <div class="sc" style="cursor:pointer" onclick="viewIncidentReport('${t.id}','${rep._id}')">
+            <div class="sc-head">
+              <div style="display:flex;align-items:center;gap:10px;flex:1">
+                <span class="al-sev ${sevBg[rep.severity]||'s-medium'}">${sevLabels[rep.severity]||rep.severity}</span>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text)">${rep.title}</div>
+                  <div style="font-size:11px;color:var(--text3)">
+                    ${new Date(rep.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+                    · ${(rep.devices||[]).join(', ')||'Système'}
+                    · ${rep.alerts?.length||0} alerte(s)
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="pill ${statusColors[rep.status]||'p-gray'}">${statusLabels[rep.status]||rep.status}</span>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewIncidentReport('${t.id}','${rep._id}')">Voir →</button>
+              </div>
+            </div>
+            ${rep.summary ? `<div class="sc-body" style="font-size:12px;color:var(--text2);line-height:1.6">${rep.summary.substring(0,200)}${rep.summary.length>200?'...':''}</div>` : ''}
+          </div>`).join('')}
+      </div>`}`;
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">❌</div><div class="empty-title">Erreur chargement</div></div>`;
+  }
+}
+
+async function generateIncidentReport(tenantId) {
+  showToast('🤖 Génération rapport d incident IA...');
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${tenantId}/incidents/generate`, {method:'POST'});
+    const d = await r.json();
+    if (d.success) { showToast('✅ Rapport d incident généré'); renderReportsPage(); }
+    else showToast('ℹ️ ' + (d.message || 'Aucune alerte critique à rapporter'));
+  } catch(e) { showToast('Erreur génération rapport'); }
+}
+
+async function viewIncidentReport(tenantId, reportId) {
+  try {
+    const r = await apiFetch(`/api/mssp/tenants/${tenantId}/incidents/${reportId}`);
+    const d = await r.json();
+    if (!d.success) return;
+    const rep = d.report;
+    const sevBg = {critical:'s-critical',high:'s-high',medium:'s-medium',low:'s-low'};
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
+    modal.innerHTML = `
+      <div style="background:var(--white);border-radius:14px;padding:28px;width:100%;max-width:700px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <span class="al-sev ${sevBg[rep.severity]||'s-medium'}" style="margin-right:8px">${rep.severity?.toUpperCase()}</span>
+            <span style="font-size:16px;font-weight:700">${rep.title}</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="this.closest('[style*=fixed]').remove()">✕ Fermer</button>
+        </div>
+        ${rep.ai_analysis ? `
+        <div style="background:#0d1117;border-radius:10px;padding:16px;margin-bottom:16px">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">🤖 Analyse IA</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;white-space:pre-wrap">${rep.ai_analysis}</div>
+        </div>` : ''}
+        ${rep.timeline?.length ? `
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📅 Timeline</div>
+          ${rep.timeline.map(e => `
+            <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+              <div style="font-size:11px;color:var(--text3);flex-shrink:0;min-width:120px">${new Date(e.timestamp).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+              <div style="font-size:12px;color:var(--text)">${e.event}</div>
+              <div style="font-size:11px;color:var(--text3);margin-left:auto">${e.actor||''}</div>
+            </div>`).join('')}
+        </div>` : ''}
+        ${rep.recommendations?.length ? `
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">✅ Recommandations</div>
+          ${rep.recommendations.map(r => `<div style="font-size:13px;color:var(--text);padding:5px 0;display:flex;gap:8px"><span style="color:var(--green)">→</span>${r}</div>`).join('')}
+        </div>` : ''}
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button class="btn btn-success btn-sm" onclick="updateReport('${tenantId}','${rep._id}','resolved');this.closest('[style*=fixed]').remove()">✓ Marquer résolu</button>
+          <button class="btn btn-ghost btn-sm" onclick="updateReport('${tenantId}','${rep._id}','investigating')">🔍 En cours d investigation</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  } catch(e) { showToast('Erreur chargement rapport'); }
+}
+
+async function updateReport(tenantId, reportId, status) {
+  try {
+    await apiFetch(`/api/mssp/tenants/${tenantId}/incidents/${reportId}`, {
+      method:'PATCH', body:JSON.stringify({status})
+    });
+    showToast('✅ Rapport mis à jour');
+    renderReportsPage();
+  } catch(e) { showToast('Erreur'); }
 }
 
 // Auto-refresh toutes les 60s
