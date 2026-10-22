@@ -12,7 +12,15 @@
 | requireAuth lit cookie + header | ✅ Codé | Rétrocompatible |
 | 0 vulnérabilités npm | ✅ Testé | npm audit fix appliqué |
 
-## MODULE 2 — Bot IA SOC analyste 🔲 À FAIRE
+## MODULE 2 — Bot IA SOC analyste ✅ TERMINÉ
+
+| Élément | Statut | Notes |
+|---------|--------|-------|
+| Route /api/soc/chat | ✅ Codé | Chat libre avec Athena |
+| Route /api/.../soc-guide | ✅ Codé | Guide détaillé par alerte |
+| Page SOC dans dashboard | ✅ Codé | Sidebar + chat + guide par alerte |
+| Boutons rapides SOC | ✅ Codé | Accès distant, isoler, ransomware, M365 |
+| Guide remédiation IA | ✅ Codé | Instructions pas à pas pour chaque alerte |
 
 ## MODULE 3 — Managed ISPM 🔲 À FAIRE
 
